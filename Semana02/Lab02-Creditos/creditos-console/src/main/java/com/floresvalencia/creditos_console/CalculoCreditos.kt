@@ -1,17 +1,10 @@
 package com.floresvalencia.creditos_console
 
 /**
- * Aplicación de consola para calcular el total a pagar por créditos de un estudiante.
+ * Aplicación de consola para calcular el total a pagar por créditos de un estudiante,
+ * determinar su carga académica y su forma de pago.
  * Desarrollada solo con condicionales (if/when) y repeticiones (while/for).
  * No utiliza clases, objetos ni ningún concepto de POO adicional al main() obligatorio de Kotlin.
- *
- * Cómo ejecutarla en Android Studio:
- * 1. Crea un proyecto de tipo "Kotlin" (No Activity / Console App), o simplemente
- *    un archivo .kt suelto dentro de un proyecto Kotlin/JVM.
- * 2. Pega este código en un archivo llamado CalculoCreditos.kt
- * 3. Haz clic derecho sobre el archivo -> Run 'CalculoCreditosKt'
- *    (o usa el botón de play que aparece junto a fun main())
- * 4. La ejecución se realizará en la pestaña "Run" (consola) de Android Studio.
  */
 
 fun main() {
@@ -93,7 +86,7 @@ fun main() {
         i++
     }
 
-    // ----- Mostrar el resumen con la estructura solicitada -----
+    // ----- Mostrar el resumen de cursos matriculados -----
     println()
     println("========================================")
     println("        RESUMEN DE MATRÍCULA")
@@ -104,7 +97,6 @@ fun main() {
     println()
 
     var totalCreditos = 0
-    var totalPagar = 0.0
 
     i = 0
     while (i < cantidadCursos) {
@@ -116,15 +108,69 @@ fun main() {
         i++
     }
 
-    totalPagar = totalCreditos * valorCredito
-
-    // ----- Totales finales -----
+    // ----- Determinar carga académica según el total de créditos -----
     println("========================================")
     println("Total de créditos matriculados: $totalCreditos")
+
+    var cargaAcademica = ""
+
+    if (totalCreditos <= 12) {
+        cargaAcademica = "Malla Regular"
+    } else if (totalCreditos in 13..18) {
+        cargaAcademica = "Carga Completa"
+    } else {
+        cargaAcademica = "Requiere autorización"
+    }
+
+    println("Carga académica: $cargaAcademica")
+
+    // ----- Validación de interrupción cuando supera los 18 créditos -----
+    if (totalCreditos > 18) {
+        println()
+        println("========================================")
+        println("PROCESO INTERRUMPIDO")
+        println("========================================")
+        println("El estudiante \"$nombre\" supera los 18 créditos permitidos ($totalCreditos créditos).")
+        println("Esta matrícula requiere autorización y debe ser gestionada")
+        println("únicamente por personal administrativo.")
+        println("Acérquese a la oficina de coordinación académica para continuar.")
+        return
+    }
+
+    // ----- Cálculo del total a pagar -----
+    val totalPagar = totalCreditos * valorCredito
+
+    println()
+    println("========================================")
     println("TOTAL A PAGAR: S/. $totalPagar")
     println("========================================")
 
-    // ----- Ejemplo de condicional adicional: mensaje según el monto -----
+    // ----- Determinar forma de pago según el monto total -----
+    var numeroCuotas = 0
+
+    if (totalPagar > 2500.0) {
+        numeroCuotas = 3
+    } else {
+        numeroCuotas = 2
+    }
+
+    val valorCuota = totalPagar / numeroCuotas
+
+    println()
+    println("========================================")
+    println("           FORMA DE PAGO")
+    println("========================================")
+    println("Número de cuotas: $numeroCuotas")
+
+    var cuota = 1
+    while (cuota <= numeroCuotas) {
+        println("Cuota $cuota: S/. $valorCuota")
+        cuota++
+    }
+
+    println("========================================")
+
+    // ----- Mensaje adicional según el monto total -----
     when {
         totalPagar >= 3000.0 -> println("Nota: El monto es alto, considere revisar planes de pago.")
         totalPagar >= 1000.0 -> println("Nota: Monto dentro del rango medio de pago.")
