@@ -6,10 +6,11 @@ plugins {
 android {
     namespace = "com.floresvalencia.lab02carritokotlin"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 1
         }
     }
+
 
     defaultConfig {
         applicationId = "com.floresvalencia.lab02carritokotlin"
@@ -19,6 +20,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
     }
 
     buildTypes {
@@ -53,4 +59,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    testImplementation(kotlin("test"))
+    testImplementation("junit:junit:4.13.2")
+
 }
