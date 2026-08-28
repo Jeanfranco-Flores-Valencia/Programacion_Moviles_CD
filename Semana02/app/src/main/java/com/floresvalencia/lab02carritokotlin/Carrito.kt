@@ -4,7 +4,8 @@ data class Producto(
     val precio: Double,
     var cantidad: Int
 )
-fun calcularSubtotal(productos: List<Producto>): Double { var subtotal = 0.0
+fun calcularSubtotal(productos: List<Producto>): Double {
+    var subtotal = 0.0
     for (p in productos) {
         subtotal += p.precio * p.cantidad
     }
