@@ -1,5 +1,6 @@
 package com.floresvalencia.lab02carritokotlin
 
+// 1. Clase Abstracta Base
 abstract class Producto(
     val nombre: String,
     precioInicial: Double,
@@ -21,6 +22,8 @@ abstract class Producto(
     open fun obtenerDetalle(): String {
         return String.format("%-25s x%-2d  S/ %8.2f", nombre, cantidad, calcularPrecioFinal())
     }
+
+    // 2. Subclase Física (Fuera de Producto)
     class ProductoFisico(
         nombre: String,
         precio: Double,
@@ -34,10 +37,17 @@ abstract class Producto(
         }
 
         override fun obtenerDetalle(): String {
-            return String.format("%-25s x%-2d  S/ %8.2f  [Fisico: Envio S/ %.2f]", nombre, cantidad, calcularPrecioFinal(), costoEnvio)
+            return String.format(
+                "%-25s x%-2d  S/ %8.2f  [Fisico: Envio S/ %.2f]",
+                nombre,
+                cantidad,
+                calcularPrecioFinal(),
+                costoEnvio
+            )
         }
     }
 
+    // 3. Subclase Digital (Fuera de Producto)
     class ProductoDigital(
         nombre: String,
         precio: Double,
@@ -51,7 +61,13 @@ abstract class Producto(
         }
 
         override fun obtenerDetalle(): String {
-            return String.format("%-25s x%-2d  S/ %8.2f  [Digital: Licencia S/ %.2f]", nombre, cantidad, calcularPrecioFinal(), comisionLicencia)
+            return String.format(
+                "%-25s x%-2d  S/ %8.2f  [Digital: Licencia S/ %.2f]",
+                nombre,
+                cantidad,
+                calcularPrecioFinal(),
+                comisionLicencia
+            )
         }
     }
 }
