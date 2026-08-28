@@ -30,3 +30,7 @@ El programa no te deja compilar y te da un error diciendo que a un "val" no se l
 
 ## Resultado en consola
 <img width="709" height="543" alt="Captura de pantalla 2026-08-28 023651" src="https://github.com/user-attachments/assets/2420d007-e55a-46ec-8175-b8342d19cd68" />
+---
+## 📸 Evidencia de Ejecución (POO)
+A continuación se muestra la salida en consola del sistema de Carrito de Compras aplicando los conceptos de Programación Orientada a Objetos (Herencia, Polimorfismo y Principios SOLID):
+<img width="782" height="437" alt="Captura de pantalla 2026-08-28 035806" src="https://github.com/user-attachments/assets/a5657bed-b3f3-4080-a403-e7103912149d" />
