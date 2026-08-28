@@ -1,5 +1,6 @@
 package com.floresvalencia.lab02carritokotlin
-
+import com.floresvalencia.lab02carritokotlin.Producto.ProductoFisico
+import com.floresvalencia.lab02carritokotlin.Producto.ProductoDigital
 object ProductoFactory {
     fun crearFisico(
         nombre: String,

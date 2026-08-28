@@ -1,5 +1,5 @@
 package com.floresvalencia.lab02carritokotlin
-
+import com.floresvalencia.lab02carritokotlin.EstrategiaDescuento.SinDescuento
 class CarritoDeCompras(
     var estrategiaDescuento: EstrategiaDescuento = SinDescuento()
 ) {
