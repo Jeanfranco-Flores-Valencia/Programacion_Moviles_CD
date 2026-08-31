@@ -1,18 +1,19 @@
 package com.floresvalencia.creditos_console
-
 /**
- * Aplicación de consola para calcular el total a pagar por créditos de un estudiante,
- * determinar su carga académica y su forma de pago.
- * Desarrollada solo con condicionales (if/when) y repeticiones (while/for).
- * No utiliza clases ni objetos; solo variables, arreglos y funciones simples de apoyo
- * para dar formato de tabla a la salida (sin ningún concepto de POO).
+ * Aplicacion de consola para calcular el total a pagar por creditos de un estudiante,
+ * determinar su carga academica y su forma de pago.
+ * Desarrollada UNICAMENTE con condicionales (if/when) y repeticiones (while/for).
+ * No utiliza arreglos, listas, clases ni objetos: cada curso se procesa y se muestra
+ * dentro del mismo recorrido (loop) en el que se lee, acumulando solo variables simples.
+ * Usa solo caracteres ASCII simples en la salida (sin tildes ni simbolos especiales)
+ * para evitar problemas de codificacion en cualquier consola.
  */
 
 import java.util.Locale
 
-// ----- Funciones de apoyo solo para formatear texto (no son clases ni objetos) -----
-
 const val ANCHO_CAJA = 56
+
+// ----- Funciones de apoyo solo para formatear texto (no son clases ni objetos) -----
 
 fun formatoMoneda(valor: Double): String {
     return String.format(Locale.US, "S/. %.2f", valor)
@@ -41,41 +42,29 @@ fun centrar(texto: String, ancho: Int): String {
     return " ".repeat(izquierda) + t + " ".repeat(derecha)
 }
 
-fun cajaSuperiorDoble(prefijo: String, ancho: Int): String {
-    return prefijo + "╔" + "═".repeat(ancho) + "╗"
+fun cajaSuperior(prefijo: String, ancho: Int): String {
+    return prefijo + "+" + "=".repeat(ancho) + "+"
 }
 
-fun cajaInferiorDoble(prefijo: String, ancho: Int): String {
-    return prefijo + "╚" + "═".repeat(ancho) + "╝"
+fun cajaInferior(prefijo: String, ancho: Int): String {
+    return prefijo + "+" + "=".repeat(ancho) + "+"
 }
 
-fun filaDoble(prefijo: String, texto: String, ancho: Int): String {
-    return prefijo + "║" + centrar(texto, ancho) + "║"
-}
-
-fun cajaSuperiorSimple(prefijo: String, ancho: Int): String {
-    return prefijo + "┌" + "─".repeat(ancho) + "┐"
-}
-
-fun cajaInferiorSimple(prefijo: String, ancho: Int): String {
-    return prefijo + "└" + "─".repeat(ancho) + "┘"
-}
-
-fun filaSimple(prefijo: String, texto: String, ancho: Int): String {
-    return prefijo + "│" + centrar(texto, ancho) + "│"
+fun filaCaja(prefijo: String, texto: String, ancho: Int): String {
+    return prefijo + "|" + centrar(texto, ancho) + "|"
 }
 
 fun main() {
-    println(cajaSuperiorDoble("", ANCHO_CAJA))
-    println(filaDoble("", "CALCULO DE PAGO POR CREDITOS", ANCHO_CAJA))
-    println(cajaInferiorDoble("", ANCHO_CAJA))
+    println(cajaSuperior("", ANCHO_CAJA))
+    println(filaCaja("", "CALCULO DE PAGO POR CREDITOS", ANCHO_CAJA))
+    println(cajaInferior("", ANCHO_CAJA))
     println()
 
     // ----- Nombre del estudiante -----
     print("Nombre del estudiante: ")
     var nombre = readLine()
     while (nombre == null || nombre.trim().isEmpty()) {
-        print("El nombre no puede estar vacío. Ingrese el nombre: ")
+        print("El nombre no puede estar vacio. Ingrese el nombre: ")
         nombre = readLine()
     }
     nombre = nombre.trim()
@@ -91,138 +80,121 @@ fun main() {
             cantidadCursos = numero
             cantidadValida = true
         } else {
-            println("-> Debe ingresar un número entero mayor a 0.")
+            println("-> Debe ingresar un numero entero mayor a 0.")
         }
     }
 
-    // ----- Valor de cada crédito -----
+    // ----- Valor de cada credito -----
     var valorCredito = 0.0
     var valorValido = false
     while (!valorValido) {
-        print("Valor de cada crédito (S/.): ")
+        print("Valor de cada credito (S/.): ")
         val entrada = readLine()
         val numero = entrada?.toDoubleOrNull()
         if (numero != null && numero > 0) {
             valorCredito = numero
             valorValido = true
         } else {
-            println("-> Debe ingresar un valor numérico mayor a 0.")
+            println("-> Debe ingresar un valor numerico mayor a 0.")
         }
     }
-
-    // ----- Arreglos para guardar los datos de cada curso -----
-    val nombresCursos = arrayOfNulls<String>(cantidadCursos)
-    val creditosCursos = IntArray(cantidadCursos)
-
-    // ----- Captura de datos de cada curso -----
-    var i = 0
-    while (i < cantidadCursos) {
-        println()
-        println("--- Curso ${i + 1} ---")
-
-        print("Nombre del curso ${i + 1}: ")
-        var nombreCurso = readLine()
-        while (nombreCurso == null || nombreCurso.trim().isEmpty()) {
-            print("El nombre del curso no puede estar vacío. Ingrese nuevamente: ")
-            nombreCurso = readLine()
-        }
-        nombresCursos[i] = nombreCurso.trim()
-
-        var creditosValidos = false
-        while (!creditosValidos) {
-            print("Créditos del curso ${i + 1}: ")
-            val entradaCreditos = readLine()
-            val numeroCreditos = entradaCreditos?.toIntOrNull()
-            if (numeroCreditos != null && numeroCreditos > 0) {
-                creditosCursos[i] = numeroCreditos
-                creditosValidos = true
-            } else {
-                println("-> Debe ingresar un número entero de créditos mayor a 0.")
-            }
-        }
-
-        i++
-    }
-
-    // ----- Calcular el total de créditos -----
-    var totalCreditos = 0
-    i = 0
-    while (i < cantidadCursos) {
-        totalCreditos += creditosCursos[i]
-        i++
-    }
-
-    // =========================================================
-    //                 SALIDA FINAL EN FORMATO TABLA
-    // =========================================================
 
     println()
-    println(cajaSuperiorDoble("", ANCHO_CAJA))
-    println(filaDoble("", "RESUMEN DE MATRÍCULA", ANCHO_CAJA))
-    println(cajaInferiorDoble("", ANCHO_CAJA))
+    println(cajaSuperior("", ANCHO_CAJA))
+    println(filaCaja("", "RESUMEN DE MATRICULA", ANCHO_CAJA))
+    println(cajaInferior("", ANCHO_CAJA))
     println()
     println("  Estudiante        : $nombre")
     println("  Cantidad de Cursos: $cantidadCursos")
-    println("  Valor por Crédito : ${formatoMoneda(valorCredito)}")
+    println("  Valor por Credito : ${formatoMoneda(valorCredito)}")
     println()
 
-    // ----- Tabla de cursos -----
-    println("  ┌──────┬────────────────────────────────┬───────────┐")
-    println("  │  N°  │ Curso                          │ Créditos  │")
-    println("  ├──────┼────────────────────────────────┼───────────┤")
+    // ----- Un unico recorrido: lee cada curso y lo muestra de inmediato en la tabla -----
+    // No se usa ningun arreglo; el total de creditos se va acumulando en una variable simple.
+    var totalCreditos = 0
 
-    i = 0
-    while (i < cantidadCursos) {
-        val numeroCol = numeroAncho((i + 1).toString(), 4)
-        val nombreCol = textoAncho(nombresCursos[i] ?: "", 30)
-        val creditosCol = numeroAncho(creditosCursos[i].toString(), 9)
-        println("  │ $numeroCol │ $nombreCol │ $creditosCol │")
+    println("  +------+--------------------------------+-----------+")
+    println("  |  N.  | Curso                          | Creditos  |")
+    println("  +------+--------------------------------+-----------+")
+
+    var i = 1
+    while (i <= cantidadCursos) {
+        print("  Nombre del curso $i: ")
+        var nombreCurso = readLine()
+        while (nombreCurso == null || nombreCurso.trim().isEmpty()) {
+            print("  El nombre del curso no puede estar vacio. Ingrese nuevamente: ")
+            nombreCurso = readLine()
+        }
+        nombreCurso = nombreCurso.trim()
+
+        var creditosCurso = 0
+        var creditosValidos = false
+        while (!creditosValidos) {
+            print("  Creditos del curso $i: ")
+            val entradaCreditos = readLine()
+            val numeroCreditos = entradaCreditos?.toIntOrNull()
+            if (numeroCreditos != null && numeroCreditos > 0) {
+                creditosCurso = numeroCreditos
+                creditosValidos = true
+            } else {
+                println("  -> Debe ingresar un numero entero de creditos mayor a 0.")
+            }
+        }
+
+        // Se acumula el total y se imprime la fila de la tabla en el mismo recorrido
+        totalCreditos += creditosCurso
+
+        val numeroCol = numeroAncho(i.toString(), 4)
+        val nombreCol = textoAncho(nombreCurso, 30)
+        val creditosCol = numeroAncho(creditosCurso.toString(), 9)
+        println("  | $numeroCol | $nombreCol | $creditosCol |")
+
         i++
     }
 
-    println("  └──────┴────────────────────────────────┴───────────┘")
+    println("  +------+--------------------------------+-----------+")
     println()
-    println("  Total de créditos matriculados: $totalCreditos")
+    println("  Total de creditos matriculados: $totalCreditos")
 
-    // ----- Determinar carga académica según el total de créditos -----
+    // ----- Determinar carga academica segun el total de creditos -----
     var cargaAcademica: String
     if (totalCreditos <= 12) {
         cargaAcademica = "Malla Regular"
     } else if (totalCreditos in 13..18) {
         cargaAcademica = "Carga Completa"
     } else {
-        cargaAcademica = "Requiere autorización"
+        cargaAcademica = "Requiere autorizacion"
     }
 
-    println("  Carga académica                : $cargaAcademica")
+    println("  Carga academica                : $cargaAcademica")
     println()
 
-    // ----- Validación de interrupción cuando supera los 18 créditos -----
+    // ----- Validacion de interrupcion cuando supera los 18 creditos -----
     if (totalCreditos > 18) {
-        println(cajaSuperiorDoble("  ", ANCHO_CAJA))
-        println(filaDoble("  ", "PROCESO INTERRUMPIDO", ANCHO_CAJA))
-        println(cajaInferiorDoble("  ", ANCHO_CAJA))
+        println(cajaSuperior("  ", ANCHO_CAJA))
+        println(filaCaja("  ", "PROCESO INTERRUMPIDO", ANCHO_CAJA))
+        println(cajaInferior("  ", ANCHO_CAJA))
         println()
-        println("  El estudiante \"$nombre\" supera los 18 créditos permitidos")
-        println("  ($totalCreditos créditos matriculados).")
+        println("  El estudiante \"$nombre\" supera los 18 creditos permitidos")
+        println("  ($totalCreditos creditos matriculados).")
         println()
-        println("  Esta matrícula requiere autorización y debe ser gestionada")
-        println("  únicamente por personal administrativo.")
-        println("  Acérquese a la oficina de coordinación académica para continuar.")
+        println("  Esta matricula requiere autorizacion y debe ser gestionada")
+        println("  unicamente por personal administrativo.")
+        println("  Acerquese a la oficina de coordinacion academica para continuar.")
         println()
         return
     }
 
-    // ----- Cálculo del total a pagar -----
+    // ----- Calculo del total a pagar -----
     val totalPagar = totalCreditos * valorCredito
 
-    println(cajaSuperiorSimple("  ", ANCHO_CAJA))
-    println(filaSimple("  ", "TOTAL A PAGAR", ANCHO_CAJA))
-    println(filaSimple("  ", formatoMoneda(totalPagar), ANCHO_CAJA))
-    println(cajaInferiorSimple("  ", ANCHO_CAJA))
+    println(cajaSuperior("  ", ANCHO_CAJA))
+    println(filaCaja("  ", "TOTAL A PAGAR", ANCHO_CAJA))
+    println(filaCaja("  ", formatoMoneda(totalPagar), ANCHO_CAJA))
+    println(cajaInferior("  ", ANCHO_CAJA))
     println()
 
-    // ----- Determinar forma de pago según el monto total -----
+    // ----- Determinar forma de pago segun el monto total -----
     var numeroCuotas: Int
     if (totalPagar > 2500.0) {
         numeroCuotas = 3
@@ -232,28 +204,29 @@ fun main() {
 
     val valorCuota = totalPagar / numeroCuotas
 
-    println(cajaSuperiorDoble("  ", ANCHO_CAJA))
-    println(filaDoble("  ", "FORMA DE PAGO", ANCHO_CAJA))
-    println(cajaInferiorDoble("  ", ANCHO_CAJA))
+    println(cajaSuperior("  ", ANCHO_CAJA))
+    println(filaCaja("  ", "FORMA DE PAGO", ANCHO_CAJA))
+    println(cajaInferior("  ", ANCHO_CAJA))
     println()
-    println("  Número de cuotas: $numeroCuotas")
+    println("  Numero de cuotas: $numeroCuotas")
     println()
-    println("  ┌──────────┬─────────────────────────┐")
-    println("  │  Cuota   │ Monto                   │")
-    println("  ├──────────┼─────────────────────────┤")
+    println("  +----------+-------------------------+")
+    println("  |  Cuota   | Monto                   |")
+    println("  +----------+-------------------------+")
 
+    // ----- Recorrido para mostrar cada cuota (tampoco usa arreglos) -----
     var cuota = 1
     while (cuota <= numeroCuotas) {
         val cuotaCol = numeroAncho(cuota.toString(), 8)
         val montoCol = textoAncho(formatoMoneda(valorCuota), 23)
-        println("  │ $cuotaCol │ $montoCol │")
+        println("  | $cuotaCol | $montoCol |")
         cuota++
     }
 
-    println("  └──────────┴─────────────────────────┘")
+    println("  +----------+-------------------------+")
     println()
 
-    // ----- Mensaje adicional según el monto total -----
+    // ----- Mensaje adicional segun el monto total -----
     when {
         totalPagar >= 3000.0 -> println("  Nota: El monto es alto, considere revisar planes de pago.")
         totalPagar >= 1000.0 -> println("  Nota: Monto dentro del rango medio de pago.")
