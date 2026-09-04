@@ -211,9 +211,9 @@ fun main() {
         // ----- Un unico recorrido: lee cada curso y lo muestra de inmediato en la tabla -----
         var totalCreditos = 0
 
-        println("  +------+--------------------------------+-----------+")
-        println("  |  N.  | Curso                          | Creditos  |")
-        println("  +------+--------------------------------+-----------+")
+        println("  +------+--------------------------------+-----------+----------------+")
+        println("  |  N.  | Curso                          | Creditos  | Subtotal       |")
+        println("  +------+--------------------------------+-----------+----------------+")
 
         var i = 1
         while (i <= cantidadCursos) {
@@ -241,15 +241,18 @@ fun main() {
 
             totalCreditos += creditosCurso
 
+            val subtotalCurso = creditosCurso * valorCredito
+
             val numeroCol = numeroAncho(i.toString(), 4)
             val nombreCol = textoAncho(nombreCurso, 30)
             val creditosCol = numeroAncho(creditosCurso.toString(), 9)
-            println("  | $numeroCol | $nombreCol | $creditosCol |")
+            val subtotalCol = textoAncho(formatoMoneda(subtotalCurso), 14)
+            println("  | $numeroCol | $nombreCol | $creditosCol | $subtotalCol |")
 
             i++
         }
 
-        println("  +------+--------------------------------+-----------+")
+        println("  +------+--------------------------------+-----------+----------------+")
         println()
         println("  Total de creditos matriculados: $totalCreditos")
 
