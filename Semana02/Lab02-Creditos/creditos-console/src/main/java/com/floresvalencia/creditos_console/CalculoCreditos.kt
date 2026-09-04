@@ -1,12 +1,14 @@
 package com.floresvalencia.creditos_console
+
 /**
  * Aplicacion de consola para calcular el total a pagar por creditos de un estudiante,
- * determinar su carga academica y su forma de pago.
+ * determinar su carga academica, turno y forma de pago.
  * Desarrollada UNICAMENTE con condicionales (if/when) y repeticiones (while/for).
- * No utiliza arreglos, listas, clases ni objetos: cada curso se procesa y se muestra
- * dentro del mismo recorrido (loop) en el que se lee, acumulando solo variables simples.
- * Usa solo caracteres ASCII simples en la salida (sin tildes ni simbolos especiales)
- * para evitar problemas de codificacion en cualquier consola.
+ * No utiliza arreglos, listas, clases ni objetos.
+ * Usa solo caracteres ASCII simples en la salida (sin tildes ni simbolos especiales).
+ *
+ * COMMIT 1: Se agrega el turno del estudiante (Manana, Tarde, Noche), que aplica
+ * un incremento porcentual (10%, 15%, 20% respectivamente) sobre el subtotal de creditos.
  */
 
 import java.util.Locale
@@ -69,6 +71,32 @@ fun main() {
     }
     nombre = nombre.trim()
 
+    // =========================================================
+    // COMMIT 1: Turno del estudiante (Manana, Tarde o Noche)
+    // =========================================================
+    var turno = ""
+    var porcentajeTurno = 0.0
+    var turnoValido = false
+    while (!turnoValido) {
+        print("Turno (1=Manana, 2=Tarde, 3=Noche): ")
+        val entrada = readLine()
+        if (entrada != null && entrada.trim() == "1") {
+            turno = "Manana"
+            porcentajeTurno = 0.10
+            turnoValido = true
+        } else if (entrada != null && entrada.trim() == "2") {
+            turno = "Tarde"
+            porcentajeTurno = 0.15
+            turnoValido = true
+        } else if (entrada != null && entrada.trim() == "3") {
+            turno = "Noche"
+            porcentajeTurno = 0.20
+            turnoValido = true
+        } else {
+            println("-> Opcion invalida. Ingrese 1, 2 o 3.")
+        }
+    }
+
     // ----- Cantidad de cursos -----
     var cantidadCursos = 0
     var cantidadValida = false
@@ -105,12 +133,12 @@ fun main() {
     println(cajaInferior("", ANCHO_CAJA))
     println()
     println("  Estudiante        : $nombre")
+    println("  Turno             : $turno")
     println("  Cantidad de Cursos: $cantidadCursos")
     println("  Valor por Credito : ${formatoMoneda(valorCredito)}")
     println()
 
     // ----- Un unico recorrido: lee cada curso y lo muestra de inmediato en la tabla -----
-    // No se usa ningun arreglo; el total de creditos se va acumulando en una variable simple.
     var totalCreditos = 0
 
     println("  +------+--------------------------------+-----------+")
@@ -141,7 +169,6 @@ fun main() {
             }
         }
 
-        // Se acumula el total y se imprime la fila de la tabla en el mismo recorrido
         totalCreditos += creditosCurso
 
         val numeroCol = numeroAncho(i.toString(), 4)
@@ -185,8 +212,22 @@ fun main() {
         return
     }
 
-    // ----- Calculo del total a pagar -----
-    val totalPagar = totalCreditos * valorCredito
+    // ----- Calculo del subtotal por creditos -----
+    val subtotalCreditos = totalCreditos * valorCredito
+
+    // =========================================================
+    // COMMIT 1: Se aplica el incremento por turno sobre el subtotal
+    // =========================================================
+    val incrementoTurno = subtotalCreditos * porcentajeTurno
+    val totalPagar = subtotalCreditos + incrementoTurno
+
+    println(cajaSuperior("  ", ANCHO_CAJA))
+    println(filaCaja("  ", "DETALLE DE PAGO", ANCHO_CAJA))
+    println(cajaInferior("  ", ANCHO_CAJA))
+    println()
+    println("  Subtotal por creditos      : ${formatoMoneda(subtotalCreditos)}")
+    println("  Incremento por turno ($turno): ${formatoMoneda(incrementoTurno)}")
+    println()
 
     println(cajaSuperior("  ", ANCHO_CAJA))
     println(filaCaja("  ", "TOTAL A PAGAR", ANCHO_CAJA))
@@ -214,7 +255,6 @@ fun main() {
     println("  |  Cuota   | Monto                   |")
     println("  +----------+-------------------------+")
 
-    // ----- Recorrido para mostrar cada cuota (tampoco usa arreglos) -----
     var cuota = 1
     while (cuota <= numeroCuotas) {
         val cuotaCol = numeroAncho(cuota.toString(), 8)
