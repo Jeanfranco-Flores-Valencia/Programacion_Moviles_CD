@@ -7,14 +7,17 @@ package com.floresvalencia.creditos_console
  * No utiliza arreglos, listas, clases ni objetos.
  * Usa solo caracteres ASCII simples en la salida (sin tildes ni simbolos especiales).
  *
- * COMMIT 2: Se agrega la categoria del estudiante (Ordinario o Becado).
- * Si es Ordinario, se le pregunta el valor de la matricula que debe pagar.
- * Si es Becado, no se pregunta nada y la matricula queda en S/. 0.00.
+ * COMMIT 2: Categoria del estudiante (Ordinario o Becado), con matricula
+ * preguntada solo si es Ordinario.
+ * COMMIT 3: Se agrega el calculo del IGV (18%) sobre el subtotal.
  */
 
 import java.util.Locale
 
 const val ANCHO_CAJA = 56
+
+// ----- Constante del IGV (COMMIT 3) -----
+const val PORCENTAJE_IGV = 0.18
 
 // ----- Funciones de apoyo solo para formatear texto (no son clases ni objetos) -----
 
@@ -257,10 +260,14 @@ fun main() {
     val incrementoTurno = subtotalCreditos * porcentajeTurno
     val subtotalConTurno = subtotalCreditos + incrementoTurno
 
+    // ----- Se suma la matricula (ingresada solo si es Ordinario) -----
+    val subtotalConMatricula = subtotalConTurno + valorMatricula
+
     // =========================================================
-    // COMMIT 2: Se suma la matricula (ingresada solo si es Ordinario)
+    // COMMIT 3: Se calcula el IGV sobre el subtotal y se obtiene el total final
     // =========================================================
-    val totalPagar = subtotalConTurno + valorMatricula
+    val montoIgv = subtotalConMatricula * PORCENTAJE_IGV
+    val totalPagar = subtotalConMatricula + montoIgv
 
     println(cajaSuperior("  ", ANCHO_CAJA))
     println(filaCaja("  ", "DETALLE DE PAGO", ANCHO_CAJA))
@@ -269,6 +276,7 @@ fun main() {
     println("  Subtotal por creditos      : ${formatoMoneda(subtotalCreditos)}")
     println("  Incremento por turno ($turno): ${formatoMoneda(incrementoTurno)}")
     println("  Matricula ($categoria)".padEnd(28) + ": ${formatoMoneda(valorMatricula)}")
+    println("  IGV (18%)                  : ${formatoMoneda(montoIgv)}")
     println()
 
     println(cajaSuperior("  ", ANCHO_CAJA))
