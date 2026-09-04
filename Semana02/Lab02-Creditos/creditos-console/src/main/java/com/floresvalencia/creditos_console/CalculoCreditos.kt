@@ -2,13 +2,14 @@ package com.floresvalencia.creditos_console
 
 /**
  * Aplicacion de consola para calcular el total a pagar por creditos de un estudiante,
- * determinar su carga academica, turno y forma de pago.
+ * determinar su carga academica, categoria, turno y forma de pago.
  * Desarrollada UNICAMENTE con condicionales (if/when) y repeticiones (while/for).
  * No utiliza arreglos, listas, clases ni objetos.
  * Usa solo caracteres ASCII simples en la salida (sin tildes ni simbolos especiales).
  *
- * COMMIT 1: Se agrega el turno del estudiante (Manana, Tarde, Noche), que aplica
- * un incremento porcentual (10%, 15%, 20% respectivamente) sobre el subtotal de creditos.
+ * COMMIT 2: Se agrega la categoria del estudiante (Ordinario o Becado).
+ * Si es Ordinario, se le pregunta el valor de la matricula que debe pagar.
+ * Si es Becado, no se pregunta nada y la matricula queda en S/. 0.00.
  */
 
 import java.util.Locale
@@ -72,8 +73,44 @@ fun main() {
     nombre = nombre.trim()
 
     // =========================================================
-    // COMMIT 1: Turno del estudiante (Manana, Tarde o Noche)
+    // COMMIT 2: Categoria del estudiante (Ordinario o Becado)
+    // Solo si es Ordinario se pregunta el valor de la matricula.
     // =========================================================
+    var categoria = ""
+    var categoriaValida = false
+    while (!categoriaValida) {
+        print("Categoria del estudiante (1=Ordinario, 2=Becado): ")
+        val entrada = readLine()
+        if (entrada != null && entrada.trim() == "1") {
+            categoria = "Ordinario"
+            categoriaValida = true
+        } else if (entrada != null && entrada.trim() == "2") {
+            categoria = "Becado"
+            categoriaValida = true
+        } else {
+            println("-> Opcion invalida. Ingrese 1 para Ordinario o 2 para Becado.")
+        }
+    }
+
+    var valorMatricula = 0.0
+    if (categoria == "Ordinario") {
+        var matriculaValida = false
+        while (!matriculaValida) {
+            print("Valor de la matricula (S/.): ")
+            val entrada = readLine()
+            val numero = entrada?.toDoubleOrNull()
+            if (numero != null && numero > 0) {
+                valorMatricula = numero
+                matriculaValida = true
+            } else {
+                println("-> Debe ingresar un valor numerico mayor a 0.")
+            }
+        }
+    } else {
+        valorMatricula = 0.0
+    }
+
+    // ----- Turno del estudiante (Manana, Tarde o Noche) -----
     var turno = ""
     var porcentajeTurno = 0.0
     var turnoValido = false
@@ -133,6 +170,7 @@ fun main() {
     println(cajaInferior("", ANCHO_CAJA))
     println()
     println("  Estudiante        : $nombre")
+    println("  Categoria         : $categoria")
     println("  Turno             : $turno")
     println("  Cantidad de Cursos: $cantidadCursos")
     println("  Valor por Credito : ${formatoMoneda(valorCredito)}")
@@ -215,11 +253,14 @@ fun main() {
     // ----- Calculo del subtotal por creditos -----
     val subtotalCreditos = totalCreditos * valorCredito
 
-    // =========================================================
-    // COMMIT 1: Se aplica el incremento por turno sobre el subtotal
-    // =========================================================
+    // ----- Se aplica el incremento por turno sobre el subtotal -----
     val incrementoTurno = subtotalCreditos * porcentajeTurno
-    val totalPagar = subtotalCreditos + incrementoTurno
+    val subtotalConTurno = subtotalCreditos + incrementoTurno
+
+    // =========================================================
+    // COMMIT 2: Se suma la matricula (ingresada solo si es Ordinario)
+    // =========================================================
+    val totalPagar = subtotalConTurno + valorMatricula
 
     println(cajaSuperior("  ", ANCHO_CAJA))
     println(filaCaja("  ", "DETALLE DE PAGO", ANCHO_CAJA))
@@ -227,6 +268,7 @@ fun main() {
     println()
     println("  Subtotal por creditos      : ${formatoMoneda(subtotalCreditos)}")
     println("  Incremento por turno ($turno): ${formatoMoneda(incrementoTurno)}")
+    println("  Matricula ($categoria)".padEnd(28) + ": ${formatoMoneda(valorMatricula)}")
     println()
 
     println(cajaSuperior("  ", ANCHO_CAJA))
