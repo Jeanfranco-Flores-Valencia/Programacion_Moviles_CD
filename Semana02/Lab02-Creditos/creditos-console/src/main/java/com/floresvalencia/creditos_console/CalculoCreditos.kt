@@ -1,22 +1,24 @@
 package com.floresvalencia.creditos_console
 
 /**
- * Aplicacion de consola para calcular el total a pagar por creditos de un estudiante,
- * determinar su carga academica, categoria, turno y forma de pago.
+ * Aplicacion de consola para calcular el total a pagar por creditos de uno o varios
+ * estudiantes, determinando su carga academica, categoria, turno, IGV y validando
+ * el aforo institucional.
  * Desarrollada UNICAMENTE con condicionales (if/when) y repeticiones (while/for).
  * No utiliza arreglos, listas, clases ni objetos.
  * Usa solo caracteres ASCII simples en la salida (sin tildes ni simbolos especiales).
  *
- * COMMIT 2: Categoria del estudiante (Ordinario o Becado), con matricula
- * preguntada solo si es Ordinario.
- * COMMIT 3: Se agrega el calculo del IGV (18%) sobre el subtotal.
+ * COMMIT 1: Turno del estudiante (Manana, Tarde, Noche) con incremento porcentual.
+ * COMMIT 2: Categoria (Ordinario/Becado); si es Ordinario se pregunta la matricula.
+ * COMMIT 3: Calculo del IGV (18%) sobre el subtotal.
+ * COMMIT 4: Aforo institucional preguntado por consola al inicio. El programa
+ * matricula estudiantes en un bucle hasta que se alcance el aforo maximo o el
+ * usuario decida interrumpir voluntariamente el proceso.
  */
 
 import java.util.Locale
 
 const val ANCHO_CAJA = 56
-
-// ----- Constante del IGV (COMMIT 3) -----
 const val PORCENTAJE_IGV = 0.18
 
 // ----- Funciones de apoyo solo para formatear texto (no son clases ni objetos) -----
@@ -62,265 +64,328 @@ fun filaCaja(prefijo: String, texto: String, ancho: Int): String {
 
 fun main() {
     println(cajaSuperior("", ANCHO_CAJA))
-    println(filaCaja("", "CALCULO DE PAGO POR CREDITOS", ANCHO_CAJA))
+    println(filaCaja("", "SISTEMA DE MATRICULA - PAGO POR CREDITOS", ANCHO_CAJA))
     println(cajaInferior("", ANCHO_CAJA))
     println()
 
-    // ----- Nombre del estudiante -----
-    print("Nombre del estudiante: ")
-    var nombre = readLine()
-    while (nombre == null || nombre.trim().isEmpty()) {
-        print("El nombre no puede estar vacio. Ingrese el nombre: ")
-        nombre = readLine()
-    }
-    nombre = nombre.trim()
-
     // =========================================================
-    // COMMIT 2: Categoria del estudiante (Ordinario o Becado)
-    // Solo si es Ordinario se pregunta el valor de la matricula.
+    // COMMIT 4: Se pregunta el aforo maximo de la institucion por consola
     // =========================================================
-    var categoria = ""
-    var categoriaValida = false
-    while (!categoriaValida) {
-        print("Categoria del estudiante (1=Ordinario, 2=Becado): ")
-        val entrada = readLine()
-        if (entrada != null && entrada.trim() == "1") {
-            categoria = "Ordinario"
-            categoriaValida = true
-        } else if (entrada != null && entrada.trim() == "2") {
-            categoria = "Becado"
-            categoriaValida = true
-        } else {
-            println("-> Opcion invalida. Ingrese 1 para Ordinario o 2 para Becado.")
-        }
-    }
-
-    var valorMatricula = 0.0
-    if (categoria == "Ordinario") {
-        var matriculaValida = false
-        while (!matriculaValida) {
-            print("Valor de la matricula (S/.): ")
-            val entrada = readLine()
-            val numero = entrada?.toDoubleOrNull()
-            if (numero != null && numero > 0) {
-                valorMatricula = numero
-                matriculaValida = true
-            } else {
-                println("-> Debe ingresar un valor numerico mayor a 0.")
-            }
-        }
-    } else {
-        valorMatricula = 0.0
-    }
-
-    // ----- Turno del estudiante (Manana, Tarde o Noche) -----
-    var turno = ""
-    var porcentajeTurno = 0.0
-    var turnoValido = false
-    while (!turnoValido) {
-        print("Turno (1=Manana, 2=Tarde, 3=Noche): ")
-        val entrada = readLine()
-        if (entrada != null && entrada.trim() == "1") {
-            turno = "Manana"
-            porcentajeTurno = 0.10
-            turnoValido = true
-        } else if (entrada != null && entrada.trim() == "2") {
-            turno = "Tarde"
-            porcentajeTurno = 0.15
-            turnoValido = true
-        } else if (entrada != null && entrada.trim() == "3") {
-            turno = "Noche"
-            porcentajeTurno = 0.20
-            turnoValido = true
-        } else {
-            println("-> Opcion invalida. Ingrese 1, 2 o 3.")
-        }
-    }
-
-    // ----- Cantidad de cursos -----
-    var cantidadCursos = 0
-    var cantidadValida = false
-    while (!cantidadValida) {
-        print("Cantidad de cursos: ")
+    var aforoMaximo = 0
+    var aforoValido = false
+    while (!aforoValido) {
+        print("Ingrese el aforo maximo de la institucion (cupos totales): ")
         val entrada = readLine()
         val numero = entrada?.toIntOrNull()
         if (numero != null && numero > 0) {
-            cantidadCursos = numero
-            cantidadValida = true
+            aforoMaximo = numero
+            aforoValido = true
         } else {
             println("-> Debe ingresar un numero entero mayor a 0.")
         }
     }
 
-    // ----- Valor de cada credito -----
-    var valorCredito = 0.0
-    var valorValido = false
-    while (!valorValido) {
-        print("Valor de cada credito (S/.): ")
-        val entrada = readLine()
-        val numero = entrada?.toDoubleOrNull()
-        if (numero != null && numero > 0) {
-            valorCredito = numero
-            valorValido = true
-        } else {
-            println("-> Debe ingresar un valor numerico mayor a 0.")
+    var cuposOcupados = 0
+    var continuarMatriculando = true
+
+    // ----- Bucle principal: matricula estudiantes hasta llenar el aforo -----
+    // o hasta que el usuario decida interrumpir voluntariamente el proceso.
+    while (cuposOcupados < aforoMaximo && continuarMatriculando) {
+        val cuposDisponibles = aforoMaximo - cuposOcupados
+        println()
+        println("  Aforo maximo de la institucion : $aforoMaximo")
+        println("  Cupos ya ocupados               : $cuposOcupados")
+        println("  Cupos disponibles               : $cuposDisponibles")
+        println()
+
+        // ----- Nombre del estudiante -----
+        print("Nombre del estudiante: ")
+        var nombre = readLine()
+        while (nombre == null || nombre.trim().isEmpty()) {
+            print("El nombre no puede estar vacio. Ingrese el nombre: ")
+            nombre = readLine()
         }
-    }
+        nombre = nombre.trim()
 
-    println()
-    println(cajaSuperior("", ANCHO_CAJA))
-    println(filaCaja("", "RESUMEN DE MATRICULA", ANCHO_CAJA))
-    println(cajaInferior("", ANCHO_CAJA))
-    println()
-    println("  Estudiante        : $nombre")
-    println("  Categoria         : $categoria")
-    println("  Turno             : $turno")
-    println("  Cantidad de Cursos: $cantidadCursos")
-    println("  Valor por Credito : ${formatoMoneda(valorCredito)}")
-    println()
-
-    // ----- Un unico recorrido: lee cada curso y lo muestra de inmediato en la tabla -----
-    var totalCreditos = 0
-
-    println("  +------+--------------------------------+-----------+")
-    println("  |  N.  | Curso                          | Creditos  |")
-    println("  +------+--------------------------------+-----------+")
-
-    var i = 1
-    while (i <= cantidadCursos) {
-        print("  Nombre del curso $i: ")
-        var nombreCurso = readLine()
-        while (nombreCurso == null || nombreCurso.trim().isEmpty()) {
-            print("  El nombre del curso no puede estar vacio. Ingrese nuevamente: ")
-            nombreCurso = readLine()
-        }
-        nombreCurso = nombreCurso.trim()
-
-        var creditosCurso = 0
-        var creditosValidos = false
-        while (!creditosValidos) {
-            print("  Creditos del curso $i: ")
-            val entradaCreditos = readLine()
-            val numeroCreditos = entradaCreditos?.toIntOrNull()
-            if (numeroCreditos != null && numeroCreditos > 0) {
-                creditosCurso = numeroCreditos
-                creditosValidos = true
+        // ----- Categoria del estudiante (Ordinario o Becado) -----
+        var categoria = ""
+        var categoriaValida = false
+        while (!categoriaValida) {
+            print("Categoria del estudiante (1=Ordinario, 2=Becado): ")
+            val entrada = readLine()
+            if (entrada != null && entrada.trim() == "1") {
+                categoria = "Ordinario"
+                categoriaValida = true
+            } else if (entrada != null && entrada.trim() == "2") {
+                categoria = "Becado"
+                categoriaValida = true
             } else {
-                println("  -> Debe ingresar un numero entero de creditos mayor a 0.")
+                println("-> Opcion invalida. Ingrese 1 para Ordinario o 2 para Becado.")
             }
         }
 
-        totalCreditos += creditosCurso
+        var valorMatricula = 0.0
+        if (categoria == "Ordinario") {
+            var matriculaValida = false
+            while (!matriculaValida) {
+                print("Valor de la matricula (S/.): ")
+                val entrada = readLine()
+                val numero = entrada?.toDoubleOrNull()
+                if (numero != null && numero > 0) {
+                    valorMatricula = numero
+                    matriculaValida = true
+                } else {
+                    println("-> Debe ingresar un valor numerico mayor a 0.")
+                }
+            }
+        } else {
+            valorMatricula = 0.0
+        }
 
-        val numeroCol = numeroAncho(i.toString(), 4)
-        val nombreCol = textoAncho(nombreCurso, 30)
-        val creditosCol = numeroAncho(creditosCurso.toString(), 9)
-        println("  | $numeroCol | $nombreCol | $creditosCol |")
+        // ----- Turno del estudiante (Manana, Tarde o Noche) -----
+        var turno = ""
+        var porcentajeTurno = 0.0
+        var turnoValido = false
+        while (!turnoValido) {
+            print("Turno (1=Manana, 2=Tarde, 3=Noche): ")
+            val entrada = readLine()
+            if (entrada != null && entrada.trim() == "1") {
+                turno = "Manana"
+                porcentajeTurno = 0.10
+                turnoValido = true
+            } else if (entrada != null && entrada.trim() == "2") {
+                turno = "Tarde"
+                porcentajeTurno = 0.15
+                turnoValido = true
+            } else if (entrada != null && entrada.trim() == "3") {
+                turno = "Noche"
+                porcentajeTurno = 0.20
+                turnoValido = true
+            } else {
+                println("-> Opcion invalida. Ingrese 1, 2 o 3.")
+            }
+        }
 
-        i++
-    }
+        // ----- Cantidad de cursos -----
+        var cantidadCursos = 0
+        var cantidadValida = false
+        while (!cantidadValida) {
+            print("Cantidad de cursos: ")
+            val entrada = readLine()
+            val numero = entrada?.toIntOrNull()
+            if (numero != null && numero > 0) {
+                cantidadCursos = numero
+                cantidadValida = true
+            } else {
+                println("-> Debe ingresar un numero entero mayor a 0.")
+            }
+        }
 
-    println("  +------+--------------------------------+-----------+")
-    println()
-    println("  Total de creditos matriculados: $totalCreditos")
+        // ----- Valor de cada credito -----
+        var valorCredito = 0.0
+        var valorValido = false
+        while (!valorValido) {
+            print("Valor de cada credito (S/.): ")
+            val entrada = readLine()
+            val numero = entrada?.toDoubleOrNull()
+            if (numero != null && numero > 0) {
+                valorCredito = numero
+                valorValido = true
+            } else {
+                println("-> Debe ingresar un valor numerico mayor a 0.")
+            }
+        }
 
-    // ----- Determinar carga academica segun el total de creditos -----
-    var cargaAcademica: String
-    if (totalCreditos <= 12) {
-        cargaAcademica = "Malla Regular"
-    } else if (totalCreditos in 13..18) {
-        cargaAcademica = "Carga Completa"
-    } else {
-        cargaAcademica = "Requiere autorizacion"
-    }
-
-    println("  Carga academica                : $cargaAcademica")
-    println()
-
-    // ----- Validacion de interrupcion cuando supera los 18 creditos -----
-    if (totalCreditos > 18) {
-        println(cajaSuperior("  ", ANCHO_CAJA))
-        println(filaCaja("  ", "PROCESO INTERRUMPIDO", ANCHO_CAJA))
-        println(cajaInferior("  ", ANCHO_CAJA))
         println()
-        println("  El estudiante \"$nombre\" supera los 18 creditos permitidos")
-        println("  ($totalCreditos creditos matriculados).")
+        println(cajaSuperior("", ANCHO_CAJA))
+        println(filaCaja("", "RESUMEN DE MATRICULA", ANCHO_CAJA))
+        println(cajaInferior("", ANCHO_CAJA))
         println()
-        println("  Esta matricula requiere autorizacion y debe ser gestionada")
-        println("  unicamente por personal administrativo.")
-        println("  Acerquese a la oficina de coordinacion academica para continuar.")
+        println("  Estudiante        : $nombre")
+        println("  Categoria         : $categoria")
+        println("  Turno             : $turno")
+        println("  Cantidad de Cursos: $cantidadCursos")
+        println("  Valor por Credito : ${formatoMoneda(valorCredito)}")
         println()
-        return
+
+        // ----- Un unico recorrido: lee cada curso y lo muestra de inmediato en la tabla -----
+        var totalCreditos = 0
+
+        println("  +------+--------------------------------+-----------+")
+        println("  |  N.  | Curso                          | Creditos  |")
+        println("  +------+--------------------------------+-----------+")
+
+        var i = 1
+        while (i <= cantidadCursos) {
+            print("  Nombre del curso $i: ")
+            var nombreCurso = readLine()
+            while (nombreCurso == null || nombreCurso.trim().isEmpty()) {
+                print("  El nombre del curso no puede estar vacio. Ingrese nuevamente: ")
+                nombreCurso = readLine()
+            }
+            nombreCurso = nombreCurso.trim()
+
+            var creditosCurso = 0
+            var creditosValidos = false
+            while (!creditosValidos) {
+                print("  Creditos del curso $i: ")
+                val entradaCreditos = readLine()
+                val numeroCreditos = entradaCreditos?.toIntOrNull()
+                if (numeroCreditos != null && numeroCreditos > 0) {
+                    creditosCurso = numeroCreditos
+                    creditosValidos = true
+                } else {
+                    println("  -> Debe ingresar un numero entero de creditos mayor a 0.")
+                }
+            }
+
+            totalCreditos += creditosCurso
+
+            val numeroCol = numeroAncho(i.toString(), 4)
+            val nombreCol = textoAncho(nombreCurso, 30)
+            val creditosCol = numeroAncho(creditosCurso.toString(), 9)
+            println("  | $numeroCol | $nombreCol | $creditosCol |")
+
+            i++
+        }
+
+        println("  +------+--------------------------------+-----------+")
+        println()
+        println("  Total de creditos matriculados: $totalCreditos")
+
+        // ----- Determinar carga academica segun el total de creditos -----
+        var cargaAcademica: String
+        if (totalCreditos <= 12) {
+            cargaAcademica = "Malla Regular"
+        } else if (totalCreditos in 13..18) {
+            cargaAcademica = "Carga Completa"
+        } else {
+            cargaAcademica = "Requiere autorizacion"
+        }
+
+        println("  Carga academica                : $cargaAcademica")
+        println()
+
+        // ----- Validacion de interrupcion cuando supera los 18 creditos -----
+        if (totalCreditos > 18) {
+            println(cajaSuperior("  ", ANCHO_CAJA))
+            println(filaCaja("  ", "MATRICULA NO COMPLETADA", ANCHO_CAJA))
+            println(cajaInferior("  ", ANCHO_CAJA))
+            println()
+            println("  El estudiante \"$nombre\" supera los 18 creditos permitidos")
+            println("  ($totalCreditos creditos matriculados).")
+            println()
+            println("  Esta matricula requiere autorizacion y debe ser gestionada")
+            println("  unicamente por personal administrativo.")
+            println("  Acerquese a la oficina de coordinacion academica para continuar.")
+            println("  Este estudiante NO ocupa un cupo del aforo.")
+            println()
+        } else {
+            // ----- Calculo del subtotal por creditos -----
+            val subtotalCreditos = totalCreditos * valorCredito
+
+            // ----- Se aplica el incremento por turno sobre el subtotal -----
+            val incrementoTurno = subtotalCreditos * porcentajeTurno
+            val subtotalConTurno = subtotalCreditos + incrementoTurno
+
+            // ----- Se suma la matricula (ingresada solo si es Ordinario) -----
+            val subtotalConMatricula = subtotalConTurno + valorMatricula
+
+            // ----- Se calcula el IGV sobre el subtotal y se obtiene el total final -----
+            val montoIgv = subtotalConMatricula * PORCENTAJE_IGV
+            val totalPagar = subtotalConMatricula + montoIgv
+
+            println(cajaSuperior("  ", ANCHO_CAJA))
+            println(filaCaja("  ", "DETALLE DE PAGO", ANCHO_CAJA))
+            println(cajaInferior("  ", ANCHO_CAJA))
+            println()
+            println("  Subtotal por creditos      : ${formatoMoneda(subtotalCreditos)}")
+            println("  Incremento por turno ($turno): ${formatoMoneda(incrementoTurno)}")
+            println("  Matricula ($categoria)".padEnd(28) + ": ${formatoMoneda(valorMatricula)}")
+            println("  IGV (18%)                  : ${formatoMoneda(montoIgv)}")
+            println()
+
+            println(cajaSuperior("  ", ANCHO_CAJA))
+            println(filaCaja("  ", "TOTAL A PAGAR", ANCHO_CAJA))
+            println(filaCaja("  ", formatoMoneda(totalPagar), ANCHO_CAJA))
+            println(cajaInferior("  ", ANCHO_CAJA))
+            println()
+
+            // ----- Determinar forma de pago segun el monto total -----
+            var numeroCuotas: Int
+            if (totalPagar > 2500.0) {
+                numeroCuotas = 3
+            } else {
+                numeroCuotas = 2
+            }
+
+            val valorCuota = totalPagar / numeroCuotas
+
+            println(cajaSuperior("  ", ANCHO_CAJA))
+            println(filaCaja("  ", "FORMA DE PAGO", ANCHO_CAJA))
+            println(cajaInferior("  ", ANCHO_CAJA))
+            println()
+            println("  Numero de cuotas: $numeroCuotas")
+            println()
+            println("  +----------+-------------------------+")
+            println("  |  Cuota   | Monto                   |")
+            println("  +----------+-------------------------+")
+
+            var cuota = 1
+            while (cuota <= numeroCuotas) {
+                val cuotaCol = numeroAncho(cuota.toString(), 8)
+                val montoCol = textoAncho(formatoMoneda(valorCuota), 23)
+                println("  | $cuotaCol | $montoCol |")
+                cuota++
+            }
+
+            println("  +----------+-------------------------+")
+            println()
+
+            // ----- Mensaje adicional segun el monto total -----
+            when {
+                totalPagar >= 3000.0 -> println("  Nota: El monto es alto, considere revisar planes de pago.")
+                totalPagar >= 1000.0 -> println("  Nota: Monto dentro del rango medio de pago.")
+                else -> println("  Nota: Monto dentro del rango bajo de pago.")
+            }
+            println()
+
+            // La matricula se completo correctamente: ocupa un cupo del aforo
+            cuposOcupados++
+        }
+
+        // ----- Verificar si ya se alcanzo el aforo maximo -----
+        if (cuposOcupados >= aforoMaximo) {
+            println(cajaSuperior("", ANCHO_CAJA))
+            println(filaCaja("", "AFORO MAXIMO ALCANZADO", ANCHO_CAJA))
+            println(cajaInferior("", ANCHO_CAJA))
+            println("  Se matricularon $cuposOcupados de $aforoMaximo cupos disponibles.")
+            println("  No es posible registrar mas estudiantes en este momento.")
+            println()
+        } else {
+            // ----- Preguntar si desea continuar matriculando a otro estudiante -----
+            var respuestaValida = false
+            while (!respuestaValida) {
+                print("¿Desea matricular a otro estudiante? (S/N): ")
+                val respuesta = readLine()
+                if (respuesta != null && respuesta.trim().uppercase() == "S") {
+                    continuarMatriculando = true
+                    respuestaValida = true
+                } else if (respuesta != null && respuesta.trim().uppercase() == "N") {
+                    continuarMatriculando = false
+                    respuestaValida = true
+                } else {
+                    println("-> Respuesta invalida. Ingrese S (Si) o N (No).")
+                }
+            }
+        }
     }
 
-    // ----- Calculo del subtotal por creditos -----
-    val subtotalCreditos = totalCreditos * valorCredito
-
-    // ----- Se aplica el incremento por turno sobre el subtotal -----
-    val incrementoTurno = subtotalCreditos * porcentajeTurno
-    val subtotalConTurno = subtotalCreditos + incrementoTurno
-
-    // ----- Se suma la matricula (ingresada solo si es Ordinario) -----
-    val subtotalConMatricula = subtotalConTurno + valorMatricula
-
-    // =========================================================
-    // COMMIT 3: Se calcula el IGV sobre el subtotal y se obtiene el total final
-    // =========================================================
-    val montoIgv = subtotalConMatricula * PORCENTAJE_IGV
-    val totalPagar = subtotalConMatricula + montoIgv
-
-    println(cajaSuperior("  ", ANCHO_CAJA))
-    println(filaCaja("  ", "DETALLE DE PAGO", ANCHO_CAJA))
-    println(cajaInferior("  ", ANCHO_CAJA))
+    // ----- Mensaje final del proceso -----
     println()
-    println("  Subtotal por creditos      : ${formatoMoneda(subtotalCreditos)}")
-    println("  Incremento por turno ($turno): ${formatoMoneda(incrementoTurno)}")
-    println("  Matricula ($categoria)".padEnd(28) + ": ${formatoMoneda(valorMatricula)}")
-    println("  IGV (18%)                  : ${formatoMoneda(montoIgv)}")
-    println()
-
-    println(cajaSuperior("  ", ANCHO_CAJA))
-    println(filaCaja("  ", "TOTAL A PAGAR", ANCHO_CAJA))
-    println(filaCaja("  ", formatoMoneda(totalPagar), ANCHO_CAJA))
-    println(cajaInferior("  ", ANCHO_CAJA))
-    println()
-
-    // ----- Determinar forma de pago segun el monto total -----
-    var numeroCuotas: Int
-    if (totalPagar > 2500.0) {
-        numeroCuotas = 3
-    } else {
-        numeroCuotas = 2
-    }
-
-    val valorCuota = totalPagar / numeroCuotas
-
-    println(cajaSuperior("  ", ANCHO_CAJA))
-    println(filaCaja("  ", "FORMA DE PAGO", ANCHO_CAJA))
-    println(cajaInferior("  ", ANCHO_CAJA))
-    println()
-    println("  Numero de cuotas: $numeroCuotas")
-    println()
-    println("  +----------+-------------------------+")
-    println("  |  Cuota   | Monto                   |")
-    println("  +----------+-------------------------+")
-
-    var cuota = 1
-    while (cuota <= numeroCuotas) {
-        val cuotaCol = numeroAncho(cuota.toString(), 8)
-        val montoCol = textoAncho(formatoMoneda(valorCuota), 23)
-        println("  | $cuotaCol | $montoCol |")
-        cuota++
-    }
-
-    println("  +----------+-------------------------+")
-    println()
-
-    // ----- Mensaje adicional segun el monto total -----
-    when {
-        totalPagar >= 3000.0 -> println("  Nota: El monto es alto, considere revisar planes de pago.")
-        totalPagar >= 1000.0 -> println("  Nota: Monto dentro del rango medio de pago.")
-        else -> println("  Nota: Monto dentro del rango bajo de pago.")
-    }
+    println(cajaSuperior("", ANCHO_CAJA))
+    println(filaCaja("", "PROCESO DE MATRICULA FINALIZADO", ANCHO_CAJA))
+    println(cajaInferior("", ANCHO_CAJA))
+    println("  Total de estudiantes matriculados: $cuposOcupados de $aforoMaximo cupos.")
     println()
 }
