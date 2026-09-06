@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,11 +115,13 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "✓ Producto registrado correctamente",
+                        color = Color(0xFF2E7D32)
+                    )
                 }
             }
-
-
-// aquí irán los campos de texto
         }
     }
 }
