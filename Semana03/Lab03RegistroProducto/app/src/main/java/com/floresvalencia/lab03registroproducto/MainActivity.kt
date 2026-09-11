@@ -52,6 +52,8 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
     var precio by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
     var mostrarResumen by remember { mutableStateOf(false) }
+    var mensajeError by remember { mutableStateOf("") }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -90,13 +92,47 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
             )
         }
         Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = { mostrarResumen = true },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("AGREGAR PRODUCTO")
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Button(
+                onClick = {
+                    if (nombre.isEmpty() || precio.isEmpty() || cantidad.isEmpty()) {
+                        mensajeError = "Todos los campos son obligatorios"
+                        mostrarResumen = false
+                    } else if (precio.toDoubleOrNull() == null || cantidad.toIntOrNull() == null) {
+                        mensajeError = "Precio y cantidad deben ser numeros validos"
+                        mostrarResumen = false
+                    } else {
+                        mensajeError = ""
+                        mostrarResumen = true
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("AGREGAR PRODUCTO")
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(
+                onClick = {
+                    nombre = ""
+                    precio = ""
+                    cantidad = ""
+                    mostrarResumen = false
+                    mensajeError = ""
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("LIMPIAR")
+            }
         }
         Spacer(modifier = Modifier.height(24.dp))
+
+        if (mensajeError.isNotEmpty()) {
+            Text(
+                text = mensajeError,
+                color = Color.Red
+            )
+        }
+
         if (mostrarResumen) {
             val precioNum = precio.toDoubleOrNull() ?: 0.0
             val cantidadNum = cantidad.toIntOrNull() ?: 0
