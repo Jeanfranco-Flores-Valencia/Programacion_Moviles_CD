@@ -20,7 +20,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.floresvalencia.lab03registroproducto.ui.theme.Lab03RegistroProductoTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -52,7 +51,7 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
     var precio by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
     var mostrarResumen by remember { mutableStateOf(false) }
-    var mensajeError by remember { mutableStateOf("") }
+    var mensajeError by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = modifier
@@ -95,15 +94,31 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Button(
                 onClick = {
-                    if (nombre.isEmpty() || precio.isEmpty() || cantidad.isEmpty()) {
-                        mensajeError = "Todos los campos son obligatorios"
-                        mostrarResumen = false
-                    } else if (precio.toDoubleOrNull() == null || cantidad.toIntOrNull() == null) {
-                        mensajeError = "Precio y cantidad deben ser numeros validos"
-                        mostrarResumen = false
-                    } else {
-                        mensajeError = ""
-                        mostrarResumen = true
+                    when {
+                        nombre.isBlank() || precio.isBlank() || cantidad.isBlank() -> {
+                            mensajeError = "Completa nombre, precio y cantidad antes de agregar"
+                            mostrarResumen = false
+                        }
+                        precio.toDoubleOrNull() == null -> {
+                            mensajeError = "El precio debe ser un numero valido"
+                            mostrarResumen = false
+                        }
+                        cantidad.toIntOrNull() == null -> {
+                            mensajeError = "La cantidad debe ser un numero entero"
+                            mostrarResumen = false
+                        }
+                        (precio.toDoubleOrNull() ?: 0.0) <= 0.0 -> {
+                            mensajeError = "El precio debe ser mayor a cero"
+                            mostrarResumen = false
+                        }
+                        (cantidad.toIntOrNull() ?: 0) <= 0 -> {
+                            mensajeError = "La cantidad debe ser mayor a cero"
+                            mostrarResumen = false
+                        }
+                        else -> {
+                            mensajeError = null
+                            mostrarResumen = true
+                        }
                     }
                 },
                 modifier = Modifier.weight(1f)
@@ -117,19 +132,20 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
                     precio = ""
                     cantidad = ""
                     mostrarResumen = false
-                    mensajeError = ""
+                    mensajeError = null
                 },
                 modifier = Modifier.weight(1f)
             ) {
                 Text("LIMPIAR")
             }
         }
+
         Spacer(modifier = Modifier.height(24.dp))
 
-        if (mensajeError.isNotEmpty()) {
+        mensajeError?.let {
             Text(
-                text = mensajeError,
-                color = Color.Red
+                text = it,
+                color = MaterialTheme.colorScheme.error
             )
         }
 
@@ -140,8 +156,7 @@ fun PantallaRegistro(modifier: Modifier = Modifier) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-            )
-            {
+            ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(nombre, style = MaterialTheme.typography.titleLarge)
                     Text("Precio: S/ " + String.format("%.2f", precioNum))
