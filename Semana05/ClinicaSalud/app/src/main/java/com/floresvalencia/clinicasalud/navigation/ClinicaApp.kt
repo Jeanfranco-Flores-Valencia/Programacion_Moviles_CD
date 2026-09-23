@@ -16,8 +16,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.floresvalencia.clinicasalud.data.DatosClinica
-import com.floresvalencia.clinicasalud.ui.screens.InicioScreen
-import com.floresvalencia.clinicasalud.ui.screens.PerfilMedicoScreen
+import com.floresvalencia.clinicasalud.ui.screens.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +49,7 @@ fun ClinicaApp() {
                     }
                 },
                 navigationIcon = {
-                    if (rutaActual == Rutas.PERFIL_MEDICO) {
+                    if (rutaActual == Rutas.PERFIL_MEDICO || rutaActual == Rutas.AGENDAR) {
                         IconButton(onClick = { navController.navigateUp() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                         }
@@ -94,7 +93,20 @@ fun ClinicaApp() {
                 val medico = DatosClinica.buscarMedico(medicoId)
                 PerfilMedicoScreen(
                     medico = medico,
-                    onAgendarClick = { /* Se conecta en el commit 7 */ }
+                    onAgendarClick = { navController.navigate(Rutas.agendar(medico.id)) }
+                )
+            }
+
+            // 3) Agendar cita (recibe medicoId; el usuario elige fecha y hora)
+            composable(
+                route = Rutas.AGENDAR,
+                arguments = listOf(navArgument("medicoId") { type = NavType.IntType })
+            ) { entry ->
+                val medicoId = entry.arguments?.getInt("medicoId") ?: 1
+                val medico = DatosClinica.buscarMedico(medicoId)
+                AgendarCitaScreen(
+                    medico = medico,
+                    onConfirmar = { fecha, hora -> /* Se conecta en el commit 8 */ }
                 )
             }
         }
