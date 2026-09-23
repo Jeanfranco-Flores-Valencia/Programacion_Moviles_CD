@@ -121,9 +121,16 @@ fun TecsupFitApp() {
                 ConfirmacionScreen(
                     clase = DatosGym.buscarClase(claseId),
                     horario = horario,
-                    onVerReservas = { /* Se conecta en el commit 8 */ },
+                    onVerReservas = {
+                        navController.navigate(Rutas.RESERVAS) { popUpTo(Rutas.INICIO) }
+                    },
                     onVolverInicio = { navController.popBackStack(Rutas.INICIO, inclusive = false) }
                 )
+            }
+
+            // Reservas (recibe la lista compartida)
+            composable(Rutas.RESERVAS) {
+                ReservasScreen(reservas = reservas)
             }
         }
     }
