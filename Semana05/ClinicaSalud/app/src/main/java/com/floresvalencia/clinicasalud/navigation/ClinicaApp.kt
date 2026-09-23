@@ -229,7 +229,14 @@ fun ClinicaApp() {
                 composable(Rutas.MIS_CITAS) {
                     MisCitasScreen(
                         citas = citas,
-                        onAgendarNueva = { navController.popBackStack(Rutas.INICIO, inclusive = false) }
+                        onAgendarNueva = { navController.popBackStack(Rutas.INICIO, inclusive = false) },
+                        onCancelarCita = { cita ->
+                            // Se reemplaza la cita por una copia con estado CANCELADA
+                            val indice = citas.indexOf(cita)
+                            if (indice != -1) {
+                                citas[indice] = cita.copy(estado = EstadoCita.CANCELADA)
+                            }
+                        }
                     )
                 }
                 composable(Rutas.HISTORIAL) {
