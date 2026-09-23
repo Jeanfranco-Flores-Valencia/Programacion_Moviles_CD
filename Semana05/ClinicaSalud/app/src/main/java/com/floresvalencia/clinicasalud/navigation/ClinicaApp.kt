@@ -140,8 +140,18 @@ fun ClinicaApp() {
                     medico = DatosClinica.buscarMedico(medicoId),
                     fecha = fecha,
                     hora = hora,
-                    onVerMisCitas = { /* Se conecta en el commit 9 */ },
+                    onVerMisCitas = {
+                        navController.navigate(Rutas.MIS_CITAS) { popUpTo(Rutas.INICIO) }
+                    },
                     onVolverInicio = { navController.popBackStack(Rutas.INICIO, inclusive = false) }
+                )
+            }
+
+            // Mis citas (recibe la lista compartida)
+            composable(Rutas.MIS_CITAS) {
+                MisCitasScreen(
+                    citas = citas,
+                    onAgendarNueva = { navController.popBackStack(Rutas.INICIO, inclusive = false) }
                 )
             }
         }
