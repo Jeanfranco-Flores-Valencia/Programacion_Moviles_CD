@@ -185,7 +185,17 @@ fun TecsupFitApp() {
 
             // Pestañas del bottomBar
             composable(Rutas.RESERVAS) {
-                ReservasScreen(reservas = reservas)
+                ReservasScreen(
+                    reservas = reservas,
+                    onRegistrarAsistencia = { reserva ->
+                        // La reserva pasa a Completada y la racha aumenta
+                        val indice = reservas.indexOf(reserva)
+                        if (indice != -1) {
+                            reservas[indice] = reserva.copy(estado = EstadoReserva.COMPLETADA)
+                            racha++
+                        }
+                    }
+                )
             }
             composable(Rutas.RUTINAS) {
                 RutinasScreen()
