@@ -5,8 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,9 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.floresvalencia.clinicasalud.data.DatosClinica
 import com.floresvalencia.clinicasalud.data.Medico
-import com.floresvalencia.clinicasalud.ui.components.AvatarIniciales
+import com.floresvalencia.clinicasalud.ui.components.AvatarMedico
 import com.floresvalencia.clinicasalud.ui.components.Calificacion
-import com.floresvalencia.clinicasalud.ui.components.TituloSeccion
 
 @Composable
 fun InicioScreen(onMedicoClick: (Medico) -> Unit) {
@@ -29,36 +27,41 @@ fun InicioScreen(onMedicoClick: (Medico) -> Unit) {
         else DatosClinica.medicos.filter { it.especialidad == especialidadSeleccionada }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = "¿Qué especialista necesitas hoy?",
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp)
-        )
 
-        TituloSeccion("Especialidades")
-
-        // LazyRow: chips de especialidad
+        // LazyRow: chips de especialidad (seleccionado = morado relleno)
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(DatosClinica.especialidades) { especialidad ->
                 FilterChip(
                     selected = especialidad == especialidadSeleccionada,
                     onClick = { especialidadSeleccionada = especialidad },
-                    label = { Text(especialidad) }
+                    label = { Text(especialidad) },
+                    shape = RoundedCornerShape(50),
+                    border = null,
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        labelColor = MaterialTheme.colorScheme.onSurface,
+                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 )
             }
         }
 
-        TituloSeccion("Médicos disponibles (${medicosFiltrados.size})")
+        Text(
+            text = "Médicos disponibles",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(start = 16.dp, top = 20.dp, bottom = 10.dp)
+        )
 
         // LazyColumn: lista de médicos
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             items(medicosFiltrados, key = { it.id }) { medico ->
                 MedicoCard(medico = medico, onClick = { onMedicoClick(medico) })
@@ -71,32 +74,31 @@ fun InicioScreen(onMedicoClick: (Medico) -> Unit) {
 private fun MedicoCard(medico: Medico, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(16.dp),
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AvatarIniciales(nombre = medico.nombre)
-            Spacer(modifier = Modifier.width(16.dp))
+            AvatarMedico()
+            Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = medico.nombre,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = medico.especialidad,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    text = medico.titulo,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Calificacion(valor = medico.calificacion)
             }
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Ver perfil")
+            Calificacion(valor = medico.calificacion)
         }
     }
 }

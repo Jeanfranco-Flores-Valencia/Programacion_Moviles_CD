@@ -1,10 +1,7 @@
 package com.floresvalencia.clinicasalud.ui.screens
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,78 +9,53 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.floresvalencia.clinicasalud.data.Medico
-import com.floresvalencia.clinicasalud.ui.components.AvatarIniciales
+import com.floresvalencia.clinicasalud.ui.components.AvatarMedico
+import com.floresvalencia.clinicasalud.ui.components.Calificacion
 
 @Composable
 fun PerfilMedicoScreen(medico: Medico, onAgendarClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(24.dp)
     ) {
-        AvatarIniciales(nombre = medico.nombre, tamano = 110.dp)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = medico.nombre,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
-        )
-        Text(
-            text = medico.especialidad,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Row(
+        // Cabecera centrada
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            DatoPerfil(titulo = "Calificación", valor = "⭐ ${medico.calificacion}")
-            DatoPerfil(titulo = "Experiencia", valor = "${medico.aniosExperiencia} años")
-            DatoPerfil(titulo = "Consulta", valor = "30 min")
+            AvatarMedico(tamano = 96.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = medico.nombre,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "${medico.titulo} · ${medico.aniosExperiencia} años exp.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Calificacion(valor = medico.calificacion, resenas = medico.resenas)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Sobre el médico",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = medico.descripcion, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
+        Text(text = medico.descripcion, style = MaterialTheme.typography.bodyMedium)
 
-        Spacer(modifier = Modifier.height(32.dp))
+        // Empuja el botón hasta abajo de la pantalla
+        Spacer(modifier = Modifier.weight(1f))
 
         Button(
             onClick = onAgendarClick,
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(52.dp)
         ) {
-            Icon(Icons.Filled.CalendarMonth, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Agendar cita")
+            Text("Agendar cita", fontWeight = FontWeight.SemiBold)
         }
-    }
-}
-
-@Composable
-private fun DatoPerfil(titulo: String, valor: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = valor, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Text(
-            text = titulo,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }
