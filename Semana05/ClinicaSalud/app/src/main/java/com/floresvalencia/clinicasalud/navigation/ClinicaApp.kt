@@ -45,6 +45,7 @@ fun ClinicaApp() {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Estado compartido entre pantallas (sin ViewModel): lista de citas
     val citas = remember {
@@ -109,6 +110,7 @@ fun ClinicaApp() {
         }
     ) {
         Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             topBar = {
                 TopAppBar(
                     title = {
@@ -231,10 +233,21 @@ fun ClinicaApp() {
                         citas = citas,
                         onAgendarNueva = { navController.popBackStack(Rutas.INICIO, inclusive = false) },
                         onCancelarCita = { cita ->
-                            // Se reemplaza la cita por una copia con estado CANCELADA
                             val indice = citas.indexOf(cita)
                             if (indice != -1) {
                                 citas[indice] = cita.copy(estado = EstadoCita.CANCELADA)
+
+                                // Snackbar con opción de deshacer
+                                scope.launch {
+                                    val resultado = snackbarHostState.showSnackbar(
+                                        message = "Cita con ${cita.medico.nombre} cancelada",
+                                        actionLabel = "Deshacer",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (resultado == SnackbarResult.ActionPerformed) {
+                                        citas[indice] = cita   // vuelve a quedar Confirmada
+                                    }
+                                }
                             }
                         }
                     )
