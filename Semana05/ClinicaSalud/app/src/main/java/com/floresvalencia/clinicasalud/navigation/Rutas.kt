@@ -10,6 +10,7 @@ object Rutas {
     const val CONFIRMACION = "confirmacion/{medicoId}/{fecha}/{hora}"
     const val MIS_CITAS = "mis_citas"
     const val HISTORIAL = "historial"
+    const val PERFIL_PACIENTE = "perfil_paciente"
 
     // Funciones que arman la ruta real con los datos del ítem elegido
     fun perfilMedico(medicoId: Int) = "perfil_medico/$medicoId"

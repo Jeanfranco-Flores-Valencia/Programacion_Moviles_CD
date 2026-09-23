@@ -154,6 +154,14 @@ fun ClinicaApp() {
                     onAgendarNueva = { navController.popBackStack(Rutas.INICIO, inclusive = false) }
                 )
             }
+            // Historial médico
+            composable(Rutas.HISTORIAL) {
+                HistorialScreen()
+            }
+            // Perfil del paciente
+            composable(Rutas.PERFIL_PACIENTE) {
+                PerfilPacienteScreen(citas = citas)
+            }
         }
     }
 }
@@ -165,5 +173,6 @@ private fun tituloDePantalla(ruta: String?): String = when (ruta) {
     Rutas.CONFIRMACION -> "Confirmación"
     Rutas.MIS_CITAS -> "Mis citas"
     Rutas.HISTORIAL -> "Historial médico"
+    Rutas.PERFIL_PACIENTE -> "Mi perfil"
     else -> "Clínica Salud+"
 }
