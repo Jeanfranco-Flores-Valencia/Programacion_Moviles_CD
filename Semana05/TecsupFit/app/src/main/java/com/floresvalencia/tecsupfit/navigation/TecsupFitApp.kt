@@ -15,6 +15,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.floresvalencia.tecsupfit.data.DatosGym
+import com.floresvalencia.tecsupfit.data.EstadoReserva
+import com.floresvalencia.tecsupfit.data.Reserva
 import com.floresvalencia.tecsupfit.ui.screens.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,7 +24,11 @@ import com.floresvalencia.tecsupfit.ui.screens.*
 fun TecsupFitApp() {
     val navController = rememberNavController()
 
-    // Ruta actual -> define el título, el color y la flecha de la topBar
+    // Estado compartido entre pantallas (sin ViewModel): lista de reservas
+    val reservas = remember {
+        mutableStateListOf<Reserva>().apply { addAll(DatosGym.reservasIniciales) }
+    }
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val rutaActual = backStackEntry?.destination?.route
     val esInicio = rutaActual == Rutas.INICIO
@@ -55,7 +61,6 @@ fun TecsupFitApp() {
                         }
                     }
                 },
-                // Verde en Inicio, blanca en las demás pantallas
                 colors = if (esInicio) {
                     TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -71,7 +76,6 @@ fun TecsupFitApp() {
             )
         }
     ) { innerPadding ->
-        // El padding del Scaffold se aplica al NavHost -> llega a TODAS las pantallas
         NavHost(
             navController = navController,
             startDestination = Rutas.INICIO,
@@ -84,7 +88,7 @@ fun TecsupFitApp() {
                 )
             }
 
-            // 2) Detalle de clase (recibe claseId)
+            // 2) Detalle de clase (recibe claseId; el usuario elige horario)
             composable(
                 route = Rutas.DETALLE,
                 arguments = listOf(navArgument("claseId") { type = NavType.IntType })
@@ -93,7 +97,32 @@ fun TecsupFitApp() {
                 val clase = DatosGym.buscarClase(claseId)
                 DetalleClaseScreen(
                     clase = clase,
-                    onReservar = { horario -> /* Se conecta en el commit 7 */ }
+                    onReservar = { horario ->
+                        // Se guarda la reserva en la lista compartida
+                        reservas.add(Reserva(clase, horario, EstadoReserva.CONFIRMADA))
+                        navController.navigate(Rutas.confirmacion(clase.id, horario)) {
+                            // Al retroceder desde Confirmación se vuelve a Inicio
+                            popUpTo(Rutas.INICIO)
+                        }
+                    }
+                )
+            }
+
+            // 3) Confirmación (recibe claseId y horario)
+            composable(
+                route = Rutas.CONFIRMACION,
+                arguments = listOf(
+                    navArgument("claseId") { type = NavType.IntType },
+                    navArgument("horario") { type = NavType.StringType }
+                )
+            ) { entry ->
+                val claseId = entry.arguments?.getInt("claseId") ?: 1
+                val horario = entry.arguments?.getString("horario") ?: ""
+                ConfirmacionScreen(
+                    clase = DatosGym.buscarClase(claseId),
+                    horario = horario,
+                    onVerReservas = { /* Se conecta en el commit 8 */ },
+                    onVolverInicio = { navController.popBackStack(Rutas.INICIO, inclusive = false) }
                 )
             }
         }
