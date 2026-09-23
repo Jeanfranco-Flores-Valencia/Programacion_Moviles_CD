@@ -4,9 +4,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.EventAvailable
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -19,6 +24,16 @@ import com.floresvalencia.tecsupfit.data.EstadoReserva
 import com.floresvalencia.tecsupfit.data.Reserva
 import com.floresvalencia.tecsupfit.ui.screens.*
 
+private data class Pestana(val ruta: String, val titulo: String, val icono: ImageVector)
+
+// 4 pestañas del bottomBar
+private val pestanas = listOf(
+    Pestana(Rutas.INICIO, "Inicio", Icons.Filled.Home),
+    Pestana(Rutas.RESERVAS, "Reservas", Icons.Filled.EventAvailable),
+    Pestana(Rutas.RUTINAS, "Rutinas", Icons.Filled.FitnessCenter),
+    Pestana(Rutas.PERFIL, "Perfil", Icons.Filled.Person)
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TecsupFitApp() {
@@ -29,10 +44,13 @@ fun TecsupFitApp() {
         mutableStateListOf<Reserva>().apply { addAll(DatosGym.reservasIniciales) }
     }
 
+    // La ruta actual decide: título, colores, flecha, visibilidad del bottomBar y pestaña resaltada.
+    // currentBackStackEntryAsState() es un State: al cambiar de pantalla, todo se recompone.
     val backStackEntry by navController.currentBackStackEntryAsState()
     val rutaActual = backStackEntry?.destination?.route
     val esInicio = rutaActual == Rutas.INICIO
     val mostrarAtras = rutaActual == Rutas.DETALLE
+    val mostrarBottomBar = pestanas.any { it.ruta == rutaActual }
 
     Scaffold(
         topBar = {
@@ -74,8 +92,45 @@ fun TecsupFitApp() {
                     )
                 }
             )
+        },
+        bottomBar = {
+            // Visible solo en las 4 pestañas (oculto en Detalle y Confirmación, como en la figura)
+            if (mostrarBottomBar) {
+                Column {
+                    HorizontalDivider()
+                    NavigationBar {
+                        pestanas.forEach { pestana ->
+                            val seleccionada = rutaActual == pestana.ruta
+                            NavigationBarItem(
+                                selected = seleccionada,
+                                onClick = {
+                                    navController.navigate(pestana.ruta) {
+                                        popUpTo(Rutas.INICIO)      // no acumular pestañas en la pila
+                                        launchSingleTop = true     // no duplicar la misma pantalla
+                                    }
+                                },
+                                icon = { Icon(pestana.icono, contentDescription = pestana.titulo) },
+                                label = {
+                                    Text(
+                                        text = pestana.titulo,
+                                        fontWeight = if (seleccionada) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            )
+                        }
+                    }
+                }
+            }
         }
     ) { innerPadding ->
+        // El padding del Scaffold (topBar + bottomBar) se aplica al NavHost -> TODAS las pantallas
         NavHost(
             navController = navController,
             startDestination = Rutas.INICIO,
@@ -98,10 +153,8 @@ fun TecsupFitApp() {
                 DetalleClaseScreen(
                     clase = clase,
                     onReservar = { horario ->
-                        // Se guarda la reserva en la lista compartida
                         reservas.add(Reserva(clase, horario, EstadoReserva.CONFIRMADA))
                         navController.navigate(Rutas.confirmacion(clase.id, horario)) {
-                            // Al retroceder desde Confirmación se vuelve a Inicio
                             popUpTo(Rutas.INICIO)
                         }
                     }
@@ -128,15 +181,13 @@ fun TecsupFitApp() {
                 )
             }
 
-            // Reservas (recibe la lista compartida)
+            // Pestañas del bottomBar
             composable(Rutas.RESERVAS) {
                 ReservasScreen(reservas = reservas)
             }
-            // Rutinas
             composable(Rutas.RUTINAS) {
                 RutinasScreen()
             }
-            // Perfil (recibe la lista para calcular estadísticas)
             composable(Rutas.PERFIL) {
                 PerfilScreen(reservas = reservas)
             }
