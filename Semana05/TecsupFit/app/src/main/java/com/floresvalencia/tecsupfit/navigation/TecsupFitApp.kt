@@ -93,7 +93,7 @@ fun TecsupFitApp() {
                 val clase = DatosGym.buscarClase(claseId)
                 DetalleClaseScreen(
                     clase = clase,
-                    onReservarClick = { /* Se conecta en el commit 6 */ }
+                    onReservar = { horario -> /* Se conecta en el commit 7 */ }
                 )
             }
         }
