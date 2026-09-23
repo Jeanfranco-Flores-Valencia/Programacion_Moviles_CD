@@ -5,8 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavType
@@ -15,7 +14,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.floresvalencia.clinicasalud.data.Cita
 import com.floresvalencia.clinicasalud.data.DatosClinica
+import com.floresvalencia.clinicasalud.data.EstadoCita
 import com.floresvalencia.clinicasalud.ui.screens.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,16 +24,21 @@ import com.floresvalencia.clinicasalud.ui.screens.*
 fun ClinicaApp() {
     val navController = rememberNavController()
 
+    // Estado compartido entre pantallas (sin ViewModel): lista de citas
+    val citas = remember {
+        mutableStateListOf<Cita>().apply { addAll(DatosClinica.citasIniciales) }
+    }
+
     val backStackEntry by navController.currentBackStackEntryAsState()
     val rutaActual = backStackEntry?.destination?.route
     val esInicio = rutaActual == Rutas.INICIO
+    val mostrarAtras = rutaActual == Rutas.PERFIL_MEDICO || rutaActual == Rutas.AGENDAR
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     if (esInicio) {
-                        // Inicio: título + saludo (como en el prototipo)
                         Column {
                             Text("Clínica Salud+", fontWeight = FontWeight.Bold)
                             Text(
@@ -49,13 +55,12 @@ fun ClinicaApp() {
                     }
                 },
                 navigationIcon = {
-                    if (rutaActual == Rutas.PERFIL_MEDICO || rutaActual == Rutas.AGENDAR) {
+                    if (mostrarAtras) {
                         IconButton(onClick = { navController.navigateUp() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                         }
                     }
                 },
-                // Morada en Inicio, blanca en las demás pantallas
                 colors = if (esInicio) {
                     TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -77,6 +82,7 @@ fun ClinicaApp() {
             startDestination = Rutas.INICIO,
             modifier = Modifier.padding(innerPadding)
         ) {
+            // 1) Inicio
             composable(Rutas.INICIO) {
                 InicioScreen(
                     onMedicoClick = { medico ->
@@ -85,6 +91,7 @@ fun ClinicaApp() {
                 )
             }
 
+            // 2) Perfil del médico (recibe medicoId)
             composable(
                 route = Rutas.PERFIL_MEDICO,
                 arguments = listOf(navArgument("medicoId") { type = NavType.IntType })
@@ -106,7 +113,35 @@ fun ClinicaApp() {
                 val medico = DatosClinica.buscarMedico(medicoId)
                 AgendarCitaScreen(
                     medico = medico,
-                    onConfirmar = { fecha, hora -> /* Se conecta en el commit 8 */ }
+                    onConfirmar = { fecha, hora ->
+                        // Se guarda la cita en la lista compartida
+                        citas.add(Cita(medico, fecha, hora, EstadoCita.CONFIRMADA))
+                        navController.navigate(Rutas.confirmacion(medico.id, fecha, hora)) {
+                            // Al retroceder desde Confirmación se vuelve a Inicio, no al formulario
+                            popUpTo(Rutas.INICIO)
+                        }
+                    }
+                )
+            }
+
+            // 4) Confirmación (recibe medicoId, fecha y hora)
+            composable(
+                route = Rutas.CONFIRMACION,
+                arguments = listOf(
+                    navArgument("medicoId") { type = NavType.IntType },
+                    navArgument("fecha") { type = NavType.StringType },
+                    navArgument("hora") { type = NavType.StringType }
+                )
+            ) { entry ->
+                val medicoId = entry.arguments?.getInt("medicoId") ?: 1
+                val fecha = entry.arguments?.getString("fecha") ?: ""
+                val hora = entry.arguments?.getString("hora") ?: ""
+                ConfirmacionScreen(
+                    medico = DatosClinica.buscarMedico(medicoId),
+                    fecha = fecha,
+                    hora = hora,
+                    onVerMisCitas = { /* Se conecta en el commit 9 */ },
+                    onVolverInicio = { navController.popBackStack(Rutas.INICIO, inclusive = false) }
                 )
             }
         }
