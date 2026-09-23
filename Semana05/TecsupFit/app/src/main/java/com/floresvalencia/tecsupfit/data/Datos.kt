@@ -91,10 +91,10 @@ object DatosGym {
     )
 
     val usuario = Usuario(
-        nombre = "Diego Ramos",
+        nombre = "Jean Flores",
         plan = "Plan Premium",
         codigo = "U20231234",
-        correo = "diego.ramos@tecsup.edu.pe"
+        correo = "jean.flores@tecsup.edu.pe"
     )
 
     const val CLASES_PREVIAS = 12   // clases tomadas antes de usar la app
