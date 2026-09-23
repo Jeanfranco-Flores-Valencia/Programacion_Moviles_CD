@@ -23,6 +23,7 @@ import com.floresvalencia.tecsupfit.data.DatosGym
 import com.floresvalencia.tecsupfit.data.EstadoReserva
 import com.floresvalencia.tecsupfit.data.Reserva
 import com.floresvalencia.tecsupfit.ui.screens.*
+import kotlinx.coroutines.launch
 
 private data class Pestana(val ruta: String, val titulo: String, val icono: ImageVector)
 
@@ -45,6 +46,8 @@ fun TecsupFitApp() {
     }
     // Racha de asistencia (días seguidos). Aumenta al registrar asistencia.
     var racha by remember { mutableIntStateOf(DatosGym.RACHA_DIAS) }
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // La ruta actual decide: título, colores, flecha, visibilidad del bottomBar y pestaña resaltada.
     // currentBackStackEntryAsState() es un State: al cambiar de pantalla, todo se recompone.
@@ -55,6 +58,7 @@ fun TecsupFitApp() {
     val mostrarBottomBar = pestanas.any { it.ruta == rutaActual }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -188,11 +192,26 @@ fun TecsupFitApp() {
                 ReservasScreen(
                     reservas = reservas,
                     onRegistrarAsistencia = { reserva ->
-                        // La reserva pasa a Completada y la racha aumenta
                         val indice = reservas.indexOf(reserva)
                         if (indice != -1) {
                             reservas[indice] = reserva.copy(estado = EstadoReserva.COMPLETADA)
                             racha++
+                            val rachaActual = racha
+
+                            // Snackbar de felicitación con acceso directo al Perfil
+                            scope.launch {
+                                val resultado = snackbarHostState.showSnackbar(
+                                    message = "¡Asistencia registrada! Racha de $rachaActual días 🔥",
+                                    actionLabel = "Ver perfil",
+                                    duration = SnackbarDuration.Short
+                                )
+                                if (resultado == SnackbarResult.ActionPerformed) {
+                                    navController.navigate(Rutas.PERFIL) {
+                                        popUpTo(Rutas.INICIO)
+                                        launchSingleTop = true
+                                    }
+                                }
+                            }
                         }
                     }
                 )
