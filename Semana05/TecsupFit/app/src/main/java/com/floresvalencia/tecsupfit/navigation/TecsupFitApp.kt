@@ -43,6 +43,8 @@ fun TecsupFitApp() {
     val reservas = remember {
         mutableStateListOf<Reserva>().apply { addAll(DatosGym.reservasIniciales) }
     }
+    // Racha de asistencia (días seguidos). Aumenta al registrar asistencia.
+    var racha by remember { mutableIntStateOf(DatosGym.RACHA_DIAS) }
 
     // La ruta actual decide: título, colores, flecha, visibilidad del bottomBar y pestaña resaltada.
     // currentBackStackEntryAsState() es un State: al cambiar de pantalla, todo se recompone.
@@ -189,7 +191,7 @@ fun TecsupFitApp() {
                 RutinasScreen()
             }
             composable(Rutas.PERFIL) {
-                PerfilScreen(reservas = reservas)
+                PerfilScreen(reservas = reservas, racha = racha)
             }
         }
     }

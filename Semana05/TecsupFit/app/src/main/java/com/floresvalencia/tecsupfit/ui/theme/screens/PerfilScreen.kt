@@ -14,7 +14,7 @@ import com.floresvalencia.tecsupfit.data.Reserva
 import com.floresvalencia.tecsupfit.ui.components.AvatarIniciales
 
 @Composable
-fun PerfilScreen(reservas: List<Reserva>) {
+fun PerfilScreen(reservas: List<Reserva>, racha: Int)  {
     val usuario = DatosGym.usuario
 
     // Estadísticas calculadas a partir de la lista de reservas
@@ -45,7 +45,7 @@ fun PerfilScreen(reservas: List<Reserva>) {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Estadistica("$clasesTomadas", "Clases tomadas", Modifier.weight(1f))
-            Estadistica("${DatosGym.RACHA_DIAS}", "Días de racha", Modifier.weight(1f))
+            Estadistica("🔥 $racha", "Días de racha", Modifier.weight(1f))
         }
 
         Spacer(modifier = Modifier.height(16.dp))
