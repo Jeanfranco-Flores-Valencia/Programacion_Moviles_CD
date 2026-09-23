@@ -132,6 +132,14 @@ fun TecsupFitApp() {
             composable(Rutas.RESERVAS) {
                 ReservasScreen(reservas = reservas)
             }
+            // Rutinas
+            composable(Rutas.RUTINAS) {
+                RutinasScreen()
+            }
+            // Perfil (recibe la lista para calcular estadísticas)
+            composable(Rutas.PERFIL) {
+                PerfilScreen(reservas = reservas)
+            }
         }
     }
 }
