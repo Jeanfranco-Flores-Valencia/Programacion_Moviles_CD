@@ -25,6 +25,8 @@ val VerdeConfirmada = Color(0xFF1B8A55)
 val VerdeConfirmadaFondo = Color(0xFFDDF4E8)
 val GrisCompletada = Color(0xFF5F5B62)
 val GrisCompletadaFondo = Color(0xFFE6E1E8)
+val RojoCancelada = Color(0xFFB3261E)
+val RojoCanceladaFondo = Color(0xFFFCE4E2)
 
 /** Círculo lavanda con una cruz médica (+), como en el prototipo. */
 @Composable
@@ -124,17 +126,18 @@ fun OpcionUnicaChip(
     }
 }
 
-/** Etiqueta de estado: verde para Confirmada, gris para Completada. */
+/** Etiqueta de estado: verde = Confirmada, gris = Completada, rojo = Cancelada. */
 @Composable
 fun EstadoBadge(estado: EstadoCita) {
-    val esConfirmada = estado == EstadoCita.CONFIRMADA
-    Surface(
-        color = if (esConfirmada) VerdeConfirmadaFondo else GrisCompletadaFondo,
-        shape = RoundedCornerShape(50)
-    ) {
+    val (fondo, colorTexto) = when (estado) {
+        EstadoCita.CONFIRMADA -> VerdeConfirmadaFondo to VerdeConfirmada
+        EstadoCita.COMPLETADA -> GrisCompletadaFondo to GrisCompletada
+        EstadoCita.CANCELADA -> RojoCanceladaFondo to RojoCancelada
+    }
+    Surface(color = fondo, shape = RoundedCornerShape(50)) {
         Text(
             text = estado.texto,
-            color = if (esConfirmada) VerdeConfirmada else GrisCompletada,
+            color = colorTexto,
             style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)
         )

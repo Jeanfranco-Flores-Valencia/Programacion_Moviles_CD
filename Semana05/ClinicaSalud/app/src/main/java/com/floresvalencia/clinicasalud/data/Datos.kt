@@ -19,7 +19,8 @@ data class FechaCita(val diaCorto: String, val numero: Int, val diaLargo: String
 
 enum class EstadoCita(val texto: String) {
     CONFIRMADA("Confirmada"),
-    COMPLETADA("Completada")
+    COMPLETADA("Completada"),
+    CANCELADA("Cancelada")
 }
 
 data class Cita(
