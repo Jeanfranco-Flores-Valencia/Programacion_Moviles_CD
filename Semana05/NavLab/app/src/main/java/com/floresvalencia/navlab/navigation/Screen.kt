@@ -1,25 +1,33 @@
 package com.floresvalencia.navlab.navigation
-//Clase sellada que actua como contrato central de navegacion.
-//Recibe "Route" como parametro - es el identificador único de cada pantalla.
+
+// Clase sellada que actúa como contrato central de navegación.
+// Recibe "route" como parámetro - es el identificador único de cada pantalla.
 // Al ser sealed, el compilador conoce todas las rutas posibles en tiempo de compilación.
-sealed class Screen(val route: String){
-    //Desarrollado por : Jeanfranco Flores
-    //Pantalla de inicio - punto de entrada de la app
+sealed class Screen(val route: String) {
+    // Desarrollado por : Jeanfranco Flores
+
+    // Pantalla de inicio de sesión - punto de entrada de la app
+    object Login : Screen("login")
+
+    // Pantalla principal del portal académico
     object Home : Screen("home")
-    //Pantalla que muestra la lista de elementos
-    object List: Screen("list")
-    //Pantalla que muestra el perfil de usuario
+
+    // Directorio de alumnos
+    object List : Screen("list")
+
+    // Configuración del perfil del alumno
     object Profile : Screen("profile")
+
     //-----------------------------------------------------
     // RUTA CON ARGUMENTO
-    // {itemId} es el placeholder que Navigation reemplaza
+    // {studentId} es el placeholder que Navigation reemplaza
     // con el valor real al momento de navegar
     //-----------------------------------------------------
-    object Detail: Screen("detail/{itemId}"){
+    object Detail : Screen("detail/{studentId}") {
 
         // Construye la ruta final sustituyendo el placeholder por el valor real.
-        // Ejemplo: createRoute(5) -> devuelve "detail/5"
+        // Ejemplo: createRoute(1) -> devuelve "detail/1"
         // Este String es el que se pasa a navController.navigate(...)
-        fun createRoute(itemId: Int): String = "detail/$itemId"
+        fun createRoute(studentId: Int): String = "detail/$studentId"
     }
 }
