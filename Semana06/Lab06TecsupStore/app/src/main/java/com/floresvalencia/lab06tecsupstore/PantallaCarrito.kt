@@ -1,30 +1,31 @@
 package com.floresvalencia.lab06tecsupstore
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
 
 @Composable
-fun PantallaCarrito(modifier: Modifier = Modifier) {
+fun PantallaCarrito(
+    productos: SnapshotStateList<Producto>,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
+
     // Estados del formulario
     var nombre by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
     var cantidad by remember { mutableStateOf("") }
-
-    // Lista observable
-    val productos = remember { mutableStateListOf<Producto>() }
 
     // Producto pendiente de confirmar eliminación
     var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
@@ -34,7 +35,7 @@ fun PantallaCarrito(modifier: Modifier = Modifier) {
     val igv = subtotal * 0.18
     val total = subtotal + igv
 
-    // Descuento (Lab 02)
+    // Descuento
     val porcentajeDescuento = when {
         total > 5000 -> 10
         total > 3000 -> 5
@@ -49,13 +50,6 @@ fun PantallaCarrito(modifier: Modifier = Modifier) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = "Mi Carrito TECSUP",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-
         OutlinedTextField(
             value = nombre,
             onValueChange = { nombre = it },
