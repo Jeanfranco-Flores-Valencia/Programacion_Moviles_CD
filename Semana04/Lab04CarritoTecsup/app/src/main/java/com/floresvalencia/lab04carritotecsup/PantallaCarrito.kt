@@ -22,13 +22,23 @@ fun PantallaCarrito(modifier: Modifier = Modifier) {
 
     // Lista observable
     val productos = remember { mutableStateListOf<Producto>() }
+
     // Producto pendiente de confirmar eliminación
     var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
 
-    // Totales (se recalculan cada vez que cambia la lista)
+    // Totales
     val subtotal = productos.sumOf { it.precio * it.cantidad }
     val igv = subtotal * 0.18
     val total = subtotal + igv
+
+    // Descuento (Lab 02)
+    val porcentajeDescuento = when {
+        total > 5000 -> 10
+        total > 3000 -> 5
+        else -> 0
+    }
+    val descuento = total * porcentajeDescuento / 100.0
+    val totalAPagar = total - descuento
 
     Column(
         modifier = modifier
@@ -131,9 +141,12 @@ fun PantallaCarrito(modifier: Modifier = Modifier) {
             cantidadProductos = productos.size,
             subtotal = subtotal,
             igv = igv,
-            total = total
+            porcentajeDescuento = porcentajeDescuento,
+            descuento = descuento,
+            totalAPagar = totalAPagar
         )
     }
+
     productoAEliminar?.let { producto ->
         AlertDialog(
             onDismissRequest = { productoAEliminar = null },

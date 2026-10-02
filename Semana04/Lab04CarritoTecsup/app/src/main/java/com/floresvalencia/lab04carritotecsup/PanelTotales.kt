@@ -14,7 +14,9 @@ fun PanelTotales(
     cantidadProductos: Int,
     subtotal: Double,
     igv: Double,
-    total: Double
+    porcentajeDescuento: Int,
+    descuento: Double,
+    totalAPagar: Double
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
@@ -29,6 +31,11 @@ fun PanelTotales(
             FilaTotal("Subtotal", formatoSoles(subtotal))
             FilaTotal("IGV (18%)", formatoSoles(igv))
 
+            // Solo se muestra cuando aplica descuento
+            if (descuento > 0) {
+                FilaTotal("Descuento ($porcentajeDescuento%)", "- ${formatoSoles(descuento)}")
+            }
+
             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
             Row(
@@ -42,7 +49,7 @@ fun PanelTotales(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = formatoSoles(total),
+                    text = formatoSoles(totalAPagar),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
