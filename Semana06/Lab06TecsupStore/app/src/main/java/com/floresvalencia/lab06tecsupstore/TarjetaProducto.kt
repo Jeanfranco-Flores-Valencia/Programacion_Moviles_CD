@@ -2,7 +2,6 @@ package com.floresvalencia.lab06tecsupstore
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,8 +11,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun TarjetaProducto(producto: Producto, onEliminar: () -> Unit) {
-    // Estado del menú contextual: cada tarjeta tiene el suyo
+fun TarjetaProducto(
+    producto: Producto,
+    onFavorito: () -> Unit,
+    onCompartir: () -> Unit,
+    onReportar: () -> Unit,
+    onEliminar: () -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
 
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -42,19 +46,34 @@ fun TarjetaProducto(producto: Producto, onEliminar: () -> Unit) {
                 fontWeight = FontWeight.SemiBold
             )
 
-            IconButton(onClick = onEliminar) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Eliminar",
-                    tint = MaterialTheme.colorScheme.error
-                )
-            }
-
+            // El menú vive en el mismo Box que su ícono para aparecer junto a él
             Box {
                 IconButton(onClick = { expanded = true }) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "Más opciones"
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Agregar a favoritos") },
+                        onClick = { expanded = false; onFavorito() }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Compartir") },
+                        onClick = { expanded = false; onCompartir() }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Reportar") },
+                        onClick = { expanded = false; onReportar() }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Eliminar") },
+                        onClick = { expanded = false; onEliminar() }
                     )
                 }
             }

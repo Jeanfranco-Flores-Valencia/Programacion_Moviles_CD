@@ -12,9 +12,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun PantallaCarrito(modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     // Estados del formulario
     var nombre by remember { mutableStateOf("") }
     var precio by remember { mutableStateOf("") }
@@ -131,6 +134,15 @@ fun PantallaCarrito(modifier: Modifier = Modifier) {
                 items(productos) { producto ->
                     TarjetaProducto(
                         producto = producto,
+                        onFavorito = {
+                            Toast.makeText(context, "${producto.nombre} agregado a favoritos", Toast.LENGTH_SHORT).show()
+                        },
+                        onCompartir = {
+                            Toast.makeText(context, "Compartiendo ${producto.nombre}", Toast.LENGTH_SHORT).show()
+                        },
+                        onReportar = {
+                            Toast.makeText(context, "Reporte enviado: ${producto.nombre}", Toast.LENGTH_SHORT).show()
+                        },
                         onEliminar = { productoAEliminar = producto }
                     )
                 }
