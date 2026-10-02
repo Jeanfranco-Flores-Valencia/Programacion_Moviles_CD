@@ -3,7 +3,6 @@ package com.floresvalencia.lab06tecsupstore
 import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -88,11 +87,7 @@ fun AppNavegacion() {
                     )
                 }
                 composable(Rutas.FAVORITOS) {
-                    PantallaSimple(
-                        titulo = "Favoritos",
-                        mensaje = "Aquí verás los productos que marques como favoritos.",
-                        icono = Icons.Default.Favorite
-                    )
+                    PantallaFavoritos(productos = productos)
                 }
                 composable(Rutas.PERFIL) {
                     PantallaSimple(
