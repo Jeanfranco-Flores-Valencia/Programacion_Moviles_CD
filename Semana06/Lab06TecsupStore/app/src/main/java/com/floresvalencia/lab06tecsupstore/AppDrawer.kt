@@ -30,6 +30,7 @@ val itemsDrawer = listOf(
 @Composable
 fun AppDrawer(
     rutaActual: String,
+    cantidadFavoritos: Int,
     onNavegar: (String) -> Unit,
     onCerrarSesion: () -> Unit
 ) {
@@ -57,7 +58,7 @@ fun AppDrawer(
                 )
             }
             Text(
-                text = "Jeanfranco Flores Valencia",
+                text = "Flores Valencia Jeanfranco",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimary
@@ -78,6 +79,11 @@ fun AppDrawer(
                 selected = item.ruta == rutaActual,
                 onClick = { onNavegar(item.ruta) },
                 icon = { Icon(item.icono, contentDescription = null) },
+                badge = {
+                    if (item.ruta == Rutas.FAVORITOS && cantidadFavoritos > 0) {
+                        Badge { Text("$cantidadFavoritos") }
+                    }
+                },
                 colors = NavigationDrawerItemDefaults.colors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                     selectedIconColor = MaterialTheme.colorScheme.primary,

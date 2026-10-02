@@ -28,6 +28,9 @@ fun AppNavegacion() {
     // Lista elevada: sobrevive al cambiar de pantalla
     val productos = remember { mutableStateListOf<Producto>() }
 
+    // Se recalcula solo cada vez que cambia la lista
+    val cantidadFavoritos = productos.count { it.favorito }
+
     val entradaActual by navController.currentBackStackEntryAsState()
     val rutaActual = entradaActual?.destination?.route ?: Rutas.INICIO
 
@@ -36,6 +39,7 @@ fun AppNavegacion() {
         drawerContent = {
             AppDrawer(
                 rutaActual = rutaActual,
+                cantidadFavoritos = cantidadFavoritos,
                 onNavegar = { ruta ->
                     scope.launch { drawerState.close() }
                     if (ruta != rutaActual) {
