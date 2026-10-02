@@ -9,6 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Warning
 
 @Composable
 fun TarjetaProducto(
@@ -61,19 +65,32 @@ fun TarjetaProducto(
                 ) {
                     DropdownMenuItem(
                         text = { Text("Agregar a favoritos") },
-                        onClick = { expanded = false; onFavorito() }
+                        onClick = { expanded = false; onFavorito() },
+                        leadingIcon = { Icon(Icons.Default.FavoriteBorder, contentDescription = null) }
                     )
                     DropdownMenuItem(
                         text = { Text("Compartir") },
-                        onClick = { expanded = false; onCompartir() }
+                        onClick = { expanded = false; onCompartir() },
+                        leadingIcon = { Icon(Icons.Default.Share, contentDescription = null) }
                     )
                     DropdownMenuItem(
                         text = { Text("Reportar") },
-                        onClick = { expanded = false; onReportar() }
+                        onClick = { expanded = false; onReportar() },
+                        leadingIcon = { Icon(Icons.Default.Warning, contentDescription = null) }
                     )
+
+                    HorizontalDivider()
+
                     DropdownMenuItem(
-                        text = { Text("Eliminar") },
-                        onClick = { expanded = false; onEliminar() }
+                        text = { Text("Eliminar", color = MaterialTheme.colorScheme.error) },
+                        onClick = { expanded = false; onEliminar() },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                     )
                 }
             }
