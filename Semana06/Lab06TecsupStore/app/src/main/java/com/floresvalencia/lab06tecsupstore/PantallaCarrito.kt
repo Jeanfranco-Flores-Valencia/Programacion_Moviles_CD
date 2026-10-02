@@ -3,7 +3,7 @@ package com.floresvalencia.lab06tecsupstore
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -125,11 +125,14 @@ fun PantallaCarrito(
                     .weight(1f),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(productos) { producto ->
+                itemsIndexed(productos) { index, producto ->
                     TarjetaProducto(
                         producto = producto,
                         onFavorito = {
-                            Toast.makeText(context, "${producto.nombre} agregado a favoritos", Toast.LENGTH_SHORT).show()
+                            // Se reemplaza el producto en la lista para que Compose detecte el cambio
+                            productos[index] = producto.copy(favorito = !producto.favorito)
+                            val mensaje = if (producto.favorito) "quitado de" else "agregado a"
+                            Toast.makeText(context, "${producto.nombre} $mensaje favoritos", Toast.LENGTH_SHORT).show()
                         },
                         onCompartir = {
                             Toast.makeText(context, "Compartiendo ${producto.nombre}", Toast.LENGTH_SHORT).show()

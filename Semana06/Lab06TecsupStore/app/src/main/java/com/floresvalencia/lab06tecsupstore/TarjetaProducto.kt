@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Favorite
 
 @Composable
 fun TarjetaProducto(
@@ -64,9 +65,17 @@ fun TarjetaProducto(
                     onDismissRequest = { expanded = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Agregar a favoritos") },
+                        text = {
+                            Text(if (producto.favorito) "Quitar de favoritos" else "Agregar a favoritos")
+                        },
                         onClick = { expanded = false; onFavorito() },
-                        leadingIcon = { Icon(Icons.Default.FavoriteBorder, contentDescription = null) }
+                        leadingIcon = {
+                            Icon(
+                                imageVector = if (producto.favorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = null,
+                                tint = if (producto.favorito) MaterialTheme.colorScheme.error else LocalContentColor.current
+                            )
+                        }
                     )
                     DropdownMenuItem(
                         text = { Text("Compartir") },
