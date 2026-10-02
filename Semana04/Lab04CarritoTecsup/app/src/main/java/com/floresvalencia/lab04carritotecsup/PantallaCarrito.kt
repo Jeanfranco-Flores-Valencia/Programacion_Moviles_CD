@@ -22,6 +22,8 @@ fun PantallaCarrito(modifier: Modifier = Modifier) {
 
     // Lista observable
     val productos = remember { mutableStateListOf<Producto>() }
+    // Producto pendiente de confirmar eliminación
+    var productoAEliminar by remember { mutableStateOf<Producto?>(null) }
 
     // Totales (se recalculan cada vez que cambia la lista)
     val subtotal = productos.sumOf { it.precio * it.cantidad }
@@ -119,7 +121,7 @@ fun PantallaCarrito(modifier: Modifier = Modifier) {
                 items(productos) { producto ->
                     TarjetaProducto(
                         producto = producto,
-                        onEliminar = { productos.remove(producto) }
+                        onEliminar = { productoAEliminar = producto }
                     )
                 }
             }
@@ -130,6 +132,26 @@ fun PantallaCarrito(modifier: Modifier = Modifier) {
             subtotal = subtotal,
             igv = igv,
             total = total
+        )
+    }
+    productoAEliminar?.let { producto ->
+        AlertDialog(
+            onDismissRequest = { productoAEliminar = null },
+            title = { Text("¿Eliminar este producto?") },
+            text = { Text("Se quitará \"${producto.nombre}\" del carrito.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    productos.remove(producto)
+                    productoAEliminar = null
+                }) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { productoAEliminar = null }) {
+                    Text("Cancelar")
+                }
+            }
         )
     }
 }
