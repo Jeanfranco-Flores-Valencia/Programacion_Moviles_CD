@@ -1,5 +1,6 @@
 package com.floresvalencia.lab06tecsupstore
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -9,6 +10,7 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -21,18 +23,13 @@ fun AppNavegacion() {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     // Lista elevada: sobrevive al cambiar de pantalla
     val productos = remember { mutableStateListOf<Producto>() }
 
     val entradaActual by navController.currentBackStackEntryAsState()
     val rutaActual = entradaActual?.destination?.route ?: Rutas.INICIO
-
-    val titulo = if (rutaActual == Rutas.INICIO) {
-        "Flores Valencia Jeanfranco"
-    } else {
-        itemsDrawer.find { it.ruta == rutaActual }?.titulo ?: "TECSUP Store"
-    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -48,6 +45,13 @@ fun AppNavegacion() {
                             restoreState = true
                         }
                     }
+                },
+                onCerrarSesion = {
+                    scope.launch { drawerState.close() }
+                    Toast.makeText(context, "Sesión cerrada", Toast.LENGTH_SHORT).show()
+                    navController.navigate(Rutas.INICIO) {
+                        popUpTo(Rutas.INICIO) { inclusive = true }
+                    }
                 }
             )
         }
@@ -55,7 +59,7 @@ fun AppNavegacion() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(titulo) },
+                    title = { Text("Flores Valencia Jeanfranco") },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
                             Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
@@ -89,7 +93,7 @@ fun AppNavegacion() {
                 composable(Rutas.PERFIL) {
                     PantallaSimple(
                         titulo = "Perfil",
-                        mensaje = "Jeanfranco Flores Valencia\nDiseño y Desarrollo de Software · 4to ciclo",
+                        mensaje = "Flores Valencia Jeanfranco\nDiseño y Desarrollo de Software · 4to ciclo",
                         icono = Icons.Default.Person
                     )
                 }
