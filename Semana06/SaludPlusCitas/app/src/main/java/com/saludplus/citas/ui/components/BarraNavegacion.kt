@@ -1,43 +1,62 @@
 package com.saludplus.citas.ui.components
 
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Business
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.saludplus.citas.data.repository.Repositorio
 import com.saludplus.citas.navigation.Rutas
-import com.saludplus.citas.ui.theme.AzulClaro
-import com.saludplus.citas.ui.theme.AzulPrimario
-import com.saludplus.citas.ui.theme.Blanco
+import com.saludplus.citas.ui.theme.Primario
+import com.saludplus.citas.ui.theme.PrimarioClaro
+import com.saludplus.citas.ui.theme.Superficie
 import com.saludplus.citas.ui.theme.TextoSecundario
 
-private data class ItemBarra(val ruta: String, val etiqueta: String, val icono: ImageVector)
-
-private val itemsBarra = listOf(
-    ItemBarra(Rutas.HOME, "Inicio", Icons.Filled.Home),
-    ItemBarra(Rutas.MIS_CITAS, "Citas", Icons.Filled.CalendarMonth),
-    ItemBarra(Rutas.RESULTADOS, "Resultados", Icons.Filled.Description),
-    ItemBarra(Rutas.PERFIL, "Perfil", Icons.Filled.Person)
+private data class ItemBarra(
+    val ruta: String,
+    val etiqueta: String,
+    val iconoActivo: ImageVector,
+    val iconoInactivo: ImageVector
 )
 
-/**
- * Menú principal (NavigationBar) con 4 destinos: Inicio, Citas, Resultados y Perfil.
- * Siempre deja Inicio como base de la pila para que "Atrás" vuelva a Inicio.
- */
+private val itemsBarra = listOf(
+    ItemBarra(Rutas.HOME, "Inicio", Icons.Filled.Home, Icons.Outlined.Home),
+    ItemBarra(Rutas.SEDES, "Sedes", Icons.Filled.Business, Icons.Outlined.Business),
+    ItemBarra(Rutas.MIS_CITAS, "Citas", Icons.Filled.CalendarMonth, Icons.Outlined.CalendarMonth),
+    ItemBarra(Rutas.PERFIL, "Perfil", Icons.Filled.Person, Icons.Outlined.Person)
+)
+
 @Composable
 fun BarraNavegacionInferior(navController: NavController, rutaActual: String) {
-    NavigationBar(containerColor = Blanco) {
+    val citasProxCount = Repositorio.citasDelUsuario().size
+
+    NavigationBar(
+        containerColor = Superficie,
+        tonalElevation = 8.dp,
+        modifier = Modifier.clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+    ) {
         itemsBarra.forEach { item ->
+            val seleccionado = rutaActual == item.ruta
             NavigationBarItem(
-                selected = rutaActual == item.ruta,
+                selected = seleccionado,
                 onClick = {
                     if (rutaActual == item.ruta) return@NavigationBarItem
                     if (item.ruta == Rutas.HOME) {
@@ -49,12 +68,23 @@ fun BarraNavegacionInferior(navController: NavController, rutaActual: String) {
                         }
                     }
                 },
-                icon = { Icon(item.icono, contentDescription = item.etiqueta) },
+                icon = {
+                    val icono = if (seleccionado) item.iconoActivo else item.iconoInactivo
+                    if (item.ruta == Rutas.MIS_CITAS && citasProxCount > 0) {
+                        BadgedBox(
+                            badge = { Badge { Text(citasProxCount.toString()) } }
+                        ) {
+                            Icon(icono, contentDescription = item.etiqueta)
+                        }
+                    } else {
+                        Icon(icono, contentDescription = item.etiqueta)
+                    }
+                },
                 label = { Text(item.etiqueta) },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = AzulPrimario,
-                    selectedTextColor = AzulPrimario,
-                    indicatorColor = AzulClaro,
+                    selectedIconColor = Primario,
+                    selectedTextColor = Primario,
+                    indicatorColor = PrimarioClaro,
                     unselectedIconColor = TextoSecundario,
                     unselectedTextColor = TextoSecundario
                 )

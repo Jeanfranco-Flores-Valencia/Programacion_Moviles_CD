@@ -6,7 +6,7 @@
     android:viewportWidth="240"
     android:viewportHeight="260">
     <!-- Fondo -->
-    <path android:fillColor="#E8F1FF"
+    <path android:fillColor="#EEF6F1"
         android:pathData="M15,140 a105,105 0 1 1 210,0 a105,105 0 1 1 -210,0 z" />
     <!-- Plantas izquierda -->
     <path android:fillColor="#8FD3B6"
@@ -24,18 +24,18 @@
         android:pathData="M204,252 C226,240 236,214 234,190 C214,204 202,228 204,252 Z" />
     <!-- Bata -->
     <path android:fillColor="#FFFFFF"
-        android:strokeColor="#D3DDEB"
+        android:strokeColor="#DCE6DF"
         android:strokeWidth="2"
         android:pathData="M52,260 C52,206 84,186 120,186 C156,186 188,206 188,260 Z" />
     <!-- Camisa y corbata -->
-    <path android:fillColor="#5B9BEA"
+    <path android:fillColor="#8CC7A1"
         android:pathData="M104,188 L120,218 L136,188 Z" />
-    <path android:fillColor="#1F5BC4"
+    <path android:fillColor="#3D7A5A"
         android:pathData="M116.5,197 L123.5,197 L127,232 L120,241 L113,232 Z" />
     <!-- Solapas -->
-    <path android:strokeColor="#D3DDEB" android:strokeWidth="2"
+    <path android:strokeColor="#DCE6DF" android:strokeWidth="2"
         android:pathData="M104,188 L96,236" />
-    <path android:strokeColor="#D3DDEB" android:strokeWidth="2"
+    <path android:strokeColor="#DCE6DF" android:strokeWidth="2"
         android:pathData="M136,188 L144,236" />
     <!-- Cuello -->
     <path android:fillColor="#EDB98F"
@@ -73,7 +73,7 @@
         android:pathData="M143,233 a8,8 0 1 0 16,0 a8,8 0 1 0 -16,0 z" />
     <!-- Portapapeles -->
     <group android:rotation="-8" android:pivotX="88" android:pivotY="238">
-        <path android:fillColor="#2F6FE4"
+        <path android:fillColor="#3D7A5A"
             android:pathData="M66,212 h44 v52 h-44 z" />
         <path android:fillColor="#FFFFFF"
             android:pathData="M72,220 h32 v44 h-32 z" />

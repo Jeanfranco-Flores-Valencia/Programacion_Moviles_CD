@@ -29,32 +29,41 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.saludplus.citas.data.repository.Repositorio
 import com.saludplus.citas.navigation.Rutas
-import com.saludplus.citas.ui.components.BarraSuperior
+import com.saludplus.citas.ui.components.HeroHeader
 import com.saludplus.citas.ui.components.MensajeVacio
+import com.saludplus.citas.ui.components.StepperAgendamiento
 import com.saludplus.citas.ui.components.TarjetaMedico
 import com.saludplus.citas.ui.theme.AzulPrimario
 import com.saludplus.citas.ui.theme.Blanco
+import com.saludplus.citas.ui.theme.BordeSuave
 import com.saludplus.citas.ui.theme.FondoApp
 import com.saludplus.citas.ui.theme.TextoSecundario
 
 @Composable
-fun MedicosScreen(navController: NavHostController, especialidadId: Int) {
+fun MedicosScreen(navController: NavHostController, sedeId: Int, especialidadId: Int) {
     val especialidad = Repositorio.obtenerEspecialidad(especialidadId)
+    val sede = Repositorio.obtenerSede(sedeId)
     var mostrarBusqueda by rememberSaveable { mutableStateOf(false) }
     var busqueda by rememberSaveable { mutableStateOf("") }
 
-    // filter + sortedByDescending (mejor calificados primero)
+    val medicosBase = Repositorio.medicosPorSedeYEspecialidad(sedeId, especialidadId)
     val medicos = if (busqueda.isBlank()) {
-        Repositorio.medicosPorEspecialidad(especialidadId)
+        medicosBase
     } else {
-        Repositorio.buscarMedicos(especialidadId, busqueda)
+        medicosBase.filter { it.nombre.contains(busqueda, ignoreCase = true) }
     }
 
     Scaffold(
-        containerColor = Blanco,
-        topBar = {
-            BarraSuperior(
-                titulo = "Médicos de ${especialidad?.nombre ?: "la especialidad"}",
+        containerColor = FondoApp
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            HeroHeader(
+                titulo = especialidad?.nombre ?: "Médicos",
+                subtitulo = "Sede: ${sede?.nombre ?: ""} · Elige tu especialista",
                 onAtras = { navController.popBackStack() },
                 acciones = {
                     IconButton(onClick = {
@@ -63,18 +72,15 @@ fun MedicosScreen(navController: NavHostController, especialidadId: Int) {
                     }) {
                         Icon(
                             if (mostrarBusqueda) Icons.Filled.Close else Icons.Filled.Search,
-                            contentDescription = "Buscar médico"
+                            contentDescription = "Buscar médico",
+                            tint = Blanco
                         )
                     }
                 }
             )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
+
+            StepperAgendamiento(pasoActual = 3)
+
             if (mostrarBusqueda) {
                 OutlinedTextField(
                     value = busqueda,
@@ -88,9 +94,9 @@ fun MedicosScreen(navController: NavHostController, especialidadId: Int) {
                     shape = RoundedCornerShape(14.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = AzulPrimario,
-                        unfocusedBorderColor = FondoApp,
-                        focusedContainerColor = FondoApp,
-                        unfocusedContainerColor = FondoApp
+                        unfocusedBorderColor = BordeSuave,
+                        focusedContainerColor = Blanco,
+                        unfocusedContainerColor = Blanco
                     )
                 )
             }
@@ -98,8 +104,8 @@ fun MedicosScreen(navController: NavHostController, especialidadId: Int) {
             if (medicos.isEmpty()) {
                 MensajeVacio(
                     icono = Icons.Filled.PersonSearch,
-                    titulo = "Sin médicos",
-                    mensaje = "No hay médicos que coincidan con tu búsqueda"
+                    titulo = "Sin médicos en esta sede",
+                    mensaje = "No hay médicos disponibles para esta especialidad en la sede seleccionada"
                 )
             } else {
                 LazyColumn(
@@ -108,7 +114,7 @@ fun MedicosScreen(navController: NavHostController, especialidadId: Int) {
                 ) {
                     items(medicos, key = { it.id }) { medico ->
                         TarjetaMedico(medico) {
-                            navController.navigate(Rutas.fechaHora(medico.id))
+                            navController.navigate(Rutas.fechaHora(medico.id, sedeId))
                         }
                     }
                 }

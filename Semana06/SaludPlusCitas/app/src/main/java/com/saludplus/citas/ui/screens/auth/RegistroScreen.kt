@@ -1,6 +1,8 @@
 package com.saludplus.citas.ui.screens.auth
 
 import android.util.Patterns
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,23 +13,30 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -42,6 +51,9 @@ import com.saludplus.citas.ui.theme.Blanco
 import com.saludplus.citas.ui.theme.Rojo
 import com.saludplus.citas.ui.theme.TextoPrincipal
 import com.saludplus.citas.ui.theme.TextoSecundario
+import com.saludplus.citas.ui.theme.VerdeExito
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun RegistroScreen(navController: NavHostController) {
@@ -55,6 +67,70 @@ fun RegistroScreen(navController: NavHostController) {
     var errorCorreo by rememberSaveable { mutableStateOf<String?>(null) }
     var errorPassword by rememberSaveable { mutableStateOf<String?>(null) }
     var errorGeneral by rememberSaveable { mutableStateOf<String?>(null) }
+    var mostrarBienvenida by remember { mutableStateOf(false) }
+
+    val nombreUsuario = Repositorio.usuarioActual?.nombre ?: nombre
+
+    if (mostrarBienvenida) {
+        LaunchedEffect(Unit) {
+            delay(1500.milliseconds)
+            navController.navigate(Rutas.HOME) {
+                popUpTo(Rutas.SPLASH) { inclusive = true }
+            }
+        }
+
+        val scaleAnim by animateFloatAsState(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 600),
+            label = "scale"
+        )
+
+        AlertDialog(
+            onDismissRequest = {},
+            title = null,
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CheckCircle,
+                        contentDescription = null,
+                        tint = VerdeExito,
+                        modifier = Modifier
+                            .size(72.dp)
+                            .scale(scaleAnim)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "¡Bienvenido,\n$nombreUsuario!",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = TextoPrincipal,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Tu cuenta ha sido creada exitosamente.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextoSecundario,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            },
+            confirmButton = {
+                BotonPrincipal(
+                    texto = "Continuar",
+                    onClick = {
+                        navController.navigate(Rutas.HOME) {
+                            popUpTo(Rutas.SPLASH) { inclusive = true }
+                        }
+                    }
+                )
+            }
+        )
+    }
 
     fun validar(): Boolean {
         errorNombre = when {
@@ -151,9 +227,7 @@ fun RegistroScreen(navController: NavHostController) {
                     if (validar()) {
                         val registrado = Repositorio.registrarUsuario(nombre, telefono, correo, password)
                         if (registrado) {
-                            navController.navigate(Rutas.HOME) {
-                                popUpTo(Rutas.SPLASH) { inclusive = true }
-                            }
+                            mostrarBienvenida = true
                         } else {
                             errorGeneral = "Ya existe una cuenta con ese teléfono o correo"
                         }

@@ -1,7 +1,13 @@
 package com.saludplus.citas.ui.components
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,9 +55,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -62,25 +71,174 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.saludplus.citas.R
 import com.saludplus.citas.data.model.Cita
 import com.saludplus.citas.data.model.Especialidad
 import com.saludplus.citas.data.model.Medico
 import com.saludplus.citas.data.repository.Repositorio
-import com.saludplus.citas.ui.theme.AzulClaro
-import com.saludplus.citas.ui.theme.AzulPrimario
-import com.saludplus.citas.ui.theme.Amarillo
-import com.saludplus.citas.ui.theme.Blanco
-import com.saludplus.citas.ui.theme.BordeSuave
-import com.saludplus.citas.ui.theme.FondoApp
-import com.saludplus.citas.ui.theme.Rojo
+import com.saludplus.citas.ui.theme.Acento
+import com.saludplus.citas.ui.theme.Borde
+import com.saludplus.citas.ui.theme.Error
+import com.saludplus.citas.ui.theme.Exito
+import com.saludplus.citas.ui.theme.ExitoClaro
+import com.saludplus.citas.ui.theme.Fondo
+import com.saludplus.citas.ui.theme.Primario
+import com.saludplus.citas.ui.theme.PrimarioClaro
+import com.saludplus.citas.ui.theme.PrimarioOscuro
+import com.saludplus.citas.ui.theme.Secundario
+import com.saludplus.citas.ui.theme.SobrePrimario
+import com.saludplus.citas.ui.theme.Superficie
 import com.saludplus.citas.ui.theme.TextoPrincipal
 import com.saludplus.citas.ui.theme.TextoSecundario
-import com.saludplus.citas.ui.theme.VerdeClaro
-import com.saludplus.citas.ui.theme.VerdeExito
+import kotlin.random.Random
 
 // ======================================================================
-// Barra superior con flecha (estilo común de todas las pantallas internas)
+// Hero Header
+// ======================================================================
+
+@Composable
+fun HeroHeader(
+    titulo: String,
+    subtitulo: String? = null,
+    onAtras: (() -> Unit)? = null,
+    acciones: @Composable RowScope.() -> Unit = {}
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp))
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(Primario, PrimarioOscuro)
+                )
+            )
+            .padding(horizontal = 20.dp, vertical = 24.dp)
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                if (onAtras != null) {
+                    IconButton(
+                        onClick = onAtras,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(SobrePrimario.copy(alpha = 0.2f))
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = SobrePrimario)
+                    }
+                } else {
+                    Spacer(modifier = Modifier.size(8.dp))
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, content = acciones)
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = titulo,
+                style = MaterialTheme.typography.headlineMedium,
+                color = SobrePrimario,
+                fontWeight = FontWeight.Bold
+            )
+            if (subtitulo != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = subtitulo,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = SobrePrimario.copy(alpha = 0.85f)
+                )
+            }
+        }
+    }
+}
+
+// ======================================================================
+// Stepper de Agendamiento
+// ======================================================================
+
+@Composable
+fun StepperAgendamiento(pasoActual: Int) {
+    val pasos = listOf("Sede", "Esp.", "Doctor", "Fecha", "Confirmar")
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        pasos.forEachIndexed { index, nombre ->
+            val num = index + 1
+            val activo = num == pasoActual
+            val completado = num < pasoActual
+
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (activo || completado) Primario else Borde
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = num.toString(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (activo || completado) SobrePrimario else TextoSecundario,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = nombre,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (activo) Primario else TextoSecundario,
+                    fontSize = 11.sp
+                )
+            }
+        }
+    }
+}
+
+// ======================================================================
+// Confeti Animado
+// ======================================================================
+
+@Composable
+fun ConfetiAnimado() {
+    val infiniteTransition = rememberInfiniteTransition(label = "confetti")
+    val animProgress by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "progress"
+    )
+
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val random = Random(42)
+        val colors = listOf(Primario, Exito, Acento, Secundario)
+        for (i in 0..30) {
+            val startX = random.nextFloat() * size.width
+            val startY = random.nextFloat() * size.height * 0.5f
+            val yOffset = (animProgress * size.height * 0.8f + startY) % size.height
+            val color = colors[i % colors.size]
+            drawCircle(
+                color = color.copy(alpha = 0.8f),
+                radius = random.nextFloat() * 6f + 4f,
+                center = Offset(startX, yOffset)
+            )
+        }
+    }
+}
+
+// ======================================================================
+// Barra Superior
 // ======================================================================
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -109,7 +267,7 @@ fun BarraSuperior(
         },
         actions = acciones,
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Blanco,
+            containerColor = Superficie,
             titleContentColor = TextoPrincipal,
             navigationIconContentColor = TextoPrincipal,
             actionIconContentColor = TextoPrincipal
@@ -136,10 +294,10 @@ fun BotonPrincipal(
             .height(52.dp),
         shape = RoundedCornerShape(14.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = AzulPrimario,
-            contentColor = Blanco,
-            disabledContainerColor = AzulPrimario.copy(alpha = 0.35f),
-            disabledContentColor = Blanco
+            containerColor = Primario,
+            contentColor = SobrePrimario,
+            disabledContainerColor = Primario.copy(alpha = 0.35f),
+            disabledContentColor = SobrePrimario
         )
     ) {
         Text(texto, style = MaterialTheme.typography.labelLarge)
@@ -151,7 +309,7 @@ fun BotonSecundario(
     texto: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    color: Color = AzulPrimario
+    color: Color = Primario
 ) {
     OutlinedButton(
         onClick = onClick,
@@ -167,14 +325,14 @@ fun BotonSecundario(
 }
 
 // ======================================================================
-// Ícono dentro de una caja redondeada de color
+// Ícono en Caja
 // ======================================================================
 
 @Composable
 fun IconoEnCaja(
     icono: ImageVector,
-    colorFondo: Color = AzulClaro,
-    colorIcono: Color = AzulPrimario,
+    colorFondo: Color = PrimarioClaro,
+    colorIcono: Color = Primario,
     tamano: Dp = 44.dp,
     circular: Boolean = false
 ) {
@@ -195,7 +353,7 @@ fun IconoEnCaja(
 }
 
 // ======================================================================
-// Campo de formulario: ícono a la izquierda + OutlinedTextField con etiqueta
+// Campo de Formulario
 // ======================================================================
 
 @Composable
@@ -231,7 +389,7 @@ fun CampoFormulario(
             singleLine = true,
             isError = error != null,
             supportingText = if (error != null) {
-                { Text(error, color = Rojo) }
+                { Text(error, color = Error) }
             } else null,
             keyboardOptions = KeyboardOptions(keyboardType = tipoTeclado),
             visualTransformation = if (esPassword && !mostrarPassword) {
@@ -252,36 +410,56 @@ fun CampoFormulario(
             } else null,
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = AzulPrimario,
-                unfocusedBorderColor = BordeSuave,
-                focusedLabelColor = AzulPrimario,
+                focusedBorderColor = Primario,
+                unfocusedBorderColor = Borde,
+                focusedLabelColor = Primario,
                 unfocusedLabelColor = TextoSecundario,
-                focusedContainerColor = Blanco,
-                unfocusedContainerColor = Blanco
+                focusedContainerColor = Superficie,
+                unfocusedContainerColor = Superficie
             )
         )
     }
 }
 
 // ======================================================================
-// Avatar del médico
+// Imágenes y Avatares
 // ======================================================================
 
 @Composable
+fun ImagenDoctor(
+    fotoUrl: String,
+    esMujer: Boolean,
+    modifier: Modifier = Modifier,
+    contentScale: ContentScale = ContentScale.Crop
+) {
+    val context = LocalContext.current
+    val fallback = if (esMujer) R.drawable.avatar_doctora else R.drawable.avatar_doctor
+
+    AsyncImage(
+        model = ImageRequest.Builder(context)
+            .data(fotoUrl.ifBlank { null })
+            .crossfade(true)
+            .error(fallback)
+            .fallback(fallback)
+            .placeholder(fallback)
+            .build(),
+        contentDescription = null,
+        contentScale = contentScale,
+        modifier = modifier
+    )
+}
+
+@Composable
 fun AvatarMedico(medico: Medico, tamano: Dp = 64.dp) {
-    Image(
-        painter = painterResource(
-            id = if (medico.esMujer) R.drawable.avatar_doctora else R.drawable.avatar_doctor
-        ),
-        contentDescription = medico.nombre,
-        contentScale = ContentScale.Crop,
+    ImagenDoctor(
+        fotoUrl = medico.fotoUrl,
+        esMujer = medico.esMujer,
         modifier = Modifier
             .size(tamano)
             .clip(CircleShape)
     )
 }
 
-/** Avatar con iniciales para el paciente. */
 @Composable
 fun AvatarIniciales(nombre: String, tamano: Dp = 72.dp) {
     val iniciales = nombre.trim()
@@ -293,12 +471,12 @@ fun AvatarIniciales(nombre: String, tamano: Dp = 72.dp) {
         modifier = Modifier
             .size(tamano)
             .clip(CircleShape)
-            .background(AzulPrimario),
+            .background(Primario),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = iniciales.ifEmpty { "P" },
-            color = Blanco,
+            color = SobrePrimario,
             fontWeight = FontWeight.Bold,
             fontSize = (tamano.value * 0.36f).sp
         )
@@ -306,13 +484,13 @@ fun AvatarIniciales(nombre: String, tamano: Dp = 72.dp) {
 }
 
 // ======================================================================
-// Tarjeta base blanca con borde suave
+// Tarjeta Base
 // ======================================================================
 
 @Composable
 fun TarjetaBase(
     modifier: Modifier = Modifier,
-    colorFondo: Color = Blanco,
+    colorFondo: Color = Superficie,
     onClick: (() -> Unit)? = null,
     contenido: @Composable () -> Unit
 ) {
@@ -324,7 +502,7 @@ fun TarjetaBase(
         modifier = modificador,
         shape = forma,
         colors = CardDefaults.cardColors(containerColor = colorFondo),
-        border = BorderStroke(1.dp, BordeSuave),
+        border = BorderStroke(1.dp, Borde),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         contenido()
@@ -335,7 +513,6 @@ fun TarjetaBase(
 // Especialidades
 // ======================================================================
 
-/** Fila de especialidad (pantalla Especialidades). */
 @Composable
 fun TarjetaEspecialidadFila(especialidad: Especialidad, onClick: () -> Unit) {
     val (fondo, colorIcono) = coloresEspecialidad(especialidad.id)
@@ -372,7 +549,6 @@ fun TarjetaEspecialidadFila(especialidad: Especialidad, onClick: () -> Unit) {
     }
 }
 
-/** Tarjeta pequeña de especialidad destacada (LazyRow de Inicio). */
 @Composable
 fun TarjetaEspecialidadDestacada(especialidad: Especialidad, onClick: () -> Unit) {
     val (fondo, colorIcono) = coloresEspecialidad(especialidad.id)
@@ -411,7 +587,7 @@ fun TarjetaEspecialidadDestacada(especialidad: Especialidad, onClick: () -> Unit
 @Composable
 fun Calificacion(medico: Medico) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(Icons.Filled.Star, contentDescription = null, tint = Amarillo, modifier = Modifier.size(16.dp))
+        Icon(Icons.Filled.Star, contentDescription = null, tint = Acento, modifier = Modifier.size(16.dp))
         Spacer(Modifier.width(4.dp))
         Text(
             "${medico.calificacion} (${medico.numResenas})",
@@ -425,12 +601,12 @@ fun Calificacion(medico: Medico) {
 fun EtiquetaDisponibilidad(texto: String) {
     Text(
         text = texto,
-        color = VerdeExito,
+        color = Exito,
         fontSize = 12.sp,
         fontWeight = FontWeight.Medium,
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(VerdeClaro)
+            .background(ExitoClaro)
             .padding(horizontal = 10.dp, vertical = 4.dp)
     )
 }
@@ -459,10 +635,9 @@ fun TarjetaMedico(medico: Medico, onClick: () -> Unit) {
     }
 }
 
-/** Encabezado con el médico (Fecha y hora, Confirmar cita, Detalle). */
 @Composable
 fun EncabezadoMedico(medico: Medico, mostrarCmp: Boolean = false) {
-    TarjetaBase(modifier = Modifier.fillMaxWidth(), colorFondo = FondoApp) {
+    TarjetaBase(modifier = Modifier.fillMaxWidth(), colorFondo = Fondo) {
         Row(
             modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -481,7 +656,7 @@ fun EncabezadoMedico(medico: Medico, mostrarCmp: Boolean = false) {
 }
 
 // ======================================================================
-// Detalle (ícono + etiqueta + valor) usado en Confirmar cita / Detalle
+// Fila Detalle
 // ======================================================================
 
 @Composable
@@ -533,11 +708,11 @@ fun TarjetaCita(cita: Cita, onClick: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(AzulClaro)
+                    .background(PrimarioClaro)
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Filled.CalendarMonth, null, tint = AzulPrimario, modifier = Modifier.size(18.dp))
+                Icon(Icons.Filled.CalendarMonth, null, tint = Primario, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(
                     textoFecha(cita.fecha),
@@ -545,7 +720,7 @@ fun TarjetaCita(cita: Cita, onClick: () -> Unit) {
                     color = TextoPrincipal,
                     modifier = Modifier.weight(1f)
                 )
-                Icon(Icons.Filled.Schedule, null, tint = AzulPrimario, modifier = Modifier.size(18.dp))
+                Icon(Icons.Filled.Schedule, null, tint = Primario, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(cita.hora, style = MaterialTheme.typography.bodyMedium, color = TextoPrincipal)
             }
@@ -554,7 +729,7 @@ fun TarjetaCita(cita: Cita, onClick: () -> Unit) {
 }
 
 // ======================================================================
-// Mensaje para listas vacías
+// Mensaje Vacío
 // ======================================================================
 
 @Composable

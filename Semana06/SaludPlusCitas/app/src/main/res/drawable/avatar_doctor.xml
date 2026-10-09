@@ -6,12 +6,12 @@
     android:viewportHeight="64">
     <group>
         <clip-path android:pathData="M32,0 a32,32 0 1 1 0,64 a32,32 0 1 1 0,-64 z" />
-        <path android:fillColor="#E3EEFF"
+        <path android:fillColor="#EEF6F1"
             android:pathData="M0,0 h64 v64 h-64 z" />
         
-        <path android:fillColor="#FFFFFF" android:strokeColor="#D3DDEB" android:strokeWidth="1"
+        <path android:fillColor="#FFFFFF" android:strokeColor="#DCE6DF" android:strokeWidth="1"
             android:pathData="M10,66 C10,50 20,42 32,42 C44,42 54,50 54,66 Z" />
-        <path android:fillColor="#5B9BEA"
+        <path android:fillColor="#8CC7A1"
             android:pathData="M27,43 L32,52 L37,43 Z" />
         <path android:fillColor="#E9BB93"
             android:pathData="M28,34 h8 v9 l-4,3 l-4,-3 z" />

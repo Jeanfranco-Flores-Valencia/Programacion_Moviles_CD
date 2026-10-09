@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,16 +33,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.saludplus.citas.data.repository.Repositorio
-import com.saludplus.citas.ui.components.BarraSuperior
 import com.saludplus.citas.ui.components.BotonSecundario
 import com.saludplus.citas.ui.components.EncabezadoMedico
 import com.saludplus.citas.ui.components.FechaUtils
 import com.saludplus.citas.ui.components.FilaDetalle
+import com.saludplus.citas.ui.components.HeroHeader
 import com.saludplus.citas.ui.components.MensajeVacio
 import com.saludplus.citas.ui.components.TarjetaBase
 import com.saludplus.citas.ui.components.rangoHora
-import com.saludplus.citas.ui.theme.Blanco
 import com.saludplus.citas.ui.theme.BordeSuave
+import com.saludplus.citas.ui.theme.FondoApp
 import com.saludplus.citas.ui.theme.Rojo
 
 @Composable
@@ -52,16 +53,21 @@ fun DetalleCitaScreen(navController: NavHostController, citaId: Int) {
     var mostrarDialogo by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = Blanco,
-        topBar = { BarraSuperior("Detalle de cita", onAtras = { navController.popBackStack() }) }
+        containerColor = FondoApp
     ) { padding ->
         if (cita == null || medico == null) {
-            MensajeVacio(
-                icono = Icons.Filled.EventBusy,
-                titulo = "Cita no encontrada",
-                mensaje = "Esta cita ya no existe o fue cancelada.",
-                modifier = Modifier.padding(padding)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                HeroHeader(titulo = "Detalle de Cita", onAtras = { navController.popBackStack() })
+                MensajeVacio(
+                    icono = Icons.Filled.EventBusy,
+                    titulo = "Cita no encontrada",
+                    mensaje = "Esta cita ya no existe o fue cancelada."
+                )
+            }
             return@Scaffold
         }
 
@@ -70,31 +76,38 @@ fun DetalleCitaScreen(navController: NavHostController, citaId: Int) {
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
         ) {
-            Spacer(Modifier.height(8.dp))
-            EncabezadoMedico(medico, mostrarCmp = true)
-            Spacer(Modifier.height(8.dp))
-            TarjetaBase(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
-                    FilaDetalle(Icons.Filled.MedicalServices, "Especialidad", especialidad?.nombre ?: "")
-                    HorizontalDivider(color = BordeSuave)
-                    FilaDetalle(Icons.Filled.CalendarMonth, "Fecha", FechaUtils.fechaLarga(cita.fecha))
-                    HorizontalDivider(color = BordeSuave)
-                    FilaDetalle(Icons.Filled.Schedule, "Hora", rangoHora(cita.hora))
-                    HorizontalDivider(color = BordeSuave)
-                    FilaDetalle(Icons.Filled.LocationOn, "Dirección", medico.direccion)
-                    HorizontalDivider(color = BordeSuave)
-                    FilaDetalle(
-                        Icons.Filled.Description,
-                        "Motivo de consulta",
-                        cita.motivo.ifBlank { "No especificado" }
-                    )
+            HeroHeader(
+                titulo = "Detalle de Cita",
+                subtitulo = "Información de tu consulta programada",
+                onAtras = { navController.popBackStack() }
+            )
+
+            Column(modifier = Modifier.padding(20.dp)) {
+                Spacer(Modifier.height(4.dp))
+                EncabezadoMedico(medico, mostrarCmp = true)
+                Spacer(Modifier.height(16.dp))
+                TarjetaBase(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                        FilaDetalle(Icons.Filled.MedicalServices, "Especialidad", especialidad?.nombre ?: "")
+                        HorizontalDivider(color = BordeSuave)
+                        FilaDetalle(Icons.Filled.CalendarMonth, "Fecha", FechaUtils.fechaLarga(cita.fecha))
+                        HorizontalDivider(color = BordeSuave)
+                        FilaDetalle(Icons.Filled.Schedule, "Hora", rangoHora(cita.hora))
+                        HorizontalDivider(color = BordeSuave)
+                        FilaDetalle(Icons.Filled.LocationOn, "Dirección", medico.direccion)
+                        HorizontalDivider(color = BordeSuave)
+                        FilaDetalle(
+                            Icons.Filled.Description,
+                            "Motivo de consulta",
+                            cita.motivo.ifBlank { "No especificado" }
+                        )
+                    }
                 }
+                Spacer(Modifier.height(28.dp))
+                BotonSecundario(texto = "Cancelar cita", onClick = { mostrarDialogo = true }, color = Rojo)
+                Spacer(Modifier.height(24.dp))
             }
-            Spacer(Modifier.height(24.dp))
-            BotonSecundario(texto = "Cancelar cita", onClick = { mostrarDialogo = true }, color = Rojo)
-            Spacer(Modifier.height(24.dp))
         }
 
         if (mostrarDialogo) {
