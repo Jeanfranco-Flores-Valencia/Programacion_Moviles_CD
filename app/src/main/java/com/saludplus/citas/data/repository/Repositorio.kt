@@ -213,7 +213,6 @@ object Repositorio {
     }
 
     fun cancelarCita(citaId: Int): Boolean {
-        // TODO: citas: removeIf por id.
-        TODO("Implementar cancelarCita")
+        return citas.removeIf { it.id == citaId }
     }
 }
