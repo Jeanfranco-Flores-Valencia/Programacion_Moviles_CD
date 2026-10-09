@@ -94,19 +94,38 @@ object Repositorio {
 
     /** Registra un usuario nuevo si su teléfono/correo no existe. Deja la sesión iniciada. */
     fun registrarUsuario(nombre: String, telefono: String, correo: String, password: String): Boolean {
-        // TODO: usuarios: any (que no exista el teléfono/correo) + add. Dejar la sesión iniciada.
-        TODO("Implementar registrarUsuario")
+        val correoLimpio = correo.trim()
+        val existe = usuarios.any {
+            it.telefono == telefono.trim() ||
+                (correoLimpio.isNotEmpty() && it.correo.equals(correoLimpio, ignoreCase = true))
+        }
+        if (existe) return false
+
+        val nuevo = Usuario(
+            id = siguienteUsuarioId++,
+            nombre = nombre.trim(),
+            telefono = telefono.trim(),
+            correo = correoLimpio,
+            password = password
+        )
+        usuarios.add(nuevo)
+        usuarioActual = nuevo
+        return true
     }
 
     /** Inicia sesión con teléfono o correo + contraseña. */
     fun iniciarSesion(usuario: String, password: String): Boolean {
-        // TODO: usuarios: find por teléfono o correo y contraseña; guardar en usuarioActual.
-        TODO("Implementar iniciarSesion")
+        val dato = usuario.trim()
+        val encontrado = usuarios.find {
+            (it.telefono == dato || (it.correo.isNotEmpty() && it.correo.equals(dato, ignoreCase = true))) &&
+                it.password == password
+        }
+        usuarioActual = encontrado
+        return encontrado != null
     }
 
     fun cerrarSesion() {
-        // TODO: limpiar usuarioActual.
-        TODO("Implementar cerrarSesion")
+        usuarioActual = null
     }
 
     // ------------------------------------------------------------------
