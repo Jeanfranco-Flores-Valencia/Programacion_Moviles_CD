@@ -10,10 +10,10 @@ usuarios, especialidades, médicos y citas viven en colecciones dentro del `obje
 3. Cuenta de prueba: teléfono **987654321** · contraseña **123456** (o regístrate).
 
 ## Ramas
-| Rama | Contenido |
-|------|-----------|
-| `main` | Fase 1 — desarrollo sin IA (todas las pantallas, NavigationBar, LazyRow/LazyColumn/LazyVerticalGrid, navegación con parámetros y `popUpTo`). |
-| `mejora-ia` | Fase 2 — calendario dinámico con `java.time.LocalDate` (ver `PROMPTS.md`). |
+| Rama                  | Contenido |
+|-----------------------|-----------|
+| `main`                | Fase 1 — desarrollo sin IA (todas las pantallas, NavigationBar, LazyRow/LazyColumn/LazyVerticalGrid, navegación con parámetros y `popUpTo`). |
+| `mejora-ia-saludplus` | Fase 2 — calendario dinámico con `java.time.LocalDate` (ver `PROMPTS.md`). |
 
 ## Estructura
 ```
