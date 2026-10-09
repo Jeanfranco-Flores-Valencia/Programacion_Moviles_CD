@@ -13,7 +13,7 @@ usuarios, especialidades, médicos y citas viven en colecciones dentro del `obje
 | Rama | Contenido |
 |------|-----------|
 | `main` | Fase 1 — desarrollo sin IA (todas las pantallas, NavigationBar, LazyRow/LazyColumn/LazyVerticalGrid, navegación con parámetros y `popUpTo`). |
-| `mejora-ia` | Fase 2 — calendario dinámico con `java.time.LocalDate` (ver `PROMPTS.md`). |
+| `mejora-ia` | Fase 2 — calendario dinámico con `java.time.LocalDate`: próximos 5 días hábiles, flechas por semana, mes dinámico, horarios recalculados y fecha en texto en español (ver `PROMPTS.md`). |
 
 ## Estructura
 ```

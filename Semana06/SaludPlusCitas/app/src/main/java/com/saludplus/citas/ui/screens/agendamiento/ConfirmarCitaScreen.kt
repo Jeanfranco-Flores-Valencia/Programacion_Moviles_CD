@@ -36,9 +36,9 @@ import com.saludplus.citas.navigation.Rutas
 import com.saludplus.citas.ui.components.BarraSuperior
 import com.saludplus.citas.ui.components.BotonPrincipal
 import com.saludplus.citas.ui.components.EncabezadoMedico
+import com.saludplus.citas.ui.components.FechaUtils
 import com.saludplus.citas.ui.components.FilaDetalle
 import com.saludplus.citas.ui.components.rangoHora
-import com.saludplus.citas.ui.components.textoFecha
 import com.saludplus.citas.ui.theme.AzulPrimario
 import com.saludplus.citas.ui.theme.Blanco
 import com.saludplus.citas.ui.theme.BordeSuave
@@ -85,7 +85,7 @@ fun ConfirmarCitaScreen(navController: NavHostController, medicoId: Int, fecha: 
             if (medico != null) EncabezadoMedico(medico, mostrarCmp = true)
             Spacer(Modifier.height(8.dp))
 
-            FilaDetalle(Icons.Filled.CalendarMonth, "Fecha", textoFecha(fecha))
+            FilaDetalle(Icons.Filled.CalendarMonth, "Fecha", FechaUtils.fechaLarga(fecha))
             HorizontalDivider(color = BordeSuave)
             FilaDetalle(Icons.Filled.Schedule, "Hora", rangoHora(hora))
             HorizontalDivider(color = BordeSuave)

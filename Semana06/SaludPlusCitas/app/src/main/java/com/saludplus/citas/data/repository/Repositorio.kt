@@ -8,6 +8,8 @@ import com.saludplus.citas.data.model.Cita
 import com.saludplus.citas.data.model.Especialidad
 import com.saludplus.citas.data.model.Medico
 import com.saludplus.citas.data.model.Usuario
+import java.time.DayOfWeek
+import java.time.LocalDate
 
 /**
  * Repositorio único de la app (object = una sola instancia compartida por todas las pantallas).
@@ -79,10 +81,15 @@ object Repositorio {
         "15:00", "15:30", "16:00"
     )
 
+    /** Próximo día hábil desde mañana: así la cita de ejemplo siempre aparece en el calendario dinámico. */
+    private val fechaEjemplo: String = generateSequence(LocalDate.now().plusDays(1)) { it.plusDays(1) }
+        .first { it.dayOfWeek != DayOfWeek.SATURDAY && it.dayOfWeek != DayOfWeek.SUNDAY }
+        .toString()
+
     /** Citas de ejemplo de otra paciente: esos horarios aparecen bloqueados. */
     val citas = mutableStateListOf(
-        Cita(1, usuarioId = 2, medicoId = 7, especialidadId = 3, fecha = "2026-10-13", hora = "09:00", motivo = "Control anual"),
-        Cita(2, usuarioId = 2, medicoId = 7, especialidadId = 3, fecha = "2026-10-13", hora = "10:30", motivo = "Resultados")
+        Cita(1, usuarioId = 2, medicoId = 7, especialidadId = 3, fecha = fechaEjemplo, hora = "09:00", motivo = "Control anual"),
+        Cita(2, usuarioId = 2, medicoId = 7, especialidadId = 3, fecha = fechaEjemplo, hora = "10:30", motivo = "Resultados")
     )
 
     private var siguienteUsuarioId = 3

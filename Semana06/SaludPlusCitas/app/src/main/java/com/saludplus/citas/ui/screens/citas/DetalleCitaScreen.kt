@@ -35,11 +35,11 @@ import com.saludplus.citas.data.repository.Repositorio
 import com.saludplus.citas.ui.components.BarraSuperior
 import com.saludplus.citas.ui.components.BotonSecundario
 import com.saludplus.citas.ui.components.EncabezadoMedico
+import com.saludplus.citas.ui.components.FechaUtils
 import com.saludplus.citas.ui.components.FilaDetalle
 import com.saludplus.citas.ui.components.MensajeVacio
 import com.saludplus.citas.ui.components.TarjetaBase
 import com.saludplus.citas.ui.components.rangoHora
-import com.saludplus.citas.ui.components.textoFecha
 import com.saludplus.citas.ui.theme.Blanco
 import com.saludplus.citas.ui.theme.BordeSuave
 import com.saludplus.citas.ui.theme.Rojo
@@ -79,7 +79,7 @@ fun DetalleCitaScreen(navController: NavHostController, citaId: Int) {
                 Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
                     FilaDetalle(Icons.Filled.MedicalServices, "Especialidad", especialidad?.nombre ?: "")
                     HorizontalDivider(color = BordeSuave)
-                    FilaDetalle(Icons.Filled.CalendarMonth, "Fecha", textoFecha(cita.fecha))
+                    FilaDetalle(Icons.Filled.CalendarMonth, "Fecha", FechaUtils.fechaLarga(cita.fecha))
                     HorizontalDivider(color = BordeSuave)
                     FilaDetalle(Icons.Filled.Schedule, "Hora", rangoHora(cita.hora))
                     HorizontalDivider(color = BordeSuave)
