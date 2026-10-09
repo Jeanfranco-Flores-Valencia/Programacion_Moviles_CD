@@ -133,23 +133,24 @@ object Repositorio {
     // ------------------------------------------------------------------
 
     fun buscarEspecialidades(texto: String): List<Especialidad> {
-        // TODO: especialidades: filter + contains (sin distinguir mayúsculas).
-        TODO("Implementar buscarEspecialidades")
+        val filtro = texto.trim()
+        if (filtro.isEmpty()) return especialidades
+        return especialidades.filter {
+            it.nombre.contains(filtro, ignoreCase = true) ||
+                it.descripcion.contains(filtro, ignoreCase = true)
+        }
     }
 
     fun especialidadesDestacadas(cantidad: Int = 5): List<Especialidad> {
-        // TODO: especialidades: filter de destacadas + take(cantidad).
-        TODO("Implementar especialidadesDestacadas")
+        return especialidades.filter { it.destacada }.take(cantidad)
     }
 
     fun obtenerEspecialidad(id: Int): Especialidad? {
-        // TODO: especialidades: find por id.
-        TODO("Implementar obtenerEspecialidad")
+        return especialidades.find { it.id == id }
     }
 
     fun obtenerMedico(id: Int): Medico? {
-        // TODO: medicos: find por id.
-        TODO("Implementar obtenerMedico")
+        return medicos.find { it.id == id }
     }
 
     fun obtenerCita(id: Int): Cita? {
@@ -159,13 +160,16 @@ object Repositorio {
 
     /** Médicos de una especialidad, del mejor al menor calificado. */
     fun medicosPorEspecialidad(especialidadId: Int): List<Medico> {
-        // TODO: medicos: filter por especialidad + sortedByDescending por calificación.
-        TODO("Implementar medicosPorEspecialidad")
+        return medicos
+            .filter { it.especialidadId == especialidadId }
+            .sortedByDescending { it.calificacion }
     }
 
     fun buscarMedicos(especialidadId: Int, texto: String): List<Medico> {
-        // TODO: medicos: filter por especialidad y nombre + sortedByDescending.
-        TODO("Implementar buscarMedicos")
+        val filtro = texto.trim()
+        return medicos
+            .filter { it.especialidadId == especialidadId && it.nombre.contains(filtro, ignoreCase = true) }
+            .sortedByDescending { it.calificacion }
     }
 
     // ------------------------------------------------------------------
