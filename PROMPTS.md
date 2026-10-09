@@ -61,3 +61,19 @@ Sugirió `DateTimeFormatter.ofPattern("EEEE d 'de' MMMM yyyy", Locale("es", "ES"
   ("setiembre") y días con mayúscula inicial.
 - No controlaba fechas mal formadas: si `LocalDate.parse` falla, ahora se muestra la fecha original en vez de cerrarse la app.
 - Apliqué el mismo formato en Cita agendada y Detalle de cita para que la app sea consistente.
+
+---
+
+## Prompt 4 — Horarios de hoy que ya pasaron
+
+**Prompt:**
+> Si el día seleccionado es hoy, en el grid aparecen horas que ya pasaron (por ejemplo 08:00 cuando son las 15:00).
+> ¿Cómo las oculto sin modificar `horariosDisponibles` del Repositorio?
+
+**Respuesta resumida:**
+Filtrar en la pantalla, después de llamar a `horariosDisponibles`, con `LocalTime.parse(hora).isAfter(LocalTime.now())`
+solo cuando la fecha elegida es igual a `LocalDate.now()`.
+
+**Qué corregí:**
+- La IA comparaba `LocalDate.now()` directamente con el `String` de la fecha (siempre era falso). Lo cambié a `hoy.toString()`.
+- Si ya no quedan horas en el día se muestra el mensaje "Sin horarios" en lugar de un grid vacío.

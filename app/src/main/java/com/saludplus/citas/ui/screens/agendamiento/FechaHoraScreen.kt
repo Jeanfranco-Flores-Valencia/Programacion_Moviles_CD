@@ -55,6 +55,7 @@ import com.saludplus.citas.ui.theme.FondoApp
 import com.saludplus.citas.ui.theme.TextoPrincipal
 import com.saludplus.citas.ui.theme.TextoSecundario
 import java.time.LocalDate
+import java.time.LocalTime
 
 @Composable
 fun FechaHoraScreen(navController: NavHostController, medicoId: Int) {
@@ -69,8 +70,15 @@ fun FechaHoraScreen(navController: NavHostController, medicoId: Int) {
     // Próximos 5 días hábiles a partir de hoy (o de hoy + N semanas)
     val dias = remember(semana) { FechaUtils.diasHabiles(hoy.plusWeeks(semana.toLong())) }
 
-    // Horarios reactivos: se recalculan solos al cambiar el día o al reservarse una cita
-    val horarios = fechaSeleccionada?.let { Repositorio.horariosDisponibles(medicoId, it) } ?: emptyList()
+    // Horarios reactivos: se recalculan solos al cambiar el día o al reservarse una cita.
+    // Si el día elegido es hoy, también se ocultan las horas que ya pasaron.
+    val horarios = fechaSeleccionada?.let { fecha ->
+        val libres = Repositorio.horariosDisponibles(medicoId, fecha)
+        if (fecha == hoy.toString()) {
+            val ahora = LocalTime.now()
+            libres.filter { LocalTime.parse(it).isAfter(ahora) }
+        } else libres
+    } ?: emptyList()
 
     fun cambiarSemana(nueva: Int) {
         semana = nueva
