@@ -190,8 +190,10 @@ object Repositorio {
 
     /** Citas del usuario en sesión ordenadas por fecha y hora. */
     fun citasDelUsuario(): List<Cita> {
-        // TODO: citas: filter del usuario en sesión + sortedWith (fecha y hora).
-        TODO("Implementar citasDelUsuario")
+        val usuario = usuarioActual ?: return emptyList()
+        return citas
+            .filter { it.usuarioId == usuario.id }
+            .sortedWith(compareBy<Cita>({ it.fecha }, { it.hora }))
     }
 
     fun cancelarCita(citaId: Int): Boolean {
