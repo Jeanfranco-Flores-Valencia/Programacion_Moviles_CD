@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ilustración del médico para la pantalla Splash -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="260dp"
+    android:viewportWidth="240"
+    android:viewportHeight="260">
+    <!-- Fondo -->
+    <path android:fillColor="#E8F1FF"
+        android:pathData="M15,140 a105,105 0 1 1 210,0 a105,105 0 1 1 -210,0 z" />
+    <!-- Plantas izquierda -->
+    <path android:fillColor="#8FD3B6"
+        android:pathData="M40,250 C18,215 20,175 38,150 C52,180 55,220 40,250 Z" />
+    <path android:fillColor="#4FA586"
+        android:pathData="M48,252 C40,212 52,178 70,165 C76,198 68,232 48,252 Z" />
+    <path android:fillColor="#6CBF9C"
+        android:pathData="M36,252 C14,240 4,214 6,190 C26,204 38,228 36,252 Z" />
+    <!-- Plantas derecha -->
+    <path android:fillColor="#8FD3B6"
+        android:pathData="M200,250 C222,215 220,175 202,150 C188,180 185,220 200,250 Z" />
+    <path android:fillColor="#4FA586"
+        android:pathData="M192,252 C200,212 188,178 170,165 C164,198 172,232 192,252 Z" />
+    <path android:fillColor="#6CBF9C"
+        android:pathData="M204,252 C226,240 236,214 234,190 C214,204 202,228 204,252 Z" />
+    <!-- Bata -->
+    <path android:fillColor="#FFFFFF"
+        android:strokeColor="#D3DDEB"
+        android:strokeWidth="2"
+        android:pathData="M52,260 C52,206 84,186 120,186 C156,186 188,206 188,260 Z" />
+    <!-- Camisa y corbata -->
+    <path android:fillColor="#5B9BEA"
+        android:pathData="M104,188 L120,218 L136,188 Z" />
+    <path android:fillColor="#1F5BC4"
+        android:pathData="M116.5,197 L123.5,197 L127,232 L120,241 L113,232 Z" />
+    <!-- Solapas -->
+    <path android:strokeColor="#D3DDEB" android:strokeWidth="2"
+        android:pathData="M104,188 L96,236" />
+    <path android:strokeColor="#D3DDEB" android:strokeWidth="2"
+        android:pathData="M136,188 L144,236" />
+    <!-- Cuello -->
+    <path android:fillColor="#EDB98F"
+        android:pathData="M108,160 h24 v30 l-12,8 l-12,-8 z" />
+    <!-- Orejas -->
+    <path android:fillColor="#F2C49C"
+        android:pathData="M82,138 a7,8 0 1 0 14,0 a7,8 0 1 0 -14,0 z" />
+    <path android:fillColor="#F2C49C"
+        android:pathData="M144,138 a7,8 0 1 0 14,0 a7,8 0 1 0 -14,0 z" />
+    <!-- Cabeza -->
+    <path android:fillColor="#F5CDA7"
+        android:pathData="M88,134 a32,35 0 1 0 64,0 a32,35 0 1 0 -64,0 z" />
+    <!-- Cabello -->
+    <path android:fillColor="#3B2A20"
+        android:pathData="M86,132 C82,100 104,88 124,90 C148,92 160,108 154,134 C150,118 140,110 126,112 C112,114 100,110 92,122 C89,126 87,130 86,132 Z" />
+    <!-- Ojos -->
+    <path android:fillColor="#2E2018"
+        android:pathData="M104,138 a3.5,3.5 0 1 0 7,0 a3.5,3.5 0 1 0 -7,0 z" />
+    <path android:fillColor="#2E2018"
+        android:pathData="M129,138 a3.5,3.5 0 1 0 7,0 a3.5,3.5 0 1 0 -7,0 z" />
+    <!-- Cejas -->
+    <path android:strokeColor="#3B2A20" android:strokeWidth="2.5" android:strokeLineCap="round"
+        android:pathData="M102,129 Q108,125 113,128" />
+    <path android:strokeColor="#3B2A20" android:strokeWidth="2.5" android:strokeLineCap="round"
+        android:pathData="M127,128 Q132,125 138,129" />
+    <!-- Sonrisa -->
+    <path android:strokeColor="#9A4E3C" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M109,152 Q120,162 131,152" />
+    <!-- Estetoscopio -->
+    <path android:strokeColor="#2D3E50" android:strokeWidth="4" android:strokeLineCap="round"
+        android:pathData="M102,190 Q94,226 118,230" />
+    <path android:strokeColor="#2D3E50" android:strokeWidth="4" android:strokeLineCap="round"
+        android:pathData="M138,190 Q146,214 150,226" />
+    <path android:fillColor="#9FB3C8" android:strokeColor="#2D3E50" android:strokeWidth="3"
+        android:pathData="M143,233 a8,8 0 1 0 16,0 a8,8 0 1 0 -16,0 z" />
+    <!-- Portapapeles -->
+    <group android:rotation="-8" android:pivotX="88" android:pivotY="238">
+        <path android:fillColor="#2F6FE4"
+            android:pathData="M66,212 h44 v52 h-44 z" />
+        <path android:fillColor="#FFFFFF"
+            android:pathData="M72,220 h32 v44 h-32 z" />
+        <path android:fillColor="#9FB3C8"
+            android:pathData="M77,228 h22 v3 h-22 z M77,236 h22 v3 h-22 z M77,244 h16 v3 h-16 z" />
+    </group>
+</vector>
