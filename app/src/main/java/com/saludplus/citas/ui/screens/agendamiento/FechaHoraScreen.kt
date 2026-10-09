@@ -28,7 +28,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,6 +45,7 @@ import com.saludplus.citas.navigation.Rutas
 import com.saludplus.citas.ui.components.BarraSuperior
 import com.saludplus.citas.ui.components.BotonPrincipal
 import com.saludplus.citas.ui.components.EncabezadoMedico
+import com.saludplus.citas.ui.components.FechaUtils
 import com.saludplus.citas.ui.components.MensajeVacio
 import com.saludplus.citas.ui.components.TarjetaBase
 import com.saludplus.citas.ui.theme.AzulPrimario
@@ -51,28 +54,29 @@ import com.saludplus.citas.ui.theme.BordeSuave
 import com.saludplus.citas.ui.theme.FondoApp
 import com.saludplus.citas.ui.theme.TextoPrincipal
 import com.saludplus.citas.ui.theme.TextoSecundario
-
-/** Día que se muestra en el calendario (fecha en formato yyyy-MM-dd). */
-private data class DiaCalendario(val nombreCorto: String, val numero: String, val fecha: String)
-
-// Fase 1: semana fija de días hábiles
-private const val MES_FIJO = "Octubre 2026"
-private val diasFijos = listOf(
-    DiaCalendario("Lun", "12", "2026-10-12"),
-    DiaCalendario("Mar", "13", "2026-10-13"),
-    DiaCalendario("Mié", "14", "2026-10-14"),
-    DiaCalendario("Jue", "15", "2026-10-15"),
-    DiaCalendario("Vie", "16", "2026-10-16")
-)
+import java.time.LocalDate
 
 @Composable
 fun FechaHoraScreen(navController: NavHostController, medicoId: Int) {
     val medico = Repositorio.obtenerMedico(medicoId)
+    val hoy = remember { LocalDate.now() }
+
+    // 0 = semana actual; no se puede ir a valores negativos
+    var semana by rememberSaveable { mutableIntStateOf(0) }
     var fechaSeleccionada by rememberSaveable { mutableStateOf<String?>(null) }
     var horaSeleccionada by rememberSaveable { mutableStateOf<String?>(null) }
 
-    // Horarios reactivos: si cambia el día (o se agenda una cita) se recalculan solos
+    // Próximos 5 días hábiles a partir de hoy (o de hoy + N semanas)
+    val dias = remember(semana) { FechaUtils.diasHabiles(hoy.plusWeeks(semana.toLong())) }
+
+    // Horarios reactivos: se recalculan solos al cambiar el día o al reservarse una cita
     val horarios = fechaSeleccionada?.let { Repositorio.horariosDisponibles(medicoId, it) } ?: emptyList()
+
+    fun cambiarSemana(nueva: Int) {
+        semana = nueva
+        fechaSeleccionada = null   // la semana cambió: se limpia la selección
+        horaSeleccionada = null
+    }
 
     Scaffold(
         containerColor = Blanco,
@@ -104,25 +108,24 @@ fun FechaHoraScreen(navController: NavHostController, medicoId: Int) {
             }
             Spacer(Modifier.height(16.dp))
 
-            // ----- Calendario -----
+            // ----- Calendario dinámico -----
             TarjetaBase(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // En la Fase 1 la semana es fija: las flechas están deshabilitadas
-                        IconButton(onClick = {}, enabled = false) {
+                        IconButton(onClick = { cambiarSemana(semana - 1) }, enabled = semana > 0) {
                             Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "Semana anterior")
                         }
                         Text(
-                            MES_FIJO,
+                            FechaUtils.tituloMes(dias),
                             modifier = Modifier.weight(1f),
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.titleMedium,
                             color = TextoPrincipal
                         )
-                        IconButton(onClick = {}, enabled = false) {
+                        IconButton(onClick = { cambiarSemana(semana + 1) }) {
                             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "Semana siguiente")
                         }
                     }
@@ -131,14 +134,18 @@ fun FechaHoraScreen(navController: NavHostController, medicoId: Int) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        diasFijos.forEach { dia ->
+                        dias.forEach { dia ->
+                            val iso = dia.toString()
                             ChipDia(
-                                dia = dia,
-                                seleccionado = dia.fecha == fechaSeleccionada,
+                                nombreCorto = FechaUtils.nombreDiaCorto(dia),
+                                numero = dia.dayOfMonth.toString(),
+                                seleccionado = iso == fechaSeleccionada,
                                 modifier = Modifier.weight(1f),
                                 onClick = {
-                                    fechaSeleccionada = dia.fecha
-                                    horaSeleccionada = null // al cambiar de día se reinicia la hora
+                                    if (iso != fechaSeleccionada) {
+                                        fechaSeleccionada = iso
+                                        horaSeleccionada = null // al cambiar de día se reinicia la hora
+                                    }
                                 }
                             )
                         }
@@ -183,7 +190,8 @@ fun FechaHoraScreen(navController: NavHostController, medicoId: Int) {
 
 @Composable
 private fun ChipDia(
-    dia: DiaCalendario,
+    nombreCorto: String,
+    numero: String,
     seleccionado: Boolean,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
@@ -197,12 +205,12 @@ private fun ChipDia(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            dia.nombreCorto,
+            nombreCorto,
             style = MaterialTheme.typography.bodyMedium,
             color = if (seleccionado) Blanco else TextoSecundario
         )
         Text(
-            dia.numero,
+            numero,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = if (seleccionado) Blanco else TextoPrincipal

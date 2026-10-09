@@ -23,3 +23,25 @@ filtrando `DayOfWeek.SATURDAY` y `SUNDAY`, y nombres de día/mes con
   escribe **"septiembre"**; en Perú se usa **"setiembre"**. Lo reemplacé por listas propias de días y meses.
 - El constructor `Locale(String, String)` está deprecado en las versiones nuevas de Java; al usar listas propias ya no se necesita.
 - Agregué `tituloMes()` para cuando la semana cruza de mes ("Octubre – Noviembre 2026"), caso que la IA no consideró.
+
+---
+
+## Prompt 2 — Calendario con flechas por semana
+
+**Prompt:**
+> Con `FechaUtils.diasHabiles`, modifica mi `FechaHoraScreen` para que las flechas < y > avancen o retrocedan una semana,
+> que no se pueda retroceder antes de la semana actual, que el título del mes cambie según la semana mostrada,
+> y que al cambiar de día se recalculen los horarios con `Repositorio.horariosDisponibles(medicoId, fecha)`
+> y se reinicie la hora seleccionada. No cambies los parámetros de la función ni del Repositorio.
+
+**Respuesta resumida:**
+Usó un estado `semana` (Int) con `remember`, calculó los días con `hoy.plusWeeks(semana)` dentro de `remember(semana)`,
+habilitó la flecha izquierda solo si `semana > 0` y guardó la fecha seleccionada como `LocalDate`.
+
+**Qué corregí:**
+- Guardaba la fecha seleccionada como `LocalDate` en `rememberSaveable`, lo que no se puede guardar en el `Bundle`
+  y se pierde al girar la pantalla. La guardé como `String` en formato `yyyy-MM-dd` (el mismo formato de `Cita.fecha`),
+  así `horariosDisponibles` sigue funcionando sin cambios y el bloqueo de horarios reservados se mantiene.
+- Al cambiar de semana dejaba seleccionado un día que ya no se veía en pantalla. Ahora al cambiar de semana se limpian el día y la hora.
+- Las citas de ejemplo del Repositorio tenían una fecha fija (octubre 2026) que ya no aparece en el calendario dinámico,
+  por lo que no se podía comprobar el bloqueo. Cambié la cita de ejemplo al próximo día hábil desde mañana usando `LocalDate.now()`.
