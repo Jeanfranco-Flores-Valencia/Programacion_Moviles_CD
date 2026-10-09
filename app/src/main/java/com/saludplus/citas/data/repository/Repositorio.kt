@@ -178,8 +178,10 @@ object Repositorio {
 
     /** Horarios libres de un médico en una fecha: se quitan los ya reservados. */
     fun horariosDisponibles(medicoId: Int, fecha: String): List<String> {
-        // TODO: citas: filter (médico y fecha) + map a horas; horariosBase: filter de las no ocupadas.
-        TODO("Implementar horariosDisponibles")
+        val ocupados = citas
+            .filter { it.medicoId == medicoId && it.fecha == fecha }
+            .map { it.hora }
+        return horariosBase.filter { it !in ocupados }
     }
 
     /** Crea la cita del usuario en sesión. Devuelve null si el horario ya está tomado. */
