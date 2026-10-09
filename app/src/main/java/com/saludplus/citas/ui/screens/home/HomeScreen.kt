@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.saludplus.citas.data.repository.Repositorio
 import com.saludplus.citas.navigation.Rutas
+import com.saludplus.citas.ui.components.BarraNavegacionInferior
 import com.saludplus.citas.ui.components.TarjetaEspecialidadDestacada
 import com.saludplus.citas.ui.components.primerNombre
 import com.saludplus.citas.ui.theme.AzulClaro
@@ -76,7 +77,8 @@ fun HomeScreen(navController: NavHostController) {
     var menuAbierto by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = Blanco
+        containerColor = Blanco,
+        bottomBar = { BarraNavegacionInferior(navController, Rutas.HOME) }
     ) { padding ->
         Column(
             modifier = Modifier
