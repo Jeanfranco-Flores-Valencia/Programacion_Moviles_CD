@@ -45,3 +45,19 @@ habilitó la flecha izquierda solo si `semana > 0` y guardó la fecha selecciona
 - Al cambiar de semana dejaba seleccionado un día que ya no se veía en pantalla. Ahora al cambiar de semana se limpian el día y la hora.
 - Las citas de ejemplo del Repositorio tenían una fecha fija (octubre 2026) que ya no aparece en el calendario dinámico,
   por lo que no se podía comprobar el bloqueo. Cambié la cita de ejemplo al próximo día hábil desde mañana usando `LocalDate.now()`.
+
+---
+
+## Prompt 3 — Fecha en texto en la Pantalla 7
+
+**Prompt:**
+> En `ConfirmarCitaScreen` recibo la fecha como "2026-09-16". Quiero mostrarla como "Martes 16 de setiembre 2026".
+
+**Respuesta resumida:**
+Sugirió `DateTimeFormatter.ofPattern("EEEE d 'de' MMMM yyyy", Locale("es", "ES"))` y capitalizar la primera letra.
+
+**Qué corregí:**
+- Con el `Locale` de España el mes sale como "septiembre". Usé `FechaUtils.fechaLarga()` con mi lista de meses
+  ("setiembre") y días con mayúscula inicial.
+- No controlaba fechas mal formadas: si `LocalDate.parse` falla, ahora se muestra la fecha original en vez de cerrarse la app.
+- Apliqué el mismo formato en Cita agendada y Detalle de cita para que la app sea consistente.
