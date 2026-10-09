@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Logo Clínica SaludPlus: cruz médica en dos tonos con un corazón -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <path
+        android:fillColor="#2F6FE4"
+        android:pathData="M43,8 h14 a9,9 0 0 1 9,9 v66 a9,9 0 0 1 -9,9 h-14 a9,9 0 0 1 -9,-9 v-66 a9,9 0 0 1 9,-9 z" />
+    <path
+        android:fillColor="#3FA2E8"
+        android:fillAlpha="0.92"
+        android:pathData="M17,34 h66 a9,9 0 0 1 9,9 v14 a9,9 0 0 1 -9,9 h-66 a9,9 0 0 1 -9,-9 v-14 a9,9 0 0 1 9,-9 z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,64 C37,55 35,47 39.5,42.5 C43,39 48,40 50,44.5 C52,40 57,39 60.5,42.5 C65,47 63,55 50,64 Z" />
+</vector>
