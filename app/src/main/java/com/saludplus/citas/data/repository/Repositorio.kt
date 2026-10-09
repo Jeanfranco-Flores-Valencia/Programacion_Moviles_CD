@@ -154,8 +154,7 @@ object Repositorio {
     }
 
     fun obtenerCita(id: Int): Cita? {
-        // TODO: citas: find por id.
-        TODO("Implementar obtenerCita")
+        return citas.find { it.id == id }
     }
 
     /** Médicos de una especialidad, del mejor al menor calificado. */
@@ -186,8 +185,23 @@ object Repositorio {
 
     /** Crea la cita del usuario en sesión. Devuelve null si el horario ya está tomado. */
     fun agendarCita(medicoId: Int, fecha: String, hora: String, motivo: String): Cita? {
-        // TODO: citas: any (horario ocupado) + add. Devolver la cita creada o null.
-        TODO("Implementar agendarCita")
+        val usuario = usuarioActual ?: return null
+        val medico = obtenerMedico(medicoId) ?: return null
+        val ocupado = citas.any { it.medicoId == medicoId && it.fecha == fecha && it.hora == hora }
+        if (ocupado) return null
+
+        val cita = Cita(
+            id = siguienteCitaId++,
+            usuarioId = usuario.id,
+            medicoId = medicoId,
+            especialidadId = medico.especialidadId,
+            fecha = fecha,
+            hora = hora,
+            motivo = motivo.trim(),
+            tipoAtencion = medico.tipoAtencion
+        )
+        citas.add(cita)
+        return cita
     }
 
     /** Citas del usuario en sesión ordenadas por fecha y hora. */
