@@ -39,9 +39,11 @@ import androidx.navigation.navArgument
 import com.floresvalencia.lavacampus.LavaApp
 import com.floresvalencia.lavacampus.model.Rol
 import com.floresvalencia.lavacampus.ui.administrador.ServiciosScreen
+import com.floresvalencia.lavacampus.ui.estudiante.InicioScreen
 import com.floresvalencia.lavacampus.ui.estudiante.LoginScreen
 import com.floresvalencia.lavacampus.ui.estudiante.SplashScreen
 import com.floresvalencia.lavacampus.ui.theme.LavaTheme
+import com.floresvalencia.lavacampus.viewmodel.InicioViewModel
 import com.floresvalencia.lavacampus.viewmodel.LavaViewModelFactory
 import com.floresvalencia.lavacampus.viewmodel.ServiciosViewModel
 import com.floresvalencia.lavacampus.viewmodel.SesionViewModel
@@ -138,7 +140,15 @@ fun NavLava() {
                 // ---------------- Grafo del estudiante ----------------
                 navigation(startDestination = Rutas.INICIO, route = Rutas.GRAFO_ESTUDIANTE) {
                     composable(Rutas.INICIO) {
-                        PantallaPendiente("Inicio del estudiante (Paso 7)")
+                        val u = usuario ?: return@composable
+                        val vm = lavaViewModel { InicioViewModel(app.repo, u) }
+                        InicioScreen(
+                            vm = vm,
+                            onNuevoPedido = { nav.navigate(Rutas.NUEVO_PEDIDO) },
+                            onMisPedidos = { irATab(nav, Rutas.MIS_PEDIDOS, Rutas.INICIO) },
+                            onTarifas = { irATab(nav, Rutas.TARIFAS, Rutas.INICIO) },
+                            onPedido = { nav.navigate(Rutas.detallePedido(it)) }
+                        )
                     }
                     composable(Rutas.NUEVO_PEDIDO) {
                         PantallaPendiente("Nuevo pedido (Paso 8)")
