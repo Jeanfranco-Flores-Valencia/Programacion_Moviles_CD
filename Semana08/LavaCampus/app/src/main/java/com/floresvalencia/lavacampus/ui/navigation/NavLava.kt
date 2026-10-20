@@ -41,10 +41,12 @@ import com.floresvalencia.lavacampus.model.Rol
 import com.floresvalencia.lavacampus.ui.administrador.ServiciosScreen
 import com.floresvalencia.lavacampus.ui.estudiante.InicioScreen
 import com.floresvalencia.lavacampus.ui.estudiante.LoginScreen
+import com.floresvalencia.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.floresvalencia.lavacampus.ui.estudiante.SplashScreen
 import com.floresvalencia.lavacampus.ui.theme.LavaTheme
 import com.floresvalencia.lavacampus.viewmodel.InicioViewModel
 import com.floresvalencia.lavacampus.viewmodel.LavaViewModelFactory
+import com.floresvalencia.lavacampus.viewmodel.NuevoPedidoViewModel
 import com.floresvalencia.lavacampus.viewmodel.ServiciosViewModel
 import com.floresvalencia.lavacampus.viewmodel.SesionViewModel
 import androidx.compose.foundation.layout.Box
@@ -151,7 +153,18 @@ fun NavLava() {
                         )
                     }
                     composable(Rutas.NUEVO_PEDIDO) {
-                        PantallaPendiente("Nuevo pedido (Paso 8)")
+                        val u = usuario ?: return@composable
+                        val vm = lavaViewModel { NuevoPedidoViewModel(app.repo, app.preferencias, u.id) }
+                        NuevoPedidoScreen(
+                            vm = vm,
+                            onAtras = { nav.popBackStack() },
+                            onCreado = {
+                                nav.navigate(Rutas.MIS_PEDIDOS) {
+                                    popUpTo(Rutas.INICIO)
+                                    launchSingleTop = true
+                                }
+                            }
+                        )
                     }
                     composable(
                         Rutas.DETALLE_PEDIDO,
