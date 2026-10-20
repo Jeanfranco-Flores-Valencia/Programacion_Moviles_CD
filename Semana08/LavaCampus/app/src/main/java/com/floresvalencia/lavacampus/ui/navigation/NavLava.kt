@@ -39,11 +39,13 @@ import androidx.navigation.navArgument
 import com.floresvalencia.lavacampus.LavaApp
 import com.floresvalencia.lavacampus.model.Rol
 import com.floresvalencia.lavacampus.ui.administrador.ServiciosScreen
+import com.floresvalencia.lavacampus.ui.estudiante.DetallePedidoScreen
 import com.floresvalencia.lavacampus.ui.estudiante.InicioScreen
 import com.floresvalencia.lavacampus.ui.estudiante.LoginScreen
 import com.floresvalencia.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.floresvalencia.lavacampus.ui.estudiante.SplashScreen
 import com.floresvalencia.lavacampus.ui.theme.LavaTheme
+import com.floresvalencia.lavacampus.viewmodel.DetallePedidoViewModel
 import com.floresvalencia.lavacampus.viewmodel.InicioViewModel
 import com.floresvalencia.lavacampus.viewmodel.LavaViewModelFactory
 import com.floresvalencia.lavacampus.viewmodel.NuevoPedidoViewModel
@@ -170,7 +172,9 @@ fun NavLava() {
                         Rutas.DETALLE_PEDIDO,
                         arguments = listOf(navArgument("id") { type = NavType.IntType })
                     ) { entry ->
-                        PantallaPendiente("Detalle del pedido (Paso 9)")
+                        val id = entry.arguments?.getInt("id") ?: 0
+                        val vm = lavaViewModel { DetallePedidoViewModel(app.repo, id) }
+                        DetallePedidoScreen(vm = vm, onAtras = { nav.popBackStack() })
                     }
                     composable(Rutas.MIS_PEDIDOS) {
                         PantallaPendiente("Mis pedidos (Paso 10)")
