@@ -40,7 +40,6 @@ import com.floresvalencia.lavacampus.ui.components.AppTopBar
 import com.floresvalencia.lavacampus.ui.components.PedidoCard
 import com.floresvalencia.lavacampus.ui.components.estado
 import com.floresvalencia.lavacampus.ui.components.fechaCorta
-import com.floresvalencia.lavacampus.ui.components.fechaDiaMes
 import com.floresvalencia.lavacampus.ui.components.iconoPrincipal
 import com.floresvalencia.lavacampus.ui.components.nombreCorto
 import com.floresvalencia.lavacampus.ui.components.numeroPedido
@@ -52,7 +51,8 @@ fun MisPedidosScreen(
     vm: MisPedidosViewModel,
     onAtras: () -> Unit,
     onPedido: (Int) -> Unit,
-    onNuevoPedido: () -> Unit
+    onNuevoPedido: () -> Unit,
+    onRepetir: (Int) -> Unit = {}
 ) {
     val activos by vm.activos.collectAsState()
     val historial by vm.historial.collectAsState()
@@ -93,7 +93,8 @@ fun MisPedidosScreen(
                         p = p,
                         puedeCancelar = vm.puedeCancelar(p),
                         onClick = { onPedido(p.pedido.id) },
-                        onCancelar = { aCancelar = p }
+                        onCancelar = { aCancelar = p },
+                        onRepetir = { onRepetir(p.pedido.id) }
                     )
                 }
                 if (pestana == 0 && listo != null) {
@@ -139,7 +140,8 @@ private fun TarjetaMiPedido(
     p: PedidoConDetalle,
     puedeCancelar: Boolean,
     onClick: () -> Unit,
-    onCancelar: () -> Unit
+    onCancelar: () -> Unit,
+    onRepetir: () -> Unit
 ) {
     val estado = p.estado
     val verde = EstadoPedido.LISTO.color
@@ -174,10 +176,13 @@ private fun TarjetaMiPedido(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
+                // Mejora IA: repetir un pedido del historial con los precios actuales
                 else -> Text(
-                    fechaDiaMes(p.pedido.fechaRegistro),
+                    "Pedir de nuevo",
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable(onClick = onRepetir)
                 )
             }
         }

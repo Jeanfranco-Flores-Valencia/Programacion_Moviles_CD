@@ -8,7 +8,8 @@ object Rutas {
     // Grafo del estudiante
     const val GRAFO_ESTUDIANTE = "grafo_estudiante"
     const val INICIO = "inicio"
-    const val NUEVO_PEDIDO = "nuevo_pedido"
+    /** Mejora IA: argumento opcional "repetir" con el id del pedido a repetir (0 = pedido nuevo). */
+    const val NUEVO_PEDIDO = "nuevo_pedido?repetir={repetir}"
     const val MIS_PEDIDOS = "mis_pedidos"
     const val DETALLE_PEDIDO = "detalle_pedido/{id}"
     const val TARIFAS = "tarifas"
@@ -24,6 +25,7 @@ object Rutas {
     const val CLIENTES = "clientes"
     const val AJUSTES = "ajustes"
 
+    fun nuevoPedido(repetir: Int = 0) = "nuevo_pedido?repetir=$repetir"
     fun detallePedido(id: Int) = "detalle_pedido/$id"
     fun gestionPedido(id: Int) = "gestion_pedido/$id"
     /** id = 0 para un servicio nuevo */

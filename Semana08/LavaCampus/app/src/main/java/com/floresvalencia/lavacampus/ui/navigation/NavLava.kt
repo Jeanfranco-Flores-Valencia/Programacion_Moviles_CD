@@ -159,15 +159,22 @@ fun NavLava() {
                         val vm = lavaViewModel { InicioViewModel(app.repo, u) }
                         InicioScreen(
                             vm = vm,
-                            onNuevoPedido = { nav.navigate(Rutas.NUEVO_PEDIDO) },
+                            onNuevoPedido = { nav.navigate(Rutas.nuevoPedido()) },
                             onMisPedidos = { irATab(nav, Rutas.MIS_PEDIDOS, Rutas.INICIO) },
                             onTarifas = { irATab(nav, Rutas.TARIFAS, Rutas.INICIO) },
                             onPedido = { nav.navigate(Rutas.detallePedido(it)) }
                         )
                     }
-                    composable(Rutas.NUEVO_PEDIDO) {
+                    composable(
+                        Rutas.NUEVO_PEDIDO,
+                        arguments = listOf(navArgument("repetir") {
+                            type = NavType.IntType
+                            defaultValue = 0
+                        })
+                    ) { entry ->
                         val u = usuario ?: return@composable
-                        val vm = lavaViewModel { NuevoPedidoViewModel(app.repo, app.preferencias, u.id) }
+                        val repetir = entry.arguments?.getInt("repetir") ?: 0
+                        val vm = lavaViewModel { NuevoPedidoViewModel(app.repo, app.preferencias, u.id, repetir) }
                         NuevoPedidoScreen(
                             vm = vm,
                             onAtras = { nav.popBackStack() },
@@ -194,7 +201,8 @@ fun NavLava() {
                             vm = vm,
                             onAtras = { nav.popBackStack() },
                             onPedido = { nav.navigate(Rutas.detallePedido(it)) },
-                            onNuevoPedido = { nav.navigate(Rutas.NUEVO_PEDIDO) }
+                            onNuevoPedido = { nav.navigate(Rutas.nuevoPedido()) },
+                            onRepetir = { nav.navigate(Rutas.nuevoPedido(it)) }
                         )
                     }
                     composable(Rutas.TARIFAS) {

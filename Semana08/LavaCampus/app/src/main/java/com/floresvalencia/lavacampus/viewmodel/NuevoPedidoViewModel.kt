@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
@@ -31,7 +32,8 @@ data class LineaResumen(
 class NuevoPedidoViewModel(
     private val repo: LavaRepository,
     prefs: PreferenciasStore,
-    private val usuarioId: Int
+    private val usuarioId: Int,
+    private val repetirId: Int = 0   // Mejora IA: id del pedido a repetir (0 = nuevo)
 ) : ViewModel() {
 
     /** Solo servicios ACTIVOS. */
@@ -87,6 +89,32 @@ class NuevoPedidoViewModel(
     val puedeConfirmar: StateFlow<Boolean> = combine(lineas, recibiendoPedidos, _enviando) { l, recibe, enviando ->
         l.isNotEmpty() && recibe && !enviando
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    init {
+        if (repetirId > 0) viewModelScope.launch { cargarRepeticion() }
+    }
+
+    /**
+     * Mejora IA: carga las mismas lineas de un pedido anterior.
+     * Los precios son los ACTUALES porque el total se calcula con los servicios activos de hoy.
+     * Si un servicio ya no esta activo, se omite y se avisa.
+     */
+    private suspend fun cargarRepeticion() {
+        val anterior = repo.observarPedido(repetirId).first() ?: return
+        val activos = repo.observarServiciosActivos().first().associateBy { it.id }
+        val cantidades = anterior.detalles
+            .filter { it.detalle.servicioId in activos }
+            .associate { d ->
+                val s = activos.getValue(d.detalle.servicioId)
+                val max = if (Unidad.desde(s.unidad) == Unidad.KG) MAX_KG else MAX_PIEZAS
+                d.detalle.servicioId to d.detalle.cantidad.coerceAtMost(max)
+            }
+        _cantidades.value = cantidades
+        _nota.value = anterior.pedido.nota
+        if (cantidades.size < anterior.detalles.size) {
+            _mensaje.value = "Algunos servicios del pedido anterior ya no están disponibles"
+        }
+    }
 
     /**
      * KG: pasos de 0.5, minimo 1.0 al activar y maximo 10.0.
