@@ -42,12 +42,15 @@ import com.floresvalencia.lavacampus.ui.administrador.ServiciosScreen
 import com.floresvalencia.lavacampus.ui.estudiante.DetallePedidoScreen
 import com.floresvalencia.lavacampus.ui.estudiante.InicioScreen
 import com.floresvalencia.lavacampus.ui.estudiante.LoginScreen
+import com.floresvalencia.lavacampus.ui.estudiante.MisPedidosScreen
 import com.floresvalencia.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.floresvalencia.lavacampus.ui.estudiante.SplashScreen
+import com.floresvalencia.lavacampus.ui.estudiante.TarifasScreen
 import com.floresvalencia.lavacampus.ui.theme.LavaTheme
 import com.floresvalencia.lavacampus.viewmodel.DetallePedidoViewModel
 import com.floresvalencia.lavacampus.viewmodel.InicioViewModel
 import com.floresvalencia.lavacampus.viewmodel.LavaViewModelFactory
+import com.floresvalencia.lavacampus.viewmodel.MisPedidosViewModel
 import com.floresvalencia.lavacampus.viewmodel.NuevoPedidoViewModel
 import com.floresvalencia.lavacampus.viewmodel.ServiciosViewModel
 import com.floresvalencia.lavacampus.viewmodel.SesionViewModel
@@ -177,10 +180,19 @@ fun NavLava() {
                         DetallePedidoScreen(vm = vm, onAtras = { nav.popBackStack() })
                     }
                     composable(Rutas.MIS_PEDIDOS) {
-                        PantallaPendiente("Mis pedidos (Paso 10)")
+                        val u = usuario ?: return@composable
+                        val vm = lavaViewModel { MisPedidosViewModel(app.repo, u.id) }
+                        MisPedidosScreen(
+                            vm = vm,
+                            onAtras = { nav.popBackStack() },
+                            onPedido = { nav.navigate(Rutas.detallePedido(it)) },
+                            onNuevoPedido = { nav.navigate(Rutas.NUEVO_PEDIDO) }
+                        )
                     }
                     composable(Rutas.TARIFAS) {
-                        PantallaPendiente("Tarifas (Paso 10)")
+                        val u = usuario ?: return@composable
+                        val vm = lavaViewModel { MisPedidosViewModel(app.repo, u.id) }
+                        TarifasScreen(vm = vm, onAtras = { nav.popBackStack() })
                     }
                     composable(Rutas.PERFIL) {
                         PantallaPendiente("Perfil (Paso 13)")
