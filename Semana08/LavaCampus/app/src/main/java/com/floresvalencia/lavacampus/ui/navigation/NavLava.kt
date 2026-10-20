@@ -38,6 +38,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.floresvalencia.lavacampus.LavaApp
 import com.floresvalencia.lavacampus.model.Rol
+import com.floresvalencia.lavacampus.ui.administrador.PanelScreen
 import com.floresvalencia.lavacampus.ui.administrador.ServiciosScreen
 import com.floresvalencia.lavacampus.ui.estudiante.DetallePedidoScreen
 import com.floresvalencia.lavacampus.ui.estudiante.InicioScreen
@@ -52,6 +53,7 @@ import com.floresvalencia.lavacampus.viewmodel.InicioViewModel
 import com.floresvalencia.lavacampus.viewmodel.LavaViewModelFactory
 import com.floresvalencia.lavacampus.viewmodel.MisPedidosViewModel
 import com.floresvalencia.lavacampus.viewmodel.NuevoPedidoViewModel
+import com.floresvalencia.lavacampus.viewmodel.PanelViewModel
 import com.floresvalencia.lavacampus.viewmodel.ServiciosViewModel
 import com.floresvalencia.lavacampus.viewmodel.SesionViewModel
 import androidx.compose.foundation.layout.Box
@@ -202,7 +204,8 @@ fun NavLava() {
                 // ---------------- Grafo del administrador ----------------
                 navigation(startDestination = Rutas.PANEL, route = Rutas.GRAFO_ADMIN) {
                     composable(Rutas.PANEL) {
-                        PantallaPendiente("Panel de la lavandería (Paso 11)")
+                        val vm = lavaViewModel { PanelViewModel(app.repo) }
+                        PanelScreen(vm = vm, onVerListos = { irATab(nav, Rutas.BANDEJA, Rutas.PANEL) })
                     }
                     composable(Rutas.BANDEJA) {
                         PantallaPendiente("Bandeja de pedidos (Paso 12)")
