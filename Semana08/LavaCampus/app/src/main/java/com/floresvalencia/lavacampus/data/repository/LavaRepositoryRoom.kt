@@ -56,14 +56,16 @@ class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
         usuarioId: Int,
         lineas: List<LineaPedido>,
         fechaEntrega: String,
-        nota: String
+        nota: String,
+        descuento: Double
     ): Long = db.withTransaction {
         val conServicio = lineas.map { linea ->
             val servicio = servicioDao.obtener(linea.servicioId)
                 ?: throw IllegalStateException("Servicio ${linea.servicioId} no existe")
             servicio to linea.cantidad
         }
-        val total = conServicio.sumOf { (s, cantidad) -> s.precio * cantidad }
+        val subtotal = conServicio.sumOf { (s, cantidad) -> s.precio * cantidad }
+        val total = (subtotal - descuento).coerceAtLeast(0.0)
         val pedidoId = pedidoDao.insertar(
             Pedido(
                 usuarioId = usuarioId,
@@ -73,7 +75,8 @@ class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
                 total = total,
                 casillero = null,
                 pagado = false,
-                nota = nota
+                nota = nota,
+                descuento = descuento
             )
         )
         detalleDao.insertarTodos(

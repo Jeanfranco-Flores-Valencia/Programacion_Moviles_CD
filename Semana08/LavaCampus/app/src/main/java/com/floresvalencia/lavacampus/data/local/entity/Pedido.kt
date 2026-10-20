@@ -30,5 +30,6 @@ data class Pedido(
     val casillero: String? = null, // nulo hasta estar LISTO
     val pagado: Boolean = false,
     val nota: String = "",
+    val descuento: Double = 0.0,   // Mejora IA: descuento por volumen (ya restado del total)
     val fechaCreacion: Long = System.currentTimeMillis()
 )

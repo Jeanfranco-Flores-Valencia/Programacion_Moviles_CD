@@ -114,6 +114,18 @@ fun DetallePedidoScreen(vm: DetallePedidoViewModel, onAtras: () -> Unit) {
                         )
                     }
                 }
+                // Mejora IA: descuento guardado en el pedido
+                if (p.pedido.descuento > 0) {
+                    Row(Modifier.padding(vertical = 3.dp)) {
+                        Text(
+                            "Descuento por volumen",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = EstadoPedido.LISTO.color,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text("- ${soles(p.pedido.descuento)}", style = MaterialTheme.typography.bodySmall, color = EstadoPedido.LISTO.color)
+                    }
+                }
                 HorizontalDivider(Modifier.padding(vertical = 8.dp), color = colores.outlineVariant)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Total", style = MaterialTheme.typography.titleSmall, color = colores.onSurface, modifier = Modifier.weight(1f))

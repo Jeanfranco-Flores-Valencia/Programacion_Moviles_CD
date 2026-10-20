@@ -66,8 +66,16 @@ class NuevoPedidoViewModel(
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    /** Total = suma de subtotales. Se recalcula en cada cambio. */
-    val total: StateFlow<Double> = combine(lineas, _cantidades) { l, _ -> l.sumOf { it.subtotal } }
+    /** Suma de subtotales (antes del descuento). */
+    val subtotal: StateFlow<Double> = combine(lineas, _cantidades) { l, _ -> l.sumOf { it.subtotal } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
+
+    /** Mejora IA: si el lavado por KG supera 5 kg, 10 % de descuento sobre las lineas en KG. */
+    val descuento: StateFlow<Double> = combine(lineas, _cantidades) { l, _ -> calcularDescuento(l) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
+
+    /** Total = suma de subtotales - descuento. Se recalcula en cada cambio. */
+    val total: StateFlow<Double> = combine(subtotal, descuento) { s, d -> s - d }
         .stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
 
     /** Hoy + el mayor tiempo de entrega de los servicios elegidos; si cae domingo pasa al lunes. */
@@ -129,7 +137,8 @@ class NuevoPedidoViewModel(
                     usuarioId = usuarioId,
                     lineas = elegidas.map { LineaPedido(it.servicio.id, it.cantidad) },
                     fechaEntrega = entrega.toString(),
-                    nota = _nota.value.trim()
+                    nota = _nota.value.trim(),
+                    descuento = calcularDescuento(elegidas)
                 )
                 _creado.value = true
             } catch (e: Exception) {
@@ -146,6 +155,17 @@ class NuevoPedidoViewModel(
         const val MAX_KG = 10.0
         const val MAX_PIEZAS = 30.0
         const val MAX_ACTIVOS = 3
+        const val UMBRAL_DESCUENTO_KG = 5.0
+        const val PORCENTAJE_DESCUENTO = 0.10
+
+        /** Descuento por volumen: 10 % del lavado por KG cuando supera 5 kg (redondeado a centimos). */
+        fun calcularDescuento(lineas: List<LineaResumen>): Double {
+            val enKg = lineas.filter { Unidad.desde(it.servicio.unidad) == Unidad.KG }
+            val kilos = enKg.sumOf { it.cantidad }
+            if (kilos <= UMBRAL_DESCUENTO_KG) return 0.0
+            val base = enKg.sumOf { it.subtotal }
+            return Math.round(base * PORCENTAJE_DESCUENTO * 100) / 100.0
+        }
 
         /** 24 h = 1 dia, 48 h = 2 dias... La lavanderia no atiende domingos: pasa al lunes. */
         fun calcularFechaEntrega(horas: Int, desde: LocalDate = LocalDate.now()): LocalDate {

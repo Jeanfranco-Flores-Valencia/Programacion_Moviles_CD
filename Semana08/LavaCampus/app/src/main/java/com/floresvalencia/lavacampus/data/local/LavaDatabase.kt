@@ -15,7 +15,7 @@ import com.floresvalencia.lavacampus.data.local.entity.Usuario
 
 @Database(
     entities = [Servicio::class, Usuario::class, Pedido::class, DetallePedido::class],
-    version = 1,
+    version = 2,   // Mejora IA: Pedido tiene la columna descuento
     exportSchema = false
 )
 abstract class LavaDatabase : RoomDatabase() {
@@ -34,7 +34,10 @@ abstract class LavaDatabase : RoomDatabase() {
                 context.applicationContext,
                 LavaDatabase::class.java,
                 "lavacampus.db"
-            ).build().also { INSTANCE = it }
+            )
+                // Base de practica: al subir la version se recrea y se vuelven a sembrar los datos
+                .fallbackToDestructiveMigration()
+                .build().also { INSTANCE = it }
         }
     }
 }

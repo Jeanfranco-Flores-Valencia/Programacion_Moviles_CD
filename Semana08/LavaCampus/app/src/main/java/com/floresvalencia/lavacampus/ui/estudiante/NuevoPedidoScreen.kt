@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.floresvalencia.lavacampus.data.local.entity.Servicio
+import com.floresvalencia.lavacampus.model.EstadoPedido
 import com.floresvalencia.lavacampus.model.Unidad
 import com.floresvalencia.lavacampus.ui.components.AppTopBar
 import com.floresvalencia.lavacampus.ui.components.IconoServicio
@@ -52,6 +53,7 @@ fun NuevoPedidoScreen(
     val nota by vm.nota.collectAsState()
     val lineas by vm.lineas.collectAsState()
     val total by vm.total.collectAsState()
+    val descuento by vm.descuento.collectAsState()
     val fechaEntrega by vm.fechaEntrega.collectAsState()
     val puedeConfirmar by vm.puedeConfirmar.collectAsState()
     val recibiendo by vm.recibiendoPedidos.collectAsState()
@@ -127,6 +129,25 @@ fun NuevoPedidoScreen(
                         )
                         Text(soles(l.subtotal), style = MaterialTheme.typography.bodySmall, color = colores.onSurface)
                     }
+                }
+                // Mejora IA: descuento por volumen visible en el resumen
+                if (descuento > 0) {
+                    Row(Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            "Descuento por volumen (10 % lavado > 5 kg)",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = EstadoPedido.LISTO.color,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text("- ${soles(descuento)}", style = MaterialTheme.typography.bodySmall, color = EstadoPedido.LISTO.color)
+                    }
+                } else if (lineas.any { Unidad.desde(it.servicio.unidad) == Unidad.KG }) {
+                    Text(
+                        "Más de 5 kg de lavado: 10 % de descuento",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colores.onSurfaceVariant
+                    )
                 }
                 HorizontalDivider(Modifier.padding(vertical = 8.dp), color = colores.outlineVariant)
                 Row(verticalAlignment = Alignment.CenterVertically) {
