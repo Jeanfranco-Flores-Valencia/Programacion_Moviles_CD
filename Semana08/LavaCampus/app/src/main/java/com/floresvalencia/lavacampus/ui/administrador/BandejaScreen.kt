@@ -33,6 +33,7 @@ import com.floresvalencia.lavacampus.ui.components.AppTopBar
 import com.floresvalencia.lavacampus.ui.components.LavaTextField
 import com.floresvalencia.lavacampus.ui.components.PedidoCard
 import com.floresvalencia.lavacampus.ui.components.estado
+import com.floresvalencia.lavacampus.ui.components.fechaDiaMes
 import com.floresvalencia.lavacampus.ui.components.iconoPrincipal
 import com.floresvalencia.lavacampus.ui.components.nombreCorto
 import com.floresvalencia.lavacampus.ui.components.resumenLineas
@@ -45,6 +46,7 @@ fun BandejaScreen(vm: BandejaViewModel, onGestionar: (Int) -> Unit) {
     val filtro by vm.filtro.collectAsState()
     val busqueda by vm.busqueda.collectAsState()
     val mensaje by vm.mensaje.collectAsState()
+    val atrasados by vm.atrasados.collectAsState()
     val colores = MaterialTheme.colorScheme
 
     Column(
@@ -104,6 +106,7 @@ fun BandejaScreen(vm: BandejaViewModel, onGestionar: (Int) -> Unit) {
             items(pedidos, key = { it.pedido.id }) { p ->
                 TarjetaBandeja(
                     p = p,
+                    atrasado = p.pedido.id in atrasados,
                     onClick = { onGestionar(p.pedido.id) },
                     onIniciar = { vm.iniciar(p) },
                     onMarcarListo = { onGestionar(p.pedido.id) },
@@ -117,6 +120,7 @@ fun BandejaScreen(vm: BandejaViewModel, onGestionar: (Int) -> Unit) {
 @Composable
 private fun TarjetaBandeja(
     p: PedidoConDetalle,
+    atrasado: Boolean,
     onClick: () -> Unit,
     onIniciar: () -> Unit,
     onMarcarListo: () -> Unit,
@@ -124,10 +128,13 @@ private fun TarjetaBandeja(
 ) {
     PedidoCard(
         id = p.pedido.id,
-        detalle = "${nombreCorto(p.usuario.nombre)} · ${p.resumenLineas()}",
+        detalle = (if (atrasado) "ATRASADO · entrega ${fechaDiaMes(p.pedido.fechaEntrega)}\n" else "") +
+            "${nombreCorto(p.usuario.nombre)} · ${p.resumenLineas()}",
         total = p.pedido.total,
         estado = p.estado,
         icono = p.iconoPrincipal(),
+        // Mejora IA: marca roja para los pedidos atrasados
+        borde = if (atrasado) MaterialTheme.colorScheme.error else null,
         onClick = onClick,
         pie = {
             // Boton de accion segun el estado

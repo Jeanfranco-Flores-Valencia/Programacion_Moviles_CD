@@ -57,6 +57,11 @@ class PanelViewModel(repo: LavaRepository) : ViewModel() {
         .map { lista -> lista.map { DatoGrafico(etiquetaCorta(it.nombre), it.total.toFloat()) } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    /** Mejora IA: cantidad de pedidos atrasados. */
+    val atrasados: StateFlow<Int> = repo.observarPedidosAtrasados(hoy.toString())
+        .map { it.size }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     /** "Lavado y secado" -> "Lavado", "Lavado en seco" -> "Seco" para que quepa bajo la barra. */
     private fun etiquetaCorta(nombre: String): String = when {
         nombre.contains("seco", ignoreCase = true) && nombre.contains("en ", ignoreCase = true) -> "Seco"

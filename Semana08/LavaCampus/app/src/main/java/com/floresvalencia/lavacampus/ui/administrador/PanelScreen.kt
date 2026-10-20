@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -48,6 +49,7 @@ fun PanelScreen(vm: PanelViewModel, onVerListos: () -> Unit) {
     val ingresos by vm.ingresosSemana.collectAsState()
     val porEstado by vm.porEstado.collectAsState()
     val porServicio by vm.porServicio.collectAsState()
+    val atrasados by vm.atrasados.collectAsState()
     val colores = MaterialTheme.colorScheme
 
     Column(
@@ -102,6 +104,33 @@ fun PanelScreen(vm: PanelViewModel, onVerListos: () -> Unit) {
         }
         Spacer(Modifier.height(14.dp))
 
+        // Mejora IA: alerta de pedidos atrasados
+        if (atrasados > 0) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(colores.errorContainer)
+                    .padding(12.dp)
+            ) {
+                Icon(Icons.Outlined.Warning, contentDescription = null, tint = colores.error)
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        if (atrasados == 1) "1 pedido atrasado" else "$atrasados pedidos atrasados",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = colores.error
+                    )
+                    Text("Su fecha de entrega ya pasó", style = MaterialTheme.typography.bodySmall, color = colores.error)
+                }
+                Button(
+                    onClick = onVerListos,
+                    colors = ButtonDefaults.buttonColors(containerColor = colores.error, contentColor = Color.White)
+                ) { Text("Ver") }
+            }
+            Spacer(Modifier.height(10.dp))
+        }
         if (porRecoger > 0) {
             val verde = EstadoPedido.LISTO.color
             Row(

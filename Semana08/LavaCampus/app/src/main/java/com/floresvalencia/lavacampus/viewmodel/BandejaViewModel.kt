@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 /** Chips de filtro de la bandeja. */
 enum class FiltroBandeja(val etiqueta: String, val estado: EstadoPedido?) {
@@ -42,6 +44,11 @@ class BandejaViewModel(private val repo: LavaRepository) : ViewModel() {
             .filter { filtro.estado == null || it.pedido.estado == filtro.estado.name }
             .filter { coincide(it, q) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Mejora IA: ids de los pedidos cuya fecha de entrega ya paso y no estan entregados ni cancelados. */
+    val atrasados: StateFlow<Set<Int>> = repo.observarPedidosAtrasados(LocalDate.now().toString())
+        .map { it.toSet() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     private fun coincide(p: PedidoConDetalle, q: String): Boolean {
         if (q.isEmpty()) return true
