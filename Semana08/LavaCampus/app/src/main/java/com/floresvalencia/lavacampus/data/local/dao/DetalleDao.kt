@@ -1,0 +1,31 @@
+package com.floresvalencia.lavacampus.data.local.dao
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.Query
+import com.floresvalencia.lavacampus.data.local.entity.DetallePedido
+import com.floresvalencia.lavacampus.model.IngresoServicio
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface DetalleDao {
+    @Insert
+    suspend fun insertarTodos(lista: List<DetallePedido>)
+
+    @Query("SELECT COUNT(*) FROM detalles_pedido WHERE servicioId = :servicioId")
+    suspend fun contarPorServicio(servicioId: Int): Int
+
+    /** Ingresos por servicio de los pedidos pagados desde una fecha (JOIN + SUM + GROUP BY). */
+    @Query(
+        """
+        SELECT s.nombre AS nombre, SUM(d.subtotal) AS total
+        FROM detalles_pedido d
+        INNER JOIN servicios s ON d.servicioId = s.id
+        INNER JOIN pedidos p ON d.pedidoId = p.id
+        WHERE p.pagado = 1 AND p.fechaRegistro >= :fechaInicio
+        GROUP BY s.id
+        ORDER BY total DESC
+        """
+    )
+    fun observarIngresosPorServicio(fechaInicio: String): Flow<List<IngresoServicio>>
+}
