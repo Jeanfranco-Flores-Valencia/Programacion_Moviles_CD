@@ -1,50 +1,234 @@
 package com.floresvalencia.lavacampus.ui.navigation
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.outlined.Group
+import androidx.compose.material.icons.outlined.LocalOffer
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.floresvalencia.lavacampus.LavaApp
 import com.floresvalencia.lavacampus.model.Rol
 import com.floresvalencia.lavacampus.ui.administrador.ServiciosScreen
+import com.floresvalencia.lavacampus.ui.estudiante.LoginScreen
 import com.floresvalencia.lavacampus.ui.estudiante.SplashScreen
 import com.floresvalencia.lavacampus.ui.theme.LavaTheme
 import com.floresvalencia.lavacampus.viewmodel.LavaViewModelFactory
 import com.floresvalencia.lavacampus.viewmodel.ServiciosViewModel
+import com.floresvalencia.lavacampus.viewmodel.SesionViewModel
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+
+/** Crea un ViewModel con la fabrica de la app (cada destino tiene su propia instancia). */
+@Composable
+private inline fun <reified VM : ViewModel> lavaViewModel(noinline crear: () -> VM): VM =
+    viewModel(factory = LavaViewModelFactory(crear))
+
+private data class ItemBarra(val ruta: String, val etiqueta: String, val icono: ImageVector)
+
+/** 4 items para el estudiante. */
+private val itemsEstudiante = listOf(
+    ItemBarra(Rutas.INICIO, "Inicio", Icons.Filled.Home),
+    ItemBarra(Rutas.MIS_PEDIDOS, "Pedidos", Icons.AutoMirrored.Filled.List),
+    ItemBarra(Rutas.TARIFAS, "Tarifas", Icons.Outlined.LocalOffer),
+    ItemBarra(Rutas.PERFIL, "Perfil", Icons.Outlined.Person)
+)
+
+/** 5 items para el administrador. */
+private val itemsAdmin = listOf(
+    ItemBarra(Rutas.PANEL, "Panel", Icons.Filled.BarChart),
+    ItemBarra(Rutas.BANDEJA, "Pedidos", Icons.AutoMirrored.Filled.List),
+    ItemBarra(Rutas.SERVICIOS, "Servicios", Icons.Outlined.LocalOffer),
+    ItemBarra(Rutas.CLIENTES, "Clientes", Icons.Outlined.Group),
+    ItemBarra(Rutas.AJUSTES, "Ajustes", Icons.Outlined.Settings)
+)
 
 @Composable
 fun NavLava() {
     val app = LocalContext.current.applicationContext as LavaApp
     val nav = rememberNavController()
 
-    // TODO (Paso 6): el tema depende del perfil activo y del modo oscuro guardado en DataStore
-    LavaTheme(rol = Rol.ADMIN) {
-        Scaffold(containerColor = MaterialTheme.colorScheme.background) { padding ->
+    // La sesion vive a nivel de la Activity: la comparten ambos grafos
+    val sesion: SesionViewModel = lavaViewModel { SesionViewModel(app.repo, app.preferencias) }
+    val usuario by sesion.usuarioActual.collectAsState()
+    val oscuro by sesion.modoOscuro.collectAsState()
+    val rol = Rol.desde(usuario?.rol) ?: Rol.CLIENTE
+
+    val entrada by nav.currentBackStackEntryAsState()
+    val rutaActual = entrada?.destination?.route
+
+    /** Navega al grafo del perfil (o al login) limpiando toda la pila. */
+    fun irAGrafo(destino: Rol?) {
+        val ruta = when (destino) {
+            Rol.ADMIN -> Rutas.GRAFO_ADMIN
+            Rol.CLIENTE -> Rutas.GRAFO_ESTUDIANTE
+            null -> Rutas.LOGIN
+        }
+        nav.navigate(ruta) {
+            popUpTo(nav.graph.id) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
+
+    LavaTheme(rol = rol, oscuro = oscuro) {
+        Scaffold(
+            containerColor = MaterialTheme.colorScheme.background,
+            bottomBar = { BarraInferior(rutaActual, nav) }
+        ) { padding ->
             NavHost(
                 navController = nav,
                 startDestination = Rutas.SPLASH,
                 modifier = Modifier.padding(padding)
             ) {
                 composable(Rutas.SPLASH) {
-                    // TODO (Paso 6): si hay perfil guardado ir a su grafo; si no, al login
-                    val irAServicios = {
-                        nav.navigate(Rutas.SERVICIOS) { popUpTo(Rutas.SPLASH) { inclusive = true } }
+                    val cargando by sesion.cargando.collectAsState()
+                    // El Splash no avanza solo: espera a que el usuario toque un boton
+                    var destino by remember { mutableStateOf<String?>(null) }
+                    SplashScreen(
+                        onComenzar = { destino = Rutas.LOGIN },
+                        onTengoCuenta = { destino = Rutas.LOGIN }
+                    )
+                    LaunchedEffect(destino, cargando) {
+                        val elegido = destino ?: return@LaunchedEffect
+                        if (cargando) return@LaunchedEffect
+                        destino = null
+                        val guardado = Rol.desde(sesion.usuarioActual.value?.rol)
+                        if (guardado != null) {
+                            // Si ya hay perfil guardado salta el login y va directo a su pantalla principal
+                            irAGrafo(guardado)
+                        } else {
+                            nav.navigate(elegido) { launchSingleTop = true }
+                        }
                     }
-                    // TODO (Paso 6): los botones llevaran al login o al perfil guardado
-                    SplashScreen(onComenzar = irAServicios, onTengoCuenta = irAServicios)
                 }
-                composable(Rutas.SERVICIOS) {
-                    val vm: ServiciosViewModel = viewModel(factory = LavaViewModelFactory { ServiciosViewModel(app.repo) })
-                    ServiciosScreen(vm, onEditar = { /* TODO (Paso 13): abrir FormularioServicio */ })
+                composable(Rutas.LOGIN) {
+                    LoginScreen(vm = sesion, onIngresar = { irAGrafo(it) })
                 }
-                // TODO: agrega aqui los destinos de cada paso
+
+                // ---------------- Grafo del estudiante ----------------
+                navigation(startDestination = Rutas.INICIO, route = Rutas.GRAFO_ESTUDIANTE) {
+                    composable(Rutas.INICIO) {
+                        PantallaPendiente("Inicio del estudiante (Paso 7)")
+                    }
+                    composable(Rutas.NUEVO_PEDIDO) {
+                        PantallaPendiente("Nuevo pedido (Paso 8)")
+                    }
+                    composable(
+                        Rutas.DETALLE_PEDIDO,
+                        arguments = listOf(navArgument("id") { type = NavType.IntType })
+                    ) { entry ->
+                        PantallaPendiente("Detalle del pedido (Paso 9)")
+                    }
+                    composable(Rutas.MIS_PEDIDOS) {
+                        PantallaPendiente("Mis pedidos (Paso 10)")
+                    }
+                    composable(Rutas.TARIFAS) {
+                        PantallaPendiente("Tarifas (Paso 10)")
+                    }
+                    composable(Rutas.PERFIL) {
+                        PantallaPendiente("Perfil (Paso 13)")
+                    }
+                }
+
+                // ---------------- Grafo del administrador ----------------
+                navigation(startDestination = Rutas.PANEL, route = Rutas.GRAFO_ADMIN) {
+                    composable(Rutas.PANEL) {
+                        PantallaPendiente("Panel de la lavandería (Paso 11)")
+                    }
+                    composable(Rutas.BANDEJA) {
+                        PantallaPendiente("Bandeja de pedidos (Paso 12)")
+                    }
+                    composable(
+                        Rutas.GESTION_PEDIDO,
+                        arguments = listOf(navArgument("id") { type = NavType.IntType })
+                    ) { entry ->
+                        PantallaPendiente("Gestionar pedido (Paso 12)")
+                    }
+                    composable(Rutas.SERVICIOS) {
+                        val vm = lavaViewModel { ServiciosViewModel(app.repo) }
+                        ServiciosScreen(vm, onEditar = { /* Paso 13: abrir FormularioServicio */ })
+                    }
+                    composable(Rutas.CLIENTES) {
+                        PantallaPendiente("Clientes (Paso 13)")
+                    }
+                    composable(Rutas.AJUSTES) {
+                        PantallaPendiente("Ajustes (Paso 13)")
+                    }
+                }
             }
         }
+    }
+}
+
+/** Cambia de pestana de la barra inferior sin apilar pantallas repetidas. */
+private fun irATab(nav: NavHostController, ruta: String, inicioGrafo: String) {
+    nav.navigate(ruta) {
+        popUpTo(inicioGrafo) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
+/** NavigationBar: 4 items para el estudiante y 5 para el administrador. Solo en las pantallas principales. */
+@Composable
+private fun BarraInferior(rutaActual: String?, nav: NavHostController) {
+    val ruta = rutaActual ?: return
+    val items = when {
+        itemsEstudiante.any { it.ruta == ruta } -> itemsEstudiante
+        itemsAdmin.any { it.ruta == ruta } -> itemsAdmin
+        else -> return
+    }
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+        items.forEach { item ->
+            NavigationBarItem(
+                selected = ruta == item.ruta,
+                onClick = { if (ruta != item.ruta) irATab(nav, item.ruta, items.first().ruta) },
+                icon = { Icon(item.icono, contentDescription = item.etiqueta) },
+                label = { Text(item.etiqueta) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            )
+        }
+    }
+}
+
+/** Pantalla temporal para los destinos que aun no se construyen. */
+@Composable
+private fun PantallaPendiente(titulo: String) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+        Text("$titulo\nEn construcción", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
