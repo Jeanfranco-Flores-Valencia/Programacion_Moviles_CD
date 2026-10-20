@@ -38,7 +38,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.floresvalencia.lavacampus.LavaApp
 import com.floresvalencia.lavacampus.model.Rol
+import com.floresvalencia.lavacampus.ui.administrador.AjustesScreen
 import com.floresvalencia.lavacampus.ui.administrador.BandejaScreen
+import com.floresvalencia.lavacampus.ui.administrador.ClientesScreen
+import com.floresvalencia.lavacampus.ui.administrador.FormularioServicioScreen
 import com.floresvalencia.lavacampus.ui.administrador.GestionPedidoScreen
 import com.floresvalencia.lavacampus.ui.administrador.PanelScreen
 import com.floresvalencia.lavacampus.ui.administrador.ServiciosScreen
@@ -47,10 +50,12 @@ import com.floresvalencia.lavacampus.ui.estudiante.InicioScreen
 import com.floresvalencia.lavacampus.ui.estudiante.LoginScreen
 import com.floresvalencia.lavacampus.ui.estudiante.MisPedidosScreen
 import com.floresvalencia.lavacampus.ui.estudiante.NuevoPedidoScreen
+import com.floresvalencia.lavacampus.ui.estudiante.PerfilScreen
 import com.floresvalencia.lavacampus.ui.estudiante.SplashScreen
 import com.floresvalencia.lavacampus.ui.estudiante.TarifasScreen
 import com.floresvalencia.lavacampus.ui.theme.LavaTheme
 import com.floresvalencia.lavacampus.viewmodel.BandejaViewModel
+import com.floresvalencia.lavacampus.viewmodel.ClientesViewModel
 import com.floresvalencia.lavacampus.viewmodel.DetallePedidoViewModel
 import com.floresvalencia.lavacampus.viewmodel.GestionPedidoViewModel
 import com.floresvalencia.lavacampus.viewmodel.InicioViewModel
@@ -60,9 +65,6 @@ import com.floresvalencia.lavacampus.viewmodel.NuevoPedidoViewModel
 import com.floresvalencia.lavacampus.viewmodel.PanelViewModel
 import com.floresvalencia.lavacampus.viewmodel.ServiciosViewModel
 import com.floresvalencia.lavacampus.viewmodel.SesionViewModel
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Alignment
 
 /** Crea un ViewModel con la fabrica de la app (cada destino tiene su propia instancia). */
 @Composable
@@ -201,7 +203,15 @@ fun NavLava() {
                         TarifasScreen(vm = vm, onAtras = { nav.popBackStack() })
                     }
                     composable(Rutas.PERFIL) {
-                        PantallaPendiente("Perfil (Paso 13)")
+                        val u = usuario ?: return@composable
+                        val pedidosVm = lavaViewModel { MisPedidosViewModel(app.repo, u.id) }
+                        PerfilScreen(
+                            sesion = sesion,
+                            pedidosVm = pedidosVm,
+                            onAtras = { nav.popBackStack() },
+                            onPerfilCambiado = { irAGrafo(it) },
+                            onSesionCerrada = { irAGrafo(null) }
+                        )
                     }
                 }
 
@@ -225,13 +235,26 @@ fun NavLava() {
                     }
                     composable(Rutas.SERVICIOS) {
                         val vm = lavaViewModel { ServiciosViewModel(app.repo) }
-                        ServiciosScreen(vm, onEditar = { /* Paso 13: abrir FormularioServicio */ })
+                        ServiciosScreen(vm, onEditar = { nav.navigate(Rutas.formularioServicio(it)) })
+                    }
+                    composable(
+                        Rutas.FORMULARIO_SERVICIO,
+                        arguments = listOf(navArgument("id") { type = NavType.IntType })
+                    ) { entry ->
+                        val id = entry.arguments?.getInt("id") ?: 0
+                        val vm = lavaViewModel { ServiciosViewModel(app.repo) }
+                        FormularioServicioScreen(vm = vm, servicioId = id, onCerrar = { nav.popBackStack() })
                     }
                     composable(Rutas.CLIENTES) {
-                        PantallaPendiente("Clientes (Paso 13)")
+                        val vm = lavaViewModel { ClientesViewModel(app.repo) }
+                        ClientesScreen(vm = vm)
                     }
                     composable(Rutas.AJUSTES) {
-                        PantallaPendiente("Ajustes (Paso 13)")
+                        AjustesScreen(
+                            sesion = sesion,
+                            onPerfilCambiado = { irAGrafo(it) },
+                            onSesionCerrada = { irAGrafo(null) }
+                        )
                     }
                 }
             }
@@ -271,13 +294,5 @@ private fun BarraInferior(rutaActual: String?, nav: NavHostController) {
                 )
             )
         }
-    }
-}
-
-/** Pantalla temporal para los destinos que aun no se construyen. */
-@Composable
-private fun PantallaPendiente(titulo: String) {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-        Text("$titulo\nEn construcción", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
