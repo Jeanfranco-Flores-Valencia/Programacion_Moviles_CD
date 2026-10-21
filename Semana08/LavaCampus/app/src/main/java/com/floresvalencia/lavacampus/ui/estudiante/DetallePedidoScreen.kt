@@ -52,7 +52,11 @@ import com.floresvalencia.lavacampus.ui.components.soles
 import com.floresvalencia.lavacampus.viewmodel.DetallePedidoViewModel
 
 @Composable
-fun DetallePedidoScreen(vm: DetallePedidoViewModel, onAtras: () -> Unit) {
+fun DetallePedidoScreen(
+    vm: DetallePedidoViewModel,
+    onAtras: () -> Unit,
+    onRepetir: ((Int) -> Unit)? = null
+) {
     val pedido by vm.pedido.collectAsState()
     val puedeCancelar by vm.puedeCancelar.collectAsState()
     var confirmar by remember { mutableStateOf(false) }
@@ -162,6 +166,14 @@ fun DetallePedidoScreen(vm: DetallePedidoViewModel, onAtras: () -> Unit) {
             }
             Spacer(Modifier.height(18.dp))
 
+            // Mejora IA: repetir desde el detalle de un pedido terminado
+            if (p.estado.esFinal && onRepetir != null) {
+                LavaButton(
+                    texto = "Pedir de nuevo",
+                    onClick = { onRepetir(p.pedido.id) },
+                    estilo = EstiloBoton.CONTORNO
+                )
+            }
             if (p.estado != EstadoPedido.CANCELADO && p.estado != EstadoPedido.ENTREGADO) {
                 LavaButton(
                     texto = "Cancelar pedido",

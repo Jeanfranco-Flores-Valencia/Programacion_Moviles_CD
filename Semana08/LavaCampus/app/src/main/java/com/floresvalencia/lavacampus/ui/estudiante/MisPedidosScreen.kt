@@ -81,11 +81,19 @@ fun MisPedidosScreen(
             ) {
                 if (lista.isEmpty()) {
                     item {
-                        Text(
-                            if (pestana == 0) "No tienes pedidos activos" else "Tu historial está vacío",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colores.onSurfaceVariant
-                        )
+                        Column {
+                            Text(
+                                if (pestana == 0) "No tienes pedidos activos" else "Tu historial está vacío",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = colores.onSurfaceVariant
+                            )
+                            // Mejora IA: accion directa desde el estado vacio
+                            if (pestana == 0) {
+                                TextButton(onClick = onNuevoPedido, contentPadding = PaddingValues(horizontal = 0.dp)) {
+                                    Text("Hacer un pedido ahora", style = MaterialTheme.typography.labelLarge)
+                                }
+                            }
+                        }
                     }
                 }
                 items(lista, key = { it.pedido.id }) { p ->

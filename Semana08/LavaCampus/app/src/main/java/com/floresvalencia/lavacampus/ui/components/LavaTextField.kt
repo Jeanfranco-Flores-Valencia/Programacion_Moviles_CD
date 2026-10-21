@@ -1,7 +1,17 @@
 package com.floresvalencia.lavacampus.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,8 +42,12 @@ fun LavaTextField(
     unaLinea: Boolean = true,
     placeholder: String? = null,
     esError: Boolean = false,
-    mensajeError: String? = null
+    mensajeError: String? = null,
+    imeAction: ImeAction = ImeAction.Default,
+    onAccion: (() -> Unit)? = null
 ) {
+    // Mejora IA: el ojo permite ver u ocultar la contrasena
+    var claveVisible by rememberSaveable { mutableStateOf(false) }
     OutlinedTextField(
         value = valor,
         onValueChange = onCambio,
@@ -44,15 +58,29 @@ fun LavaTextField(
         leadingIcon = if (icono != null) {
             { Icon(icono, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         } else null,
+        trailingIcon = if (esClave) {
+            {
+                IconButton(onClick = { claveVisible = !claveVisible }) {
+                    Icon(
+                        if (claveVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                        contentDescription = if (claveVisible) "Ocultar contraseña" else "Ver contraseña",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else null,
         supportingText = if (mensajeError != null) {
             { Text(mensajeError) }
         } else null,
         singleLine = unaLinea,
         isError = esError || mensajeError != null,
-        visualTransformation = if (esClave) PasswordVisualTransformation() else VisualTransformation.None,
+        visualTransformation = if (esClave && !claveVisible) PasswordVisualTransformation() else VisualTransformation.None,
+        // Mejora IA: "Siguiente" pasa al otro campo y "Listo" ejecuta la accion del formulario
         keyboardOptions = KeyboardOptions(
-            keyboardType = if (esClave) KeyboardType.Password else teclado
+            keyboardType = if (esClave) KeyboardType.Password else teclado,
+            imeAction = imeAction
         ),
+        keyboardActions = KeyboardActions(onDone = { onAccion?.invoke() }),
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surface,

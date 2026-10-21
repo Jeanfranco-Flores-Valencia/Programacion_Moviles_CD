@@ -60,6 +60,7 @@ fun GestionPedidoScreen(vm: GestionPedidoViewModel, onAtras: () -> Unit) {
     val ocupados by vm.casillerosOcupados.collectAsState()
     val elegido by vm.casilleroElegido.collectAsState()
     val mensaje by vm.mensaje.collectAsState()
+    val primerLibre by vm.primerLibre.collectAsState()
     var confirmarCancelar by remember { mutableStateOf(false) }
     val colores = MaterialTheme.colorScheme
 
@@ -145,6 +146,12 @@ fun GestionPedidoScreen(vm: GestionPedidoViewModel, onAtras: () -> Unit) {
                     color = colores.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp)
                 )
+                // Mejora IA: atajo para elegir el primer casillero libre
+                if (estado == EstadoPedido.EN_PROCESO && elegido == null && primerLibre != null) {
+                    TextButton(onClick = vm::usarPrimerLibre, contentPadding = PaddingValues(horizontal = 0.dp)) {
+                        Text("Usar el primer casillero libre (${primerLibre})", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
                 Spacer(Modifier.height(14.dp))
             }
 

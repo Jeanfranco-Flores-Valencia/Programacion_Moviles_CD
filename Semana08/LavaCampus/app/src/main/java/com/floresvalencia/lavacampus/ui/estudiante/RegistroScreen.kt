@@ -27,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -91,7 +92,8 @@ fun RegistroScreen(
                 onCambio = { nombre = it; vm.limpiarCampo(CampoRegistro.NOMBRE) },
                 etiqueta = "Nombre y apellido",
                 icono = Icons.Outlined.Person,
-                mensajeError = errores.nombre
+                mensajeError = errores.nombre,
+                imeAction = ImeAction.Next
             )
             Spacer(Modifier.height(8.dp))
             LavaTextField(
@@ -100,7 +102,8 @@ fun RegistroScreen(
                 etiqueta = "Código de estudiante",
                 placeholder = "U202310234",
                 icono = Icons.Outlined.Badge,
-                mensajeError = errores.codigo
+                mensajeError = errores.codigo,
+                imeAction = ImeAction.Next
             )
             Spacer(Modifier.height(8.dp))
             LavaTextField(
@@ -109,7 +112,8 @@ fun RegistroScreen(
                 etiqueta = "Correo",
                 icono = Icons.Outlined.Email,
                 teclado = KeyboardType.Email,
-                mensajeError = errores.correo
+                mensajeError = errores.correo,
+                imeAction = ImeAction.Next
             )
             Spacer(Modifier.height(8.dp))
             LavaTextField(
@@ -118,7 +122,8 @@ fun RegistroScreen(
                 etiqueta = "Contraseña (mínimo 6, letras y números)",
                 icono = Icons.Outlined.Lock,
                 esClave = true,
-                mensajeError = errores.clave
+                mensajeError = errores.clave,
+                imeAction = ImeAction.Next
             )
             Spacer(Modifier.height(8.dp))
             LavaTextField(
@@ -127,7 +132,9 @@ fun RegistroScreen(
                 etiqueta = "Confirmar contraseña",
                 icono = Icons.Outlined.Lock,
                 esClave = true,
-                mensajeError = errores.confirmar
+                mensajeError = errores.confirmar,
+                imeAction = ImeAction.Done,
+                onAccion = { vm.registrar(nombre, codigo, correo, clave, confirmar) }
             )
             Spacer(Modifier.height(20.dp))
             LavaButton(

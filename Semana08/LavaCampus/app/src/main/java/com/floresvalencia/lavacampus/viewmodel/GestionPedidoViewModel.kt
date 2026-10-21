@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -43,6 +44,11 @@ class GestionPedidoViewModel(
         elegido ?: p?.pedido?.casillero
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    /** Mejora IA: primer casillero libre para elegirlo con un toque. */
+    val primerLibre: StateFlow<String?> = casillerosOcupados
+        .map { ocupados -> Casilleros.todos.firstOrNull { it !in ocupados } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     private val _mensaje = MutableStateFlow<String?>(null)
     val mensaje: StateFlow<String?> = _mensaje.asStateFlow()
 
@@ -53,6 +59,15 @@ class GestionPedidoViewModel(
         }
         _elegido.value = c
         _mensaje.value = null
+    }
+
+    fun usarPrimerLibre() {
+        val libre = primerLibre.value
+        if (libre == null) {
+            _mensaje.value = "No hay casilleros libres"
+            return
+        }
+        elegirCasillero(libre)
     }
 
     fun marcarPagado(b: Boolean) {

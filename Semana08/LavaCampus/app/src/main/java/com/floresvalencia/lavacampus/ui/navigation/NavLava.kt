@@ -220,7 +220,11 @@ fun NavLava() {
                     ) { entry ->
                         val id = entry.arguments?.getInt("id") ?: 0
                         val vm = lavaViewModel { DetallePedidoViewModel(app.repo, id) }
-                        DetallePedidoScreen(vm = vm, onAtras = { nav.popBackStack() })
+                        DetallePedidoScreen(
+                            vm = vm,
+                            onAtras = { nav.popBackStack() },
+                            onRepetir = { nav.navigate(Rutas.nuevoPedido(it)) }
+                        )
                     }
                     composable(Rutas.MIS_PEDIDOS) {
                         val u = usuario ?: return@composable

@@ -73,7 +73,8 @@ fun NuevoPedidoScreen(
         AppTopBar(titulo = "Nuevo pedido", onAtras = onAtras)
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
+                .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 24.dp)
@@ -178,7 +179,23 @@ fun NuevoPedidoScreen(
                         .padding(10.dp)
                 )
             }
-            Spacer(Modifier.height(12.dp))
+        }
+        // Mejora IA: barra fija con el total y el boton, siempre visible al elegir cantidades
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(colores.surface)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
+                Text(
+                    if (lineas.isEmpty()) "Elige al menos un servicio" else "${lineas.size} servicio(s)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colores.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(soles(total), style = MaterialTheme.typography.titleMedium, color = colores.primary)
+            }
             LavaButton(texto = "Confirmar pedido", onClick = vm::confirmar, enabled = puedeConfirmar)
         }
     }

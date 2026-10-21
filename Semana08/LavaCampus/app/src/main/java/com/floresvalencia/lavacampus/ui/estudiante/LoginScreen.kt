@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -134,7 +135,8 @@ fun LoginScreen(
                 onCambio = { correo = it; vm.limpiarError() },
                 etiqueta = "Correo",
                 icono = Icons.Outlined.Email,
-                teclado = KeyboardType.Email
+                teclado = KeyboardType.Email,
+                imeAction = ImeAction.Next
             )
             Spacer(Modifier.height(12.dp))
             LavaTextField(
@@ -142,7 +144,9 @@ fun LoginScreen(
                 onCambio = { clave = it; vm.limpiarError() },
                 etiqueta = "Contraseña",
                 icono = Icons.Outlined.Lock,
-                esClave = true
+                esClave = true,
+                imeAction = ImeAction.Done,
+                onAccion = { vm.login(correo, clave, rolElegido) }
             )
             Text(
                 "¿Olvidaste tu contraseña?",
