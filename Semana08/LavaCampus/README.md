@@ -108,6 +108,8 @@ com.floresvalencia.lavacampus
 - **Descuento por volumen:** 10 % del lavado cuando supera 5 kg; se ve en el resumen y se guarda en el pedido (base versión 2).
 - **Repetir un pedido:** "Pedir de nuevo" desde el historial con los precios actuales.
 - **Registro de estudiantes:** "Comenzar" lleva a crear la cuenta; al registrarse va al login con el correo ya escrito. Validaciones en `SesionViewModel`: nombre y apellido solo con letras, código `U` + 9 dígitos, correo válido, contraseña de 6+ caracteres con letras y números, confirmación igual y correo/código no repetidos.
+- **Navegación más cómoda:** insignias con pedidos pendientes en la barra inferior, campana con insignia en Inicio y Panel, conteo por chip en la bandeja y pedidos de cada cliente desde Clientes.
+- **Usabilidad:** ver/ocultar contraseña, teclado con Siguiente/Listo, barra fija con total en Nuevo pedido, atajo al primer casillero libre, "Pedir de nuevo" desde el detalle y acceso directo en Mis pedidos vacío.
 
 ## Pruebas de aceptación
 
