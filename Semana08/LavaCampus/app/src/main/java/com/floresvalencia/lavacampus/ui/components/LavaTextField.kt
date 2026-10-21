@@ -16,7 +16,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
-/** Campo de texto con el estilo de la app. */
+/**
+ * Campo de texto con el estilo de la app.
+ * mensajeError: si no es null, el campo se marca en rojo y el texto aparece debajo.
+ */
 @Composable
 fun LavaTextField(
     valor: String,
@@ -28,7 +31,8 @@ fun LavaTextField(
     teclado: KeyboardType = KeyboardType.Text,
     unaLinea: Boolean = true,
     placeholder: String? = null,
-    esError: Boolean = false
+    esError: Boolean = false,
+    mensajeError: String? = null
 ) {
     OutlinedTextField(
         value = valor,
@@ -40,8 +44,11 @@ fun LavaTextField(
         leadingIcon = if (icono != null) {
             { Icon(icono, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
         } else null,
+        supportingText = if (mensajeError != null) {
+            { Text(mensajeError) }
+        } else null,
         singleLine = unaLinea,
-        isError = esError,
+        isError = esError || mensajeError != null,
         visualTransformation = if (esClave) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = KeyboardOptions(
             keyboardType = if (esClave) KeyboardType.Password else teclado
@@ -50,6 +57,7 @@ fun LavaTextField(
         colors = OutlinedTextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+            errorContainerColor = MaterialTheme.colorScheme.surface,
             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
         ),
         modifier = modifier.fillMaxWidth()

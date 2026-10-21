@@ -21,6 +21,16 @@ interface UsuarioDao {
     @Insert
     suspend fun insertarTodos(lista: List<Usuario>): List<Long>
 
+    /** Registro de un estudiante nuevo. */
+    @Insert
+    suspend fun insertar(u: Usuario): Long
+
+    @Query("SELECT COUNT(*) FROM usuarios WHERE correo = :correo")
+    suspend fun contarPorCorreo(correo: String): Int
+
+    @Query("SELECT COUNT(*) FROM usuarios WHERE codigo = :codigo")
+    suspend fun contarPorCodigo(codigo: String): Int
+
     @Query("SELECT COUNT(*) FROM usuarios")
     suspend fun contar(): Int
 

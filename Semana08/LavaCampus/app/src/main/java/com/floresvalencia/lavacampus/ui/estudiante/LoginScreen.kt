@@ -41,14 +41,27 @@ import com.floresvalencia.lavacampus.viewmodel.SesionViewModel
 
 /** Un solo Composable para ambos roles: el color cambia segun la pestana elegida. */
 @Composable
-fun LoginScreen(vm: SesionViewModel, onIngresar: (Rol) -> Unit) {
+fun LoginScreen(
+    vm: SesionViewModel,
+    onIngresar: (Rol) -> Unit,
+    onRegistrarse: () -> Unit
+) {
     val usuario by vm.usuarioActual.collectAsState()
     val error by vm.error.collectAsState()
     val oscuro by vm.modoOscuro.collectAsState()
+    val correoRegistrado by vm.correoRegistrado.collectAsState()
 
     var rolElegido by rememberSaveable { mutableStateOf(Rol.CLIENTE) }
     var correo by rememberSaveable { mutableStateOf("") }
     var clave by rememberSaveable { mutableStateOf("") }
+
+    // Viene del registro: el correo ya aparece escrito en la pestana Estudiante
+    LaunchedEffect(correoRegistrado) {
+        correoRegistrado?.let {
+            correo = it
+            rolElegido = Rol.CLIENTE
+        }
+    }
 
     // Exito: el ViewModel guardo la sesion; la vista solo navega
     LaunchedEffect(usuario) {
@@ -68,6 +81,21 @@ fun LoginScreen(vm: SesionViewModel, onIngresar: (Rol) -> Unit) {
             Text("Bienvenido", style = MaterialTheme.typography.headlineMedium, color = colores.onBackground)
             Text("Ingresa para continuar", style = MaterialTheme.typography.bodyMedium, color = colores.onSurfaceVariant)
             Spacer(Modifier.height(24.dp))
+
+            if (correoRegistrado != null) {
+                Text(
+                    "¡Cuenta creada! Ingresa con tu correo y contraseña.",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colores.onPrimaryContainer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(colores.primaryContainer)
+                        .padding(10.dp)
+                )
+                Spacer(Modifier.height(14.dp))
+            }
 
             // Selector Estudiante / Administrador
             Row(
@@ -146,11 +174,15 @@ fun LoginScreen(vm: SesionViewModel, onIngresar: (Rol) -> Unit) {
 
             if (rolElegido == Rol.CLIENTE) {
                 Text(
-                    "¿No tienes cuenta? Regístrate en la lavandería",
-                    style = MaterialTheme.typography.labelMedium,
+                    "¿No tienes cuenta? Regístrate",
+                    style = MaterialTheme.typography.labelLarge,
                     color = colores.primary,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(onClick = onRegistrarse)
+                        .padding(vertical = 8.dp)
                 )
             }
             Spacer(Modifier.height(16.dp))

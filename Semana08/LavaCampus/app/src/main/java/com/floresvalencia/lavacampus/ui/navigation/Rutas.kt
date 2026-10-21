@@ -4,6 +4,8 @@ package com.floresvalencia.lavacampus.ui.navigation
 object Rutas {
     const val SPLASH = "splash"
     const val LOGIN = "login"
+    /** Mejora IA: registro de estudiantes */
+    const val REGISTRO = "registro"
 
     // Grafo del estudiante
     const val GRAFO_ESTUDIANTE = "grafo_estudiante"

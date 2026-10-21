@@ -102,6 +102,13 @@ com.floresvalencia.lavacampus
 - Estados: solo se avanza un paso. LISTO exige casillero libre (C-01 a C-30); ENTREGADO exige pagado.
 - Un servicio usado en algún pedido no se elimina (solo se desactiva).
 
+## Mejoras con IA (rama `mejora-ia-lavacampus`)
+
+- **Pedidos atrasados:** marca roja en la bandeja y alerta en el panel.
+- **Descuento por volumen:** 10 % del lavado cuando supera 5 kg; se ve en el resumen y se guarda en el pedido (base versión 2).
+- **Repetir un pedido:** "Pedir de nuevo" desde el historial con los precios actuales.
+- **Registro de estudiantes:** "Comenzar" lleva a crear la cuenta; al registrarse va al login con el correo ya escrito. Validaciones en `SesionViewModel`: nombre y apellido solo con letras, código `U` + 9 dígitos, correo válido, contraseña de 6+ caracteres con letras y números, confirmación igual y correo/código no repetidos.
+
 ## Pruebas de aceptación
 
 | Prueba | Resultado esperado | OK |

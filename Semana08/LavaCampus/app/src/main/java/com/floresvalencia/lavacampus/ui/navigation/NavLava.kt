@@ -48,6 +48,7 @@ import com.floresvalencia.lavacampus.ui.administrador.ServiciosScreen
 import com.floresvalencia.lavacampus.ui.estudiante.DetallePedidoScreen
 import com.floresvalencia.lavacampus.ui.estudiante.InicioScreen
 import com.floresvalencia.lavacampus.ui.estudiante.LoginScreen
+import com.floresvalencia.lavacampus.ui.estudiante.RegistroScreen
 import com.floresvalencia.lavacampus.ui.estudiante.MisPedidosScreen
 import com.floresvalencia.lavacampus.ui.estudiante.NuevoPedidoScreen
 import com.floresvalencia.lavacampus.ui.estudiante.PerfilScreen
@@ -132,7 +133,7 @@ fun NavLava() {
                     // El Splash no avanza solo: espera a que el usuario toque un boton
                     var destino by remember { mutableStateOf<String?>(null) }
                     SplashScreen(
-                        onComenzar = { destino = Rutas.LOGIN },
+                        onComenzar = { destino = Rutas.REGISTRO },   // Mejora IA: primero se registra
                         onTengoCuenta = { destino = Rutas.LOGIN }
                     )
                     LaunchedEffect(destino, cargando) {
@@ -148,8 +149,31 @@ fun NavLava() {
                         }
                     }
                 }
+                // Mejora IA: registro -> login (el correo llega ya escrito)
+                composable(Rutas.REGISTRO) {
+                    RegistroScreen(
+                        vm = sesion,
+                        onAtras = { nav.popBackStack() },
+                        onRegistrado = {
+                            nav.navigate(Rutas.LOGIN) {
+                                popUpTo(Rutas.REGISTRO) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        },
+                        onTengoCuenta = {
+                            nav.navigate(Rutas.LOGIN) {
+                                popUpTo(Rutas.REGISTRO) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
                 composable(Rutas.LOGIN) {
-                    LoginScreen(vm = sesion, onIngresar = { irAGrafo(it) })
+                    LoginScreen(
+                        vm = sesion,
+                        onIngresar = { irAGrafo(it) },
+                        onRegistrarse = { nav.navigate(Rutas.REGISTRO) { launchSingleTop = true } }
+                    )
                 }
 
                 // ---------------- Grafo del estudiante ----------------

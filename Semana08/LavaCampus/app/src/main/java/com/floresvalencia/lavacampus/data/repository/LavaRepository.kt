@@ -23,6 +23,11 @@ interface LavaRepository {
     suspend fun primerUsuarioDeRol(rol: Rol): Usuario?
     fun observarClientes(): Flow<List<ClienteResumen>>
 
+    // Mejora IA: registro de estudiantes
+    suspend fun registrarEstudiante(nombre: String, codigo: String, correo: String, clave: String): Long
+    suspend fun correoRegistrado(correo: String): Boolean
+    suspend fun codigoRegistrado(codigo: String): Boolean
+
     // Servicios (ejemplo resuelto)
     fun observarServicios(): Flow<List<Servicio>>
     fun observarServiciosActivos(): Flow<List<Servicio>>
