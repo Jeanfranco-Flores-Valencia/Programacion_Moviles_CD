@@ -1,6 +1,7 @@
 package com.floresvalencia.lavacampus.ui.administrador
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +38,7 @@ import com.floresvalencia.lavacampus.ui.estudiante.Tarjeta
 import com.floresvalencia.lavacampus.viewmodel.ClientesViewModel
 
 @Composable
-fun ClientesScreen(vm: ClientesViewModel) {
+fun ClientesScreen(vm: ClientesViewModel, onCliente: (String) -> Unit = {}) {
     val clientes by vm.clientes.collectAsState()
     val busqueda by vm.busqueda.collectAsState()
     val colores = MaterialTheme.colorScheme
@@ -61,15 +62,16 @@ fun ClientesScreen(vm: ClientesViewModel) {
             if (clientes.isEmpty()) {
                 item { Text("Sin resultados", style = MaterialTheme.typography.bodyMedium, color = colores.onSurfaceVariant) }
             }
-            items(clientes, key = { it.id }) { c -> TarjetaCliente(c) }
+            items(clientes, key = { it.id }) { c -> TarjetaCliente(c, onClick = { onCliente(c.nombre) }) }
         }
     }
 }
 
 @Composable
-private fun TarjetaCliente(c: ClienteResumen) {
+private fun TarjetaCliente(c: ClienteResumen, onClick: () -> Unit) {
     val colores = MaterialTheme.colorScheme
-    Tarjeta {
+    // Mejora IA: la tarjeta abre los pedidos del cliente
+    Tarjeta(modifier = Modifier.clickable(onClick = onClick)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 contentAlignment = Alignment.Center,

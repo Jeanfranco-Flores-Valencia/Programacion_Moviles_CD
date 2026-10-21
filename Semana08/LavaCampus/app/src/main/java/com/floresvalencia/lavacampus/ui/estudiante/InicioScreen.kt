@@ -21,7 +21,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.LocalOffer
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +61,7 @@ fun InicioScreen(
 ) {
     val activo by vm.pedidoActivo.collectAsState()
     val recientes by vm.recientes.collectAsState()
+    val listos by vm.listos.collectAsState()
     val colores = MaterialTheme.colorScheme
     val primerNombre = vm.estudiante.nombre.substringBefore(" ")
 
@@ -76,7 +81,8 @@ fun InicioScreen(
                     color = colores.onSurfaceVariant
                 )
             }
-            Icon(Icons.Filled.Notifications, contentDescription = "Avisos", tint = colores.onBackground)
+            // Mejora IA: la campana muestra cuantos pedidos estan listos y abre Mis pedidos
+            CampanaAvisos(cantidad = listos, onClick = onMisPedidos)
         }
         Spacer(Modifier.height(16.dp))
 
@@ -129,6 +135,19 @@ fun InicioScreen(
                 } else null
             )
             Spacer(Modifier.height(10.dp))
+        }
+    }
+}
+
+/** Campana con insignia (Mejora IA). Se reutiliza en el panel del administrador. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun CampanaAvisos(cantidad: Int, onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        BadgedBox(badge = {
+            if (cantidad > 0) Badge { Text(cantidad.toString()) }
+        }) {
+            Icon(Icons.Filled.Notifications, contentDescription = "Avisos", tint = MaterialTheme.colorScheme.onBackground)
         }
     }
 }

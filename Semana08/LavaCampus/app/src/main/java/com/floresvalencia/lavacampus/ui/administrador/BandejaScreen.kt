@@ -41,12 +41,18 @@ import com.floresvalencia.lavacampus.viewmodel.BandejaViewModel
 import com.floresvalencia.lavacampus.viewmodel.FiltroBandeja
 
 @Composable
-fun BandejaScreen(vm: BandejaViewModel, onGestionar: (Int) -> Unit) {
+fun BandejaScreen(
+    vm: BandejaViewModel,
+    onGestionar: (Int) -> Unit,
+    onAtras: (() -> Unit)? = null,
+    titulo: String = "Pedidos"
+) {
     val pedidos by vm.pedidos.collectAsState()
     val filtro by vm.filtro.collectAsState()
     val busqueda by vm.busqueda.collectAsState()
     val mensaje by vm.mensaje.collectAsState()
     val atrasados by vm.atrasados.collectAsState()
+    val conteos by vm.conteos.collectAsState()
     val colores = MaterialTheme.colorScheme
 
     Column(
@@ -54,7 +60,7 @@ fun BandejaScreen(vm: BandejaViewModel, onGestionar: (Int) -> Unit) {
             .fillMaxSize()
             .background(colores.background)
     ) {
-        AppTopBar(titulo = "Pedidos")
+        AppTopBar(titulo = titulo, onAtras = onAtras)
         LavaTextField(
             valor = busqueda,
             onCambio = vm::buscar,
@@ -70,7 +76,8 @@ fun BandejaScreen(vm: BandejaViewModel, onGestionar: (Int) -> Unit) {
                 FilterChip(
                     selected = f == filtro,
                     onClick = { vm.elegirFiltro(f) },
-                    label = { Text(f.etiqueta) },
+                    // Mejora IA: cada chip muestra cuantos pedidos tiene
+                    label = { Text("${f.etiqueta} (${conteos[f] ?: 0})") },
                     shape = RoundedCornerShape(50),
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = colores.primary,

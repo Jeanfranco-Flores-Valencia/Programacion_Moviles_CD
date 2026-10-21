@@ -6,7 +6,12 @@ import com.floresvalencia.lavacampus.data.local.entity.Usuario
 import com.floresvalencia.lavacampus.data.prefs.PreferenciasStore
 import com.floresvalencia.lavacampus.data.repository.LavaRepository
 import com.floresvalencia.lavacampus.model.Rol
+import com.floresvalencia.lavacampus.model.EstadoPedido
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,6 +59,22 @@ class SesionViewModel(
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
     val recibirPedidos: StateFlow<Boolean> = prefs.recibirPedidos
         .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    /**
+     * Mejora IA: numero que se muestra como insignia en "Pedidos" de la barra inferior.
+     * Estudiante: sus pedidos activos. Administrador: pedidos RECIBIDOS por atender.
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val insigniaPedidos: StateFlow<Int> = _usuarioActual
+        .flatMapLatest { u ->
+            when {
+                u == null -> flowOf(0)
+                u.rol == Rol.ADMIN.name -> repo.observarCantidadPorEstado(EstadoPedido.RECIBIDO)
+                else -> repo.observarPedidosDeUsuario(u.id)
+                    .map { lista -> lista.count { EstadoPedido.desde(it.pedido.estado).esActivo } }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     // ---------- Registro ----------
     private val _erroresRegistro = MutableStateFlow(ErroresRegistro())

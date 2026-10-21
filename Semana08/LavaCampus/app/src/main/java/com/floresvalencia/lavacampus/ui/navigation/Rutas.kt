@@ -1,5 +1,7 @@
 package com.floresvalencia.lavacampus.ui.navigation
 
+import android.net.Uri
+
 /** Rutas de navegacion. Cada perfil tiene su propio grafo. */
 object Rutas {
     const val SPLASH = "splash"
@@ -25,11 +27,14 @@ object Rutas {
     const val SERVICIOS = "servicios"
     const val FORMULARIO_SERVICIO = "formulario_servicio/{id}"
     const val CLIENTES = "clientes"
+    /** Mejora IA: pedidos de un cliente (bandeja filtrada por su nombre) */
+    const val PEDIDOS_CLIENTE = "pedidos_cliente/{nombre}"
     const val AJUSTES = "ajustes"
 
     fun nuevoPedido(repetir: Int = 0) = "nuevo_pedido?repetir=$repetir"
     fun detallePedido(id: Int) = "detalle_pedido/$id"
     fun gestionPedido(id: Int) = "gestion_pedido/$id"
+    fun pedidosCliente(nombre: String) = "pedidos_cliente/" + Uri.encode(nombre)
     /** id = 0 para un servicio nuevo */
     fun formularioServicio(id: Int) = "formulario_servicio/$id"
 }

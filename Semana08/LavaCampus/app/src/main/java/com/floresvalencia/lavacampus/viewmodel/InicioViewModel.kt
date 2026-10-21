@@ -25,6 +25,11 @@ class InicioViewModel(
         .map { lista -> lista.firstOrNull { EstadoPedido.valueOf(it.pedido.estado).esActivo } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
+    /** Mejora IA: pedidos LISTO esperando recojo (insignia de la campana). */
+    val listos: StateFlow<Int> = misPedidos
+        .map { lista -> lista.count { it.pedido.estado == EstadoPedido.LISTO.name } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     /** Los 2 ultimos pedidos. */
     val recientes: StateFlow<List<PedidoConDetalle>> = misPedidos
         .map { it.take(2) }

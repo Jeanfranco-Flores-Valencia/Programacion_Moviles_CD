@@ -14,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
@@ -37,6 +36,7 @@ import com.floresvalencia.lavacampus.ui.components.fechaCorta
 import com.floresvalencia.lavacampus.ui.components.graficos.GraficoBarras
 import com.floresvalencia.lavacampus.ui.components.graficos.GraficoDona
 import com.floresvalencia.lavacampus.ui.components.soles
+import com.floresvalencia.lavacampus.ui.estudiante.CampanaAvisos
 import com.floresvalencia.lavacampus.ui.estudiante.SeccionTitulo
 import com.floresvalencia.lavacampus.ui.estudiante.Tarjeta
 import com.floresvalencia.lavacampus.viewmodel.PanelViewModel
@@ -50,6 +50,7 @@ fun PanelScreen(vm: PanelViewModel, onVerListos: () -> Unit) {
     val porEstado by vm.porEstado.collectAsState()
     val porServicio by vm.porServicio.collectAsState()
     val atrasados by vm.atrasados.collectAsState()
+    val nuevos by vm.nuevos.collectAsState()
     val colores = MaterialTheme.colorScheme
 
     Column(
@@ -68,7 +69,8 @@ fun PanelScreen(vm: PanelViewModel, onVerListos: () -> Unit) {
                     color = colores.onSurfaceVariant
                 )
             }
-            Icon(Icons.Filled.Notifications, contentDescription = "Avisos", tint = colores.onBackground)
+            // Mejora IA: campana con los pedidos nuevos; abre la bandeja
+            CampanaAvisos(cantidad = nuevos, onClick = onVerListos)
         }
         Spacer(Modifier.height(16.dp))
 

@@ -24,12 +24,15 @@ enum class FiltroBandeja(val etiqueta: String, val estado: EstadoPedido?) {
 }
 
 /** Bandeja del administrador: ve TODOS los pedidos, filtrados por chip y buscador. */
-class BandejaViewModel(private val repo: LavaRepository) : ViewModel() {
+class BandejaViewModel(
+    private val repo: LavaRepository,
+    busquedaInicial: String = ""   // Mejora IA: llega desde Clientes con el nombre del estudiante
+) : ViewModel() {
 
     private val _filtro = MutableStateFlow(FiltroBandeja.TODOS)
     val filtro: StateFlow<FiltroBandeja> = _filtro.asStateFlow()
 
-    private val _busqueda = MutableStateFlow("")
+    private val _busqueda = MutableStateFlow(busquedaInicial)
     val busqueda: StateFlow<String> = _busqueda.asStateFlow()
 
     private val _mensaje = MutableStateFlow<String?>(null)
@@ -44,6 +47,15 @@ class BandejaViewModel(private val repo: LavaRepository) : ViewModel() {
             .filter { filtro.estado == null || it.pedido.estado == filtro.estado.name }
             .filter { coincide(it, q) }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** Mejora IA: cantidad de pedidos por chip (se muestra en cada filtro). */
+    val conteos: StateFlow<Map<FiltroBandeja, Int>> = repo.observarPedidos()
+        .map { lista ->
+            FiltroBandeja.entries.associateWith { f ->
+                if (f.estado == null) lista.size else lista.count { it.pedido.estado == f.estado.name }
+            }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     /** Mejora IA: ids de los pedidos cuya fecha de entrega ya paso y no estan entregados ni cancelados. */
     val atrasados: StateFlow<Set<Int>> = repo.observarPedidosAtrasados(LocalDate.now().toString())

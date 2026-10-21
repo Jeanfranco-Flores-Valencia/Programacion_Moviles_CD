@@ -29,6 +29,10 @@ class PanelViewModel(repo: LavaRepository) : ViewModel() {
     val enProceso: StateFlow<Int> = repo.observarCantidadPorEstado(EstadoPedido.EN_PROCESO)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
+    /** Mejora IA: pedidos RECIBIDOS por atender (insignia de la campana). */
+    val nuevos: StateFlow<Int> = repo.observarCantidadPorEstado(EstadoPedido.RECIBIDO)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
     /** Pedidos LISTO esperando recojo. */
     val porRecoger: StateFlow<Int> = repo.observarCantidadPorEstado(EstadoPedido.LISTO)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)

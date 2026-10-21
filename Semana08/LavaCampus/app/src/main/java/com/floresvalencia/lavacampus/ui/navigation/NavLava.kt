@@ -9,6 +9,9 @@ import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.LocalOffer
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -101,6 +104,7 @@ fun NavLava() {
     val usuario by sesion.usuarioActual.collectAsState()
     val oscuro by sesion.modoOscuro.collectAsState()
     val rol = Rol.desde(usuario?.rol) ?: Rol.CLIENTE
+    val insignia by sesion.insigniaPedidos.collectAsState()
 
     val entrada by nav.currentBackStackEntryAsState()
     val rutaActual = entrada?.destination?.route
@@ -121,7 +125,7 @@ fun NavLava() {
     LavaTheme(rol = rol, oscuro = oscuro) {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
-            bottomBar = { BarraInferior(rutaActual, nav) }
+            bottomBar = { BarraInferior(rutaActual, nav, insignia) }
         ) { padding ->
             NavHost(
                 navController = nav,
@@ -279,7 +283,21 @@ fun NavLava() {
                     }
                     composable(Rutas.CLIENTES) {
                         val vm = lavaViewModel { ClientesViewModel(app.repo) }
-                        ClientesScreen(vm = vm)
+                        ClientesScreen(vm = vm, onCliente = { nav.navigate(Rutas.pedidosCliente(it)) })
+                    }
+                    // Mejora IA: pedidos de un cliente reutilizando la bandeja
+                    composable(
+                        Rutas.PEDIDOS_CLIENTE,
+                        arguments = listOf(navArgument("nombre") { type = NavType.StringType })
+                    ) { entry ->
+                        val nombre = entry.arguments?.getString("nombre").orEmpty()
+                        val vm = lavaViewModel { BandejaViewModel(app.repo, nombre) }
+                        BandejaScreen(
+                            vm = vm,
+                            onGestionar = { nav.navigate(Rutas.gestionPedido(it)) },
+                            onAtras = { nav.popBackStack() },
+                            titulo = "Pedidos de $nombre"
+                        )
                     }
                     composable(Rutas.AJUSTES) {
                         AjustesScreen(
@@ -304,8 +322,9 @@ private fun irATab(nav: NavHostController, ruta: String, inicioGrafo: String) {
 }
 
 /** NavigationBar: 4 items para el estudiante y 5 para el administrador. Solo en las pantallas principales. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BarraInferior(rutaActual: String?, nav: NavHostController) {
+private fun BarraInferior(rutaActual: String?, nav: NavHostController, insignia: Int) {
     val ruta = rutaActual ?: return
     val items = when {
         itemsEstudiante.any { it.ruta == ruta } -> itemsEstudiante
@@ -317,7 +336,15 @@ private fun BarraInferior(rutaActual: String?, nav: NavHostController) {
             NavigationBarItem(
                 selected = ruta == item.ruta,
                 onClick = { if (ruta != item.ruta) irATab(nav, item.ruta, items.first().ruta) },
-                icon = { Icon(item.icono, contentDescription = item.etiqueta) },
+                icon = {
+                    // Mejora IA: insignia con los pedidos pendientes en el item "Pedidos"
+                    val conInsignia = item.ruta == Rutas.MIS_PEDIDOS || item.ruta == Rutas.BANDEJA
+                    BadgedBox(badge = {
+                        if (conInsignia && insignia > 0) Badge { Text(insignia.toString()) }
+                    }) {
+                        Icon(item.icono, contentDescription = item.etiqueta)
+                    }
+                },
                 label = { Text(item.etiqueta) },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = MaterialTheme.colorScheme.primary,
