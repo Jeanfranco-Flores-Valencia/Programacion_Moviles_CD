@@ -20,12 +20,8 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -134,24 +130,19 @@ fun NavLava() {
             ) {
                 composable(Rutas.SPLASH) {
                     val cargando by sesion.cargando.collectAsState()
-                    // El Splash no avanza solo: espera a que el usuario toque un boton
-                    var destino by remember { mutableStateOf<String?>(null) }
+                    // El Splash no avanza solo: navega solo cuando el usuario toca una opcion
                     SplashScreen(
-                        onComenzar = { destino = Rutas.REGISTRO },   // Mejora IA: primero se registra
-                        onTengoCuenta = { destino = Rutas.LOGIN }
-                    )
-                    LaunchedEffect(destino, cargando) {
-                        val elegido = destino ?: return@LaunchedEffect
-                        if (cargando) return@LaunchedEffect
-                        destino = null
-                        val guardado = Rol.desde(sesion.usuarioActual.value?.rol)
-                        if (guardado != null) {
-                            // Si ya hay perfil guardado salta el login y va directo a su pantalla principal
-                            irAGrafo(guardado)
-                        } else {
-                            nav.navigate(elegido) { launchSingleTop = true }
+                        // Mejora IA: "Comenzar" siempre lleva a crear la cuenta
+                        onComenzar = { nav.navigate(Rutas.REGISTRO) { launchSingleTop = true } },
+                        onTengoCuenta = {
+                            if (!cargando) {
+                                // Si ya hay perfil guardado salta el login y va directo a su pantalla principal
+                                val guardado = Rol.desde(sesion.usuarioActual.value?.rol)
+                                if (guardado != null) irAGrafo(guardado)
+                                else nav.navigate(Rutas.LOGIN) { launchSingleTop = true }
+                            }
                         }
-                    }
+                    )
                 }
                 // Mejora IA: registro -> login (el correo llega ya escrito)
                 composable(Rutas.REGISTRO) {

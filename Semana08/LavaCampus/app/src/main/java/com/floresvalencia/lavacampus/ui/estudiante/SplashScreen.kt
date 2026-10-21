@@ -1,27 +1,30 @@
 package com.floresvalencia.lavacampus.ui.estudiante
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.floresvalencia.lavacampus.ui.components.EstiloBoton
 import com.floresvalencia.lavacampus.ui.components.IconoServicio
 import com.floresvalencia.lavacampus.ui.components.LavaButton
 
 /**
  * Pantalla de bienvenida. No avanza sola: espera a que el usuario elija
- * "Comenzar" (crear cuenta) o "Ya tengo una cuenta" (iniciar sesion).
+ * "Comenzar" (crear cuenta) o "¿Ya tienes una cuenta? Inicia sesión" (login).
  */
 @Composable
 fun SplashScreen(
@@ -63,7 +66,17 @@ fun SplashScreen(
         Spacer(Modifier.weight(1f))
         LavaButton(texto = "Comenzar", onClick = onComenzar)
         Spacer(Modifier.height(10.dp))
-        LavaButton(texto = "Ya tengo una cuenta", onClick = onTengoCuenta, estilo = EstiloBoton.CONTORNO)
+        Text(
+            "¿Ya tienes una cuenta? Inicia sesión",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(onClick = onTengoCuenta)
+                .padding(vertical = 8.dp)
+        )
         Spacer(Modifier.height(12.dp))
         Text(
             "Tecsup · Lavandería universitaria",
