@@ -31,6 +31,9 @@ object Rutas {
     const val PEDIDOS_CLIENTE = "pedidos_cliente/{nombre}"
     const val AJUSTES = "ajustes"
 
+    // Grafo de soporte
+    const val GRAFO_SOPORTE = "grafo_soporte"
+
     fun nuevoPedido(repetir: Int = 0) = "nuevo_pedido?repetir=$repetir"
     fun detallePedido(id: Int) = "detalle_pedido/$id"
     fun gestionPedido(id: Int) = "gestion_pedido/$id"

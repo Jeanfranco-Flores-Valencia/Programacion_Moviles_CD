@@ -45,7 +45,8 @@ fun BandejaScreen(
     vm: BandejaViewModel,
     onGestionar: (Int) -> Unit,
     onAtras: (() -> Unit)? = null,
-    titulo: String = "Pedidos"
+    titulo: String = "Pedidos",
+    soloLectura: Boolean = false
 ) {
     val pedidos by vm.pedidos.collectAsState()
     val filtro by vm.filtro.collectAsState()
@@ -114,7 +115,8 @@ fun BandejaScreen(
                 TarjetaBandeja(
                     p = p,
                     atrasado = p.pedido.id in atrasados,
-                    onClick = { onGestionar(p.pedido.id) },
+                    soloLectura = soloLectura,
+                    onClick = { if (!soloLectura) onGestionar(p.pedido.id) },
                     onIniciar = { vm.iniciar(p) },
                     onMarcarListo = { onGestionar(p.pedido.id) },
                     onEntregar = { vm.entregar(p) }
@@ -128,6 +130,7 @@ fun BandejaScreen(
 private fun TarjetaBandeja(
     p: PedidoConDetalle,
     atrasado: Boolean,
+    soloLectura: Boolean,
     onClick: () -> Unit,
     onIniciar: () -> Unit,
     onMarcarListo: () -> Unit,
@@ -144,21 +147,23 @@ private fun TarjetaBandeja(
         borde = if (atrasado) MaterialTheme.colorScheme.error else null,
         onClick = onClick,
         pie = {
-            // Boton de accion segun el estado
-            val accion: Pair<String, () -> Unit>? = when (p.estado) {
-                EstadoPedido.RECIBIDO -> "Iniciar" to onIniciar
-                EstadoPedido.EN_PROCESO -> "Marcar listo" to onMarcarListo
-                EstadoPedido.LISTO -> "Entregar" to onEntregar
-                else -> null
-            }
-            if (accion != null) {
-                Button(
-                    onClick = accion.second,
-                    shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
-                    modifier = Modifier.height(32.dp)
-                ) {
-                    Text(accion.first, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+            if (!soloLectura) {
+                // Boton de accion segun el estado
+                val accion: Pair<String, () -> Unit>? = when (p.estado) {
+                    EstadoPedido.RECIBIDO -> "Iniciar" to onIniciar
+                    EstadoPedido.EN_PROCESO -> "Marcar listo" to onMarcarListo
+                    EstadoPedido.LISTO -> "Entregar" to onEntregar
+                    else -> null
+                }
+                if (accion != null) {
+                    Button(
+                        onClick = accion.second,
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text(accion.first, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

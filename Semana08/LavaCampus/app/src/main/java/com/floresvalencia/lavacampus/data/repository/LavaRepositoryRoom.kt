@@ -33,9 +33,24 @@ class LavaRepositoryRoom(private val db: LavaDatabase) : LavaRepository {
     override fun observarClientes(): Flow<List<ClienteResumen>> = usuarioDao.observarClientes()
 
     /** Mejora IA: el registro siempre crea un estudiante (rol CLIENTE). Las validaciones viven en el ViewModel. */
-    override suspend fun registrarEstudiante(nombre: String, codigo: String, correo: String, clave: String): Long =
+    override suspend fun registrarEstudiante(
+        nombre: String,
+        codigo: String,
+        correo: String,
+        clave: String,
+        telefono: String,
+        direccion: String
+    ): Long =
         usuarioDao.insertar(
-            Usuario(nombre = nombre, codigo = codigo, correo = correo, clave = clave, rol = Rol.CLIENTE.name)
+            Usuario(
+                nombre = nombre,
+                codigo = codigo,
+                correo = correo,
+                clave = clave,
+                rol = Rol.CLIENTE.name,
+                telefono = telefono,
+                direccion = direccion
+            )
         )
 
     override suspend fun correoRegistrado(correo: String): Boolean = usuarioDao.contarPorCorreo(correo) > 0

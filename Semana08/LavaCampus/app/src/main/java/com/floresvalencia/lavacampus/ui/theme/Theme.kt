@@ -8,12 +8,32 @@ import androidx.compose.runtime.Composable
 import com.floresvalencia.lavacampus.model.Rol
 
 private fun esquemaClaro(rol: Rol): ColorScheme = lightColorScheme(
-    primary = if (rol == Rol.ADMIN) Violeta else Turquesa,
+    primary = when (rol) {
+        Rol.ADMIN -> Violeta
+        Rol.SOPORTE -> Esmeralda
+        Rol.CLIENTE -> Turquesa
+    },
     onPrimary = Blanco,
-    primaryContainer = if (rol == Rol.ADMIN) VioletaContenedor else TurquesaContenedor,
-    onPrimaryContainer = if (rol == Rol.ADMIN) VioletaOscuroContenedor else TurquesaOscuroContenedor,
-    secondary = if (rol == Rol.ADMIN) Violeta else Turquesa,
-    background = if (rol == Rol.ADMIN) FondoAdministrador else FondoEstudiante,
+    primaryContainer = when (rol) {
+        Rol.ADMIN -> VioletaContenedor
+        Rol.SOPORTE -> EsmeraldaContenedor
+        Rol.CLIENTE -> TurquesaContenedor
+    },
+    onPrimaryContainer = when (rol) {
+        Rol.ADMIN -> VioletaOscuroContenedor
+        Rol.SOPORTE -> EsmeraldaOscuroContenedor
+        Rol.CLIENTE -> TurquesaOscuroContenedor
+    },
+    secondary = when (rol) {
+        Rol.ADMIN -> Violeta
+        Rol.SOPORTE -> Esmeralda
+        Rol.CLIENTE -> Turquesa
+    },
+    background = when (rol) {
+        Rol.ADMIN -> FondoAdministrador
+        Rol.SOPORTE -> FondoSoporte
+        Rol.CLIENTE -> FondoEstudiante
+    },
     onBackground = TextoPrincipal,
     surface = Blanco,
     onSurface = TextoPrincipal,
@@ -29,11 +49,31 @@ private fun esquemaClaro(rol: Rol): ColorScheme = lightColorScheme(
 )
 
 private fun esquemaOscuro(rol: Rol): ColorScheme = darkColorScheme(
-    primary = if (rol == Rol.ADMIN) VioletaClaro else TurquesaClaro,
-    onPrimary = if (rol == Rol.ADMIN) VioletaOscuroContenedor else TurquesaOscuroContenedor,
-    primaryContainer = if (rol == Rol.ADMIN) VioletaOscuroContenedor else TurquesaOscuroContenedor,
-    onPrimaryContainer = if (rol == Rol.ADMIN) VioletaContenedor else TurquesaContenedor,
-    secondary = if (rol == Rol.ADMIN) VioletaClaro else TurquesaClaro,
+    primary = when (rol) {
+        Rol.ADMIN -> VioletaClaro
+        Rol.SOPORTE -> EsmeraldaClaro
+        Rol.CLIENTE -> TurquesaClaro
+    },
+    onPrimary = when (rol) {
+        Rol.ADMIN -> VioletaOscuroContenedor
+        Rol.SOPORTE -> EsmeraldaOscuroContenedor
+        Rol.CLIENTE -> TurquesaOscuroContenedor
+    },
+    primaryContainer = when (rol) {
+        Rol.ADMIN -> VioletaOscuroContenedor
+        Rol.SOPORTE -> EsmeraldaOscuroContenedor
+        Rol.CLIENTE -> TurquesaOscuroContenedor
+    },
+    onPrimaryContainer = when (rol) {
+        Rol.ADMIN -> VioletaContenedor
+        Rol.SOPORTE -> EsmeraldaContenedor
+        Rol.CLIENTE -> TurquesaContenedor
+    },
+    secondary = when (rol) {
+        Rol.ADMIN -> VioletaClaro
+        Rol.SOPORTE -> EsmeraldaClaro
+        Rol.CLIENTE -> TurquesaClaro
+    },
     background = FondoOscuro,
     onBackground = TextoOscuro,
     surface = SuperficieOscura,
@@ -51,7 +91,7 @@ private fun esquemaOscuro(rol: Rol): ColorScheme = darkColorScheme(
 
 /**
  * Tema de LavaCampus. Entrega un ColorScheme segun el perfil:
- * turquesa para el estudiante y violeta para el administrador.
+ * turquesa para el estudiante, violeta para el administrador y esmeralda para soporte.
  * En las pantallas usa MaterialTheme.colorScheme.primary, nunca un color fijo.
  */
 @Composable

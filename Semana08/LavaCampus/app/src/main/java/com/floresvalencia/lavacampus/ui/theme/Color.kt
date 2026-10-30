@@ -16,6 +16,13 @@ val VioletaOscuroContenedor = Color(0xFF4C1D95)
 val VioletaClaro = Color(0xFFC4B5FD)
 val FondoAdministrador = Color(0xFFFAF8FF)
 
+// Soporte (esmeralda)
+val Esmeralda = Color(0xFF059669)
+val EsmeraldaContenedor = Color(0xFFD1FAE5)
+val EsmeraldaOscuroContenedor = Color(0xFF065F46)
+val EsmeraldaClaro = Color(0xFF34D399)
+val FondoSoporte = Color(0xFFF0FDF4)
+
 // Neutros
 val Blanco = Color(0xFFFFFFFF)
 val TextoPrincipal = Color(0xFF0F172A)

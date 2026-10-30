@@ -90,6 +90,13 @@ private val itemsAdmin = listOf(
     ItemBarra(Rutas.AJUSTES, "Ajustes", Icons.Outlined.Settings)
 )
 
+/** 3 items para soporte. */
+private val itemsSoporte = listOf(
+    ItemBarra(Rutas.BANDEJA, "Pedidos", Icons.AutoMirrored.Filled.List),
+    ItemBarra(Rutas.CLIENTES, "Clientes", Icons.Outlined.Group),
+    ItemBarra(Rutas.AJUSTES, "Ajustes", Icons.Outlined.Settings)
+)
+
 @Composable
 fun NavLava() {
     val app = LocalContext.current.applicationContext as LavaApp
@@ -110,6 +117,7 @@ fun NavLava() {
         val ruta = when (destino) {
             Rol.ADMIN -> Rutas.GRAFO_ADMIN
             Rol.CLIENTE -> Rutas.GRAFO_ESTUDIANTE
+            Rol.SOPORTE -> Rutas.GRAFO_SOPORTE
             null -> Rutas.LOGIN
         }
         nav.navigate(ruta) {
@@ -302,6 +310,40 @@ fun NavLava() {
                         )
                     }
                 }
+
+                // ---------------- Grafo de soporte ----------------
+                navigation(startDestination = Rutas.BANDEJA, route = Rutas.GRAFO_SOPORTE) {
+                    composable(Rutas.BANDEJA) {
+                        val vm = lavaViewModel { BandejaViewModel(app.repo) }
+                        BandejaScreen(vm = vm, onGestionar = {}, soloLectura = true)
+                    }
+                    composable(Rutas.CLIENTES) {
+                        val vm = lavaViewModel { ClientesViewModel(app.repo) }
+                        ClientesScreen(vm = vm, onCliente = { nav.navigate(Rutas.pedidosCliente(it)) }, soloLectura = true)
+                    }
+                    composable(
+                        Rutas.PEDIDOS_CLIENTE,
+                        arguments = listOf(navArgument("nombre") { type = NavType.StringType })
+                    ) { entry ->
+                        val nombre = entry.arguments?.getString("nombre").orEmpty()
+                        val vm = lavaViewModel { BandejaViewModel(app.repo, nombre) }
+                        BandejaScreen(
+                            vm = vm,
+                            onGestionar = {},
+                            onAtras = { nav.popBackStack() },
+                            titulo = "Pedidos de $nombre",
+                            soloLectura = true
+                        )
+                    }
+                    composable(Rutas.AJUSTES) {
+                        AjustesScreen(
+                            sesion = sesion,
+                            onPerfilCambiado = { irAGrafo(it) },
+                            onSesionCerrada = { irAGrafo(null) },
+                            soloLectura = true
+                        )
+                    }
+                }
             }
         }
     }
@@ -316,7 +358,7 @@ private fun irATab(nav: NavHostController, ruta: String, inicioGrafo: String) {
     }
 }
 
-/** NavigationBar: 4 items para el estudiante y 5 para el administrador. Solo en las pantallas principales. */
+/** NavigationBar: items para estudiante, administrador y soporte. Solo en las pantallas principales. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BarraInferior(rutaActual: String?, nav: NavHostController, insignia: Int) {
@@ -324,6 +366,7 @@ private fun BarraInferior(rutaActual: String?, nav: NavHostController, insignia:
     val items = when {
         itemsEstudiante.any { it.ruta == ruta } -> itemsEstudiante
         itemsAdmin.any { it.ruta == ruta } -> itemsAdmin
+        itemsSoporte.any { it.ruta == ruta } -> itemsSoporte
         else -> return
     }
     NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {

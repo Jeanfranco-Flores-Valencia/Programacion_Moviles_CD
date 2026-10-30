@@ -15,7 +15,7 @@ import com.floresvalencia.lavacampus.data.local.entity.Usuario
 
 @Database(
     entities = [Servicio::class, Usuario::class, Pedido::class, DetallePedido::class],
-    version = 2,   // Mejora IA: Pedido tiene la columna descuento
+    version = 3,   // Actualizado: teléfono, dirección y rol soporte en Usuario
     exportSchema = false
 )
 abstract class LavaDatabase : RoomDatabase() {

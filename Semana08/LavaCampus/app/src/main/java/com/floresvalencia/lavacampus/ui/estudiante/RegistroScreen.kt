@@ -14,8 +14,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,6 +58,8 @@ fun RegistroScreen(
     var nombre by rememberSaveable { mutableStateOf("") }
     var codigo by rememberSaveable { mutableStateOf("") }
     var correo by rememberSaveable { mutableStateOf("") }
+    var telefono by rememberSaveable { mutableStateOf("") }
+    var direccion by rememberSaveable { mutableStateOf("") }
     var clave by rememberSaveable { mutableStateOf("") }
     var confirmar by rememberSaveable { mutableStateOf("") }
 
@@ -117,6 +121,27 @@ fun RegistroScreen(
             )
             Spacer(Modifier.height(8.dp))
             LavaTextField(
+                valor = telefono,
+                onCambio = { telefono = it.trim().take(9); vm.limpiarCampo(CampoRegistro.TELEFONO) },
+                etiqueta = "Teléfono",
+                placeholder = "987654321",
+                icono = Icons.Outlined.Phone,
+                teclado = KeyboardType.Phone,
+                mensajeError = errores.telefono,
+                imeAction = ImeAction.Next
+            )
+            Spacer(Modifier.height(8.dp))
+            LavaTextField(
+                valor = direccion,
+                onCambio = { direccion = it; vm.limpiarCampo(CampoRegistro.DIRECCION) },
+                etiqueta = "Dirección",
+                placeholder = "Av. Universitaria 1801",
+                icono = Icons.Outlined.Home,
+                mensajeError = errores.direccion,
+                imeAction = ImeAction.Next
+            )
+            Spacer(Modifier.height(8.dp))
+            LavaTextField(
                 valor = clave,
                 onCambio = { clave = it; vm.limpiarCampo(CampoRegistro.CLAVE) },
                 etiqueta = "Contraseña (mínimo 6, letras y números)",
@@ -134,12 +159,12 @@ fun RegistroScreen(
                 esClave = true,
                 mensajeError = errores.confirmar,
                 imeAction = ImeAction.Done,
-                onAccion = { vm.registrar(nombre, codigo, correo, clave, confirmar) }
+                onAccion = { vm.registrar(nombre, codigo, correo, clave, confirmar, telefono, direccion) }
             )
             Spacer(Modifier.height(20.dp))
             LavaButton(
                 texto = if (registrando) "Creando cuenta..." else "Crear cuenta",
-                onClick = { vm.registrar(nombre, codigo, correo, clave, confirmar) },
+                onClick = { vm.registrar(nombre, codigo, correo, clave, confirmar, telefono, direccion) },
                 enabled = !registrando
             )
             Spacer(Modifier.height(12.dp))

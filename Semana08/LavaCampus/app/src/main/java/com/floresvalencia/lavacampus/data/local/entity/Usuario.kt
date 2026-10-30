@@ -11,8 +11,10 @@ import androidx.room.PrimaryKey
 data class Usuario(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val nombre: String,
-    val codigo: String,        // codigo de estudiante (ej. U202310234); vacio para el administrador
+    val codigo: String,        // codigo de estudiante (ej. U202310234); vacio para el administrador y soporte
     val correo: String,
     val clave: String,
-    val rol: String            // Rol.name: CLIENTE | ADMIN
+    val rol: String,           // Rol.name: CLIENTE | ADMIN | SOPORTE
+    val telefono: String = "",
+    val direccion: String = ""
 )

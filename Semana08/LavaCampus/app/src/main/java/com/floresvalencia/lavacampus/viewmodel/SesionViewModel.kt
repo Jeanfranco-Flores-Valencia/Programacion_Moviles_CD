@@ -18,9 +18,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 /** Campos del formulario de registro (para limpiar el error de cada uno). */
-enum class CampoRegistro { NOMBRE, CODIGO, CORREO, CLAVE, CONFIRMAR }
+enum class CampoRegistro { NOMBRE, CODIGO, CORREO, CLAVE, CONFIRMAR, TELEFONO, DIRECCION }
 
 /** Error de cada campo del registro (null = correcto). */
 data class ErroresRegistro(
@@ -28,10 +29,12 @@ data class ErroresRegistro(
     val codigo: String? = null,
     val correo: String? = null,
     val clave: String? = null,
-    val confirmar: String? = null
+    val confirmar: String? = null,
+    val telefono: String? = null,
+    val direccion: String? = null
 ) {
     val hayErrores: Boolean
-        get() = listOf(nombre, codigo, correo, clave, confirmar).any { it != null }
+        get() = listOf(nombre, codigo, correo, clave, confirmar, telefono, direccion).any { it != null }
 }
 
 /**
@@ -62,7 +65,7 @@ class SesionViewModel(
 
     /**
      * Mejora IA: numero que se muestra como insignia en "Pedidos" de la barra inferior.
-     * Estudiante: sus pedidos activos. Administrador: pedidos RECIBIDOS por atender.
+     * Estudiante: sus pedidos activos. Administrador: pedidos RECIBIDOS por atender. Soporte: pedidos atrasados.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     val insigniaPedidos: StateFlow<Int> = _usuarioActual
@@ -70,6 +73,7 @@ class SesionViewModel(
             when {
                 u == null -> flowOf(0)
                 u.rol == Rol.ADMIN.name -> repo.observarCantidadPorEstado(EstadoPedido.RECIBIDO)
+                u.rol == Rol.SOPORTE.name -> repo.observarPedidosAtrasados(LocalDate.now().toString()).map { it.size }
                 else -> repo.observarPedidosDeUsuario(u.id)
                     .map { lista -> lista.count { EstadoPedido.desde(it.pedido.estado).esActivo } }
             }
@@ -106,14 +110,18 @@ class SesionViewModel(
         _cargando.value = false
     }
 
-    fun login(correo: String, clave: String, rolSeleccionado: Rol) {
+    fun login(correo: String, clave: String, confirmar: String, rolSeleccionado: Rol) {
         val correoLimpio = correo.trim().lowercase()
-        if (correoLimpio.isEmpty() || clave.isEmpty()) {
-            _error.value = "Completa el correo y la contraseña"
+        if (correoLimpio.isEmpty() || clave.isEmpty() || (rolSeleccionado.pideConfirmacion && confirmar.isEmpty())) {
+            _error.value = "Completa todos los campos"
             return
         }
         if (!REGEX_CORREO.matches(correoLimpio)) {
             _error.value = "Ingresa un correo válido"
+            return
+        }
+        if (rolSeleccionado.pideConfirmacion && clave != confirmar) {
+            _error.value = "Las contraseñas no coinciden"
             return
         }
         viewModelScope.launch {
@@ -122,11 +130,14 @@ class SesionViewModel(
                 usuario == null ->
                     _error.value = "Correo o contraseña incorrectos"
 
-                usuario.rol != rolSeleccionado.name ->
-                    _error.value = if (rolSeleccionado == Rol.ADMIN)
-                        "Esta cuenta no es de administrador. Usa la pestaña Estudiante"
-                    else
-                        "Esta cuenta es de administrador. Usa la pestaña Administrador"
+                usuario.rol != rolSeleccionado.name -> {
+                    val rolReal = Rol.desde(usuario.rol)
+                    _error.value = if (rolReal != null) {
+                        "Esta cuenta es de ${rolReal.etiqueta}. Usa la pestaña ${rolReal.etiqueta}"
+                    } else {
+                        "Esta cuenta no corresponde a este rol"
+                    }
+                }
 
                 else -> {
                     prefs.guardarSesion(usuario.rol, usuario.id)
@@ -146,11 +157,14 @@ class SesionViewModel(
      * Registro de un estudiante. Valida cada campo; si todo esta bien, crea la cuenta
      * y la vista lleva al login para que ingrese con sus datos.
      */
-    fun registrar(nombre: String, codigo: String, correo: String, clave: String, confirmar: String) {
+    fun registrar(nombre: String, codigo: String, correo: String, clave: String, confirmar: String, telefono: String, direccion: String) {
         if (_registrando.value) return
         val n = nombre.trim().replace(Regex("\\s+"), " ")
         val c = codigo.trim().uppercase()
         val e = correo.trim().lowercase()
+        val t = telefono.trim()
+        val d = direccion.trim()
+        val regexTelefono = Regex("^9\\d{8}$")
 
         val errores = ErroresRegistro(
             nombre = when {
@@ -181,6 +195,16 @@ class SesionViewModel(
                 confirmar.isEmpty() -> "Repite la contraseña"
                 confirmar != clave -> "Las contraseñas no coinciden"
                 else -> null
+            },
+            telefono = when {
+                t.isEmpty() -> "Ingresa tu número de celular"
+                !regexTelefono.matches(t) -> "Ingresa un celular de 9 dígitos que empiece con 9"
+                else -> null
+            },
+            direccion = when {
+                d.isEmpty() -> "Ingresa tu dirección"
+                d.length < 5 || d.replace(Regex("\\s+"), "").length < 5 -> "Ingresa una dirección válida"
+                else -> null
             }
         )
         _erroresRegistro.value = errores
@@ -198,7 +222,7 @@ class SesionViewModel(
                     )
                     return@launch
                 }
-                repo.registrarEstudiante(nombre = n, codigo = c, correo = e, clave = clave)
+                repo.registrarEstudiante(nombre = n, codigo = c, correo = e, clave = clave, telefono = t, direccion = d)
                 _correoRegistrado.value = e
                 _registroOk.value = true
             } catch (ex: Exception) {
@@ -218,6 +242,8 @@ class SesionViewModel(
             CampoRegistro.CORREO -> actual.copy(correo = null)
             CampoRegistro.CLAVE -> actual.copy(clave = null)
             CampoRegistro.CONFIRMAR -> actual.copy(confirmar = null)
+            CampoRegistro.TELEFONO -> actual.copy(telefono = null)
+            CampoRegistro.DIRECCION -> actual.copy(direccion = null)
         }
     }
 
@@ -227,10 +253,12 @@ class SesionViewModel(
         _erroresRegistro.value = ErroresRegistro()
     }
 
-    /** Modo practica: guarda el otro perfil y avisa a la vista para que navegue a su grafo. */
+    /** Modo practica: pasa al siguiente rol del enum en ciclo y avisa a la vista para que navegue a su grafo. */
     fun cambiarPerfil(alCambiar: (Rol) -> Unit) {
         val actual = _usuarioActual.value ?: return
-        val otroRol = if (actual.rol == Rol.ADMIN.name) Rol.CLIENTE else Rol.ADMIN
+        val rolActual = Rol.desde(actual.rol) ?: Rol.CLIENTE
+        val entries = Rol.entries
+        val otroRol = entries[(entries.indexOf(rolActual) + 1) % entries.size]
         viewModelScope.launch {
             val otro = repo.primerUsuarioDeRol(otroRol)
             if (otro == null) {

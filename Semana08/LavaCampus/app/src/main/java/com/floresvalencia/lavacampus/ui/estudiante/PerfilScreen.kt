@@ -78,7 +78,7 @@ fun PerfilScreen(
                 Contador("${numeroTexto(stats.kilos)} kg", "Lavados", Modifier.weight(1f))
             }
             Spacer(Modifier.height(12.dp))
-            TarjetaCambiarPerfil("Modo práctica: ir a vista Administrador") {
+            TarjetaCambiarPerfil("Modo práctica: cambiar de perfil") {
                 sesion.cambiarPerfil(onPerfilCambiado)
             }
             Spacer(Modifier.height(18.dp))
@@ -129,6 +129,12 @@ internal fun TarjetaUsuario(usuario: Usuario, etiqueta: String) {
             Column {
                 Text(usuario.nombre, style = MaterialTheme.typography.titleMedium, color = colores.onSurface)
                 Text(usuario.correo, style = MaterialTheme.typography.bodySmall, color = colores.onSurfaceVariant)
+                if (usuario.telefono.isNotBlank()) {
+                    Text("Teléfono: ${usuario.telefono}", style = MaterialTheme.typography.bodySmall, color = colores.onSurfaceVariant)
+                }
+                if (usuario.direccion.isNotBlank()) {
+                    Text("Dirección: ${usuario.direccion}", style = MaterialTheme.typography.bodySmall, color = colores.onSurfaceVariant)
+                }
                 Spacer(Modifier.height(4.dp))
                 Text(
                     etiqueta,

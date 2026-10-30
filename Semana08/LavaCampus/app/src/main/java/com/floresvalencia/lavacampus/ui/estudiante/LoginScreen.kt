@@ -40,7 +40,7 @@ import com.floresvalencia.lavacampus.ui.components.LavaTextField
 import com.floresvalencia.lavacampus.ui.theme.LavaTheme
 import com.floresvalencia.lavacampus.viewmodel.SesionViewModel
 
-/** Un solo Composable para ambos roles: el color cambia segun la pestana elegida. */
+/** Un solo Composable para los roles: el color cambia segun la pestana elegida. */
 @Composable
 fun LoginScreen(
     vm: SesionViewModel,
@@ -55,6 +55,7 @@ fun LoginScreen(
     var rolElegido by rememberSaveable { mutableStateOf(Rol.CLIENTE) }
     var correo by rememberSaveable { mutableStateOf("") }
     var clave by rememberSaveable { mutableStateOf("") }
+    var confirmar by rememberSaveable { mutableStateOf("") }
 
     // Viene del registro: el correo ya aparece escrito en la pestana Estudiante
     LaunchedEffect(correoRegistrado) {
@@ -98,7 +99,7 @@ fun LoginScreen(
                 Spacer(Modifier.height(14.dp))
             }
 
-            // Selector Estudiante / Administrador
+            // Selector de pestañas (Estudiante, Administrador, Soporte)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -116,6 +117,7 @@ fun LoginScreen(
                             .background(if (elegido) colores.primary else colores.surfaceVariant)
                             .clickable {
                                 rolElegido = rol
+                                confirmar = ""
                                 vm.limpiarError()
                             }
                             .padding(vertical = 10.dp)
@@ -145,9 +147,27 @@ fun LoginScreen(
                 etiqueta = "Contraseña",
                 icono = Icons.Outlined.Lock,
                 esClave = true,
-                imeAction = ImeAction.Done,
-                onAccion = { vm.login(correo, clave, rolElegido) }
+                imeAction = if (rolElegido.pideConfirmacion) ImeAction.Next else ImeAction.Done,
+                onAccion = {
+                    if (!rolElegido.pideConfirmacion) {
+                        vm.login(correo, clave, confirmar, rolElegido)
+                    }
+                }
             )
+
+            if (rolElegido.pideConfirmacion) {
+                Spacer(Modifier.height(12.dp))
+                LavaTextField(
+                    valor = confirmar,
+                    onCambio = { confirmar = it; vm.limpiarError() },
+                    etiqueta = "Confirmar contraseña",
+                    icono = Icons.Outlined.Lock,
+                    esClave = true,
+                    imeAction = ImeAction.Done,
+                    onAccion = { vm.login(correo, clave, confirmar, rolElegido) }
+                )
+            }
+
             Text(
                 "¿Olvidaste tu contraseña?",
                 style = MaterialTheme.typography.labelMedium,
@@ -173,7 +193,7 @@ fun LoginScreen(
                 )
             }
             Spacer(Modifier.height(20.dp))
-            LavaButton(texto = "Ingresar", onClick = { vm.login(correo, clave, rolElegido) })
+            LavaButton(texto = "Ingresar", onClick = { vm.login(correo, clave, confirmar, rolElegido) })
             Spacer(Modifier.height(16.dp))
 
             if (rolElegido == Rol.CLIENTE) {
@@ -200,13 +220,16 @@ fun LoginScreen(
             ) {
                 Text("Modo práctica", style = MaterialTheme.typography.titleSmall, color = colores.onPrimaryContainer)
                 Text(
-                    if (rolElegido == Rol.CLIENTE) "Prueba con ana@correo.test / 1234"
-                    else "Prueba con admin@lavacampus.test / admin",
+                    when (rolElegido) {
+                        Rol.CLIENTE -> "Prueba con ana@correo.test / 1234"
+                        Rol.ADMIN -> "Prueba con admin@lavacampus.test / admin"
+                        Rol.SOPORTE -> "Prueba con soporte@lavacampus.test / soporte"
+                    },
                     style = MaterialTheme.typography.bodySmall,
                     color = colores.onPrimaryContainer
                 )
                 Text(
-                    "Puedes cambiar de perfil desde Perfil o Ajustes para probar ambos roles.",
+                    "Puedes cambiar de perfil desde Perfil o Ajustes para probar los roles.",
                     style = MaterialTheme.typography.bodySmall,
                     color = colores.onPrimaryContainer
                 )

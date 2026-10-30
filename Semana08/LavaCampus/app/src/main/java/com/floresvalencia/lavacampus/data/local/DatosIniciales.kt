@@ -27,10 +27,11 @@ object DatosIniciales {
     )
 
     private val usuarios = listOf(
-        Usuario(nombre = "Ana García", codigo = "U202310234", correo = "ana@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
-        Usuario(nombre = "Luis Ramos", codigo = "U202310877", correo = "luis@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
-        Usuario(nombre = "Marta Paredes", codigo = "U202410022", correo = "marta@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
-        Usuario(nombre = "Administración", codigo = "", correo = "admin@lavacampus.test", clave = "admin", rol = Rol.ADMIN.name)
+        Usuario(nombre = "Ana García", codigo = "U202310234", correo = "ana@correo.test", clave = "1234", rol = Rol.CLIENTE.name, telefono = "987654321", direccion = "Av. Universitaria 1801"),
+        Usuario(nombre = "Luis Ramos", codigo = "U202310877", correo = "luis@correo.test", clave = "1234", rol = Rol.CLIENTE.name, telefono = "912345678", direccion = "Jr. Los Pinos 456"),
+        Usuario(nombre = "Marta Paredes", codigo = "U202410022", correo = "marta@correo.test", clave = "1234", rol = Rol.CLIENTE.name, telefono = "998877665", direccion = "Calle Las Flores 789"),
+        Usuario(nombre = "Administración", codigo = "", correo = "admin@lavacampus.test", clave = "admin", rol = Rol.ADMIN.name, telefono = "900111222", direccion = "Campus Central Of. 101"),
+        Usuario(nombre = "Soporte LavaCampus", codigo = "", correo = "soporte@lavacampus.test", clave = "soporte", rol = Rol.SOPORTE.name, telefono = "900333444", direccion = "Centro de Soporte T-2")
     )
 
     /** Pedido de ejemplo: indice del estudiante (0 Ana, 1 Luis, 2 Marta), dias atras y lineas (servicio, cantidad). */

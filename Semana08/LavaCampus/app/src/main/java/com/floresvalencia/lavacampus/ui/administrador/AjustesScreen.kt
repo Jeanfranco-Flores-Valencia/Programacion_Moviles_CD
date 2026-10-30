@@ -31,7 +31,8 @@ import com.floresvalencia.lavacampus.viewmodel.SesionViewModel
 fun AjustesScreen(
     sesion: SesionViewModel,
     onPerfilCambiado: (Rol) -> Unit,
-    onSesionCerrada: () -> Unit
+    onSesionCerrada: () -> Unit,
+    soloLectura: Boolean = false
 ) {
     val usuario by sesion.usuarioActual.collectAsState()
     val oscuro by sesion.modoOscuro.collectAsState()
@@ -54,7 +55,7 @@ fun AjustesScreen(
         ) {
             usuario?.let { TarjetaUsuario(it, etiqueta = "Perfil activo") }
             Spacer(Modifier.height(12.dp))
-            TarjetaCambiarPerfil("Modo práctica: ir a vista Estudiante") {
+            TarjetaCambiarPerfil("Modo práctica: cambiar de perfil") {
                 sesion.cambiarPerfil(onPerfilCambiado)
             }
             Spacer(Modifier.height(18.dp))

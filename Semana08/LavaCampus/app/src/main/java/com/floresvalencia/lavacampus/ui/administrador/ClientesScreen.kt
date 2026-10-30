@@ -38,7 +38,11 @@ import com.floresvalencia.lavacampus.ui.estudiante.Tarjeta
 import com.floresvalencia.lavacampus.viewmodel.ClientesViewModel
 
 @Composable
-fun ClientesScreen(vm: ClientesViewModel, onCliente: (String) -> Unit = {}) {
+fun ClientesScreen(
+    vm: ClientesViewModel,
+    onCliente: (String) -> Unit = {},
+    soloLectura: Boolean = false
+) {
     val clientes by vm.clientes.collectAsState()
     val busqueda by vm.busqueda.collectAsState()
     val colores = MaterialTheme.colorScheme
