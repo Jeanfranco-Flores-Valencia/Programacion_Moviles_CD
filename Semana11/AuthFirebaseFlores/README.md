@@ -19,16 +19,32 @@ App en Kotlin + Jetpack Compose con inicio de sesión y registro usando **Fireba
 - La contraseña tiene un botón para ver u ocultar lo escrito.
 - Los errores de Firebase se muestran en español (credenciales incorrectas, correo ya registrado, sin internet).
 
+## Mejora con IA (rama `mejora-ia-authfirebase`)
+
+Rediseño de la interfaz con ambiente de **biblioteca** y los **colores de Tecsup** (azul marino y celeste). Detalle de los prompts en `PROMPTS.md`.
+
+- **Fondo animado:** estantes con libros dibujados con `Canvas`, luz celeste que "respira" e íconos de estudio flotando.
+- **Una sola tarjeta** con pestañas Iniciar sesión / Crear cuenta, subrayado que se desliza y formularios que cambian con animación.
+- **Campos con íconos**, ver u ocultar la contraseña y teclado con Siguiente / Listo.
+- **Errores dentro de la tarjeta** (la tarjeta se sacude) en lugar de Toast.
+- **Indicador de seguridad** de la contraseña y check cuando la confirmación coincide.
+- **¿Olvidaste tu contraseña?:** Firebase envía un enlace al correo.
+- **Bienvenida:** saludo según la hora, avatar con la inicial, consejo de estudio del día, espacio "Mis cursos" y confirmación al cerrar sesión.
+- **Transiciones** entre pantallas y tarjetas que aparecen en cascada.
+
 ## Archivos principales
 
 ```
 app/src/main/java/com/tecsup/authfirebaseflores/
 ├── MainActivity.kt      punto de entrada: tema y AuthApp()
-├── AuthApp.kt           NavHost con las rutas login, register y home
-├── LoginScreen.kt       signInWithEmailAndPassword
+├── AuthApp.kt           NavHost con las rutas login y home (con transiciones)
+├── AuthScreen.kt        tarjeta con pestañas Iniciar sesión / Crear cuenta
+├── LoginScreen.kt       signInWithEmailAndPassword y sendPasswordResetEmail
 ├── RegisterScreen.kt    createUserWithEmailAndPassword
 ├── HomeScreen.kt        currentUser.email y signOut()
-└── AuthComponentes.kt   CampoClave y mensajeDeError
+├── AuthComponentes.kt   campos, botón, avisos, indicador de clave y mensajeDeError
+├── Theme.kt             Paleta con los colores de Tecsup
+└── FondoEducativo.kt    fondo de biblioteca animado
 ```
 
 - `AndroidManifest.xml`: declara la app, la actividad principal y el permiso de internet.
@@ -53,11 +69,13 @@ app/src/main/java/com/tecsup/authfirebaseflores/
 
 | Prueba | Resultado esperado |
 |---|---|
-| Login con campos vacíos | "Complete todos los campos" |
+| Login con campos vacíos | "Complete todos los campos" y la tarjeta se sacude |
 | Login con contraseña incorrecta | "Correo o contraseña incorrectos" |
 | Registro con contraseñas distintas | "Las contraseñas no coinciden" |
 | Registro con menos de 6 caracteres | "Mínimo 6 caracteres" |
 | Registro con un correo ya usado | "Ese correo ya está registrado" |
-| Registro correcto | "Usuario creado", entra a la bienvenida y el usuario aparece en Firebase |
+| Registro correcto | Entra a la bienvenida y el usuario aparece en Firebase |
 | Cerrar y abrir la app con sesión | Abre directo la bienvenida |
-| Cerrar sesión | Vuelve al login |
+| Cerrar sesión | Pide confirmación y vuelve al login |
+| ¿Olvidaste tu contraseña? sin correo | Pide escribir el correo |
+| ¿Olvidaste tu contraseña? con correo | Aviso verde y llega el enlace al correo |
