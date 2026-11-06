@@ -1,5 +1,10 @@
 package com.tecsup.authfirebaseflores
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -26,7 +31,12 @@ fun AuthNavGraph(navController: NavHostController) {
 
     NavHost(
         navController = navController,
-        startDestination = inicio
+        startDestination = inicio,
+        // Mejora IA: transicion suave entre pantallas (aparece con un leve zoom, sale desvaneciendose)
+        enterTransition = { fadeIn(tween(450)) + scaleIn(tween(450), initialScale = 0.96f) },
+        exitTransition = { fadeOut(tween(250)) + scaleOut(tween(250), targetScale = 1.02f) },
+        popEnterTransition = { fadeIn(tween(450)) + scaleIn(tween(450), initialScale = 0.96f) },
+        popExitTransition = { fadeOut(tween(250)) + scaleOut(tween(250), targetScale = 1.02f) }
     ) {
         composable(Destinations.LOGIN) {
             AuthScreen(
