@@ -8,3 +8,6 @@ captures/
 .kotlin/
 local.properties
 .DS_Store
+
+# Contiene la clave de API del proyecto de Firebase: cada uno descarga el suyo
+app/google-services.json

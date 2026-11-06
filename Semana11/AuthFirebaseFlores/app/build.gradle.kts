@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    // Lee app/google-services.json y conecta la app con el proyecto de Firebase
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -39,6 +42,13 @@ android {
 }
 
 dependencies {
+    // Firebase: el BOM fija versiones compatibles entre si; Authentication sin version
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation("com.google.firebase:firebase-auth")
+
+    // Navigation Compose (NavHost, NavController, composable)
+    implementation("androidx.navigation:navigation-compose:2.8.2")
+
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
     implementation("androidx.activity:activity-compose:1.9.2")
