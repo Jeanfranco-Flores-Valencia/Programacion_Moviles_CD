@@ -41,7 +41,8 @@ import kotlin.math.roundToInt
 
 /**
  * Formulario de inicio de sesion con correo y contrasena (Firebase Authentication).
- * Mejora IA: vive dentro de la tarjeta de AuthScreen; los errores se muestran en la tarjeta.
+ * Mejora IA: vive dentro de la tarjeta de AuthScreen; los errores se muestran en la tarjeta
+ * y se puede pedir un enlace para recuperar la contrasena.
  */
 @Composable
 fun LoginScreen(
@@ -82,6 +83,25 @@ fun LoginScreen(
         }
     }
 
+    /** Mejora IA: Firebase envia al correo un enlace para crear una nueva contrasena. */
+    fun recuperarClave() {
+        foco.clearFocus()
+        val correo = email.trim()
+        if (!Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+            avisar(Aviso("Escribe tu correo arriba para enviarte el enlace"))
+            return
+        }
+        isLoading = true
+        auth.sendPasswordResetEmail(correo)
+            .addOnCompleteListener { task ->
+                isLoading = false
+                avisar(
+                    if (task.isSuccessful) Aviso("Si $correo tiene una cuenta, te llegará un enlace para cambiar tu contraseña", esError = false)
+                    else Aviso(mensajeDeError(task.exception))
+                )
+            }
+    }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
@@ -104,6 +124,13 @@ fun LoginScreen(
             imeAction = ImeAction.Done,
             onAccion = { ingresar() }
         )
+        TextButton(
+            onClick = { recuperarClave() },
+            enabled = !isLoading,
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            Text("¿Olvidaste tu contraseña?", color = Paleta.TextoSuave, style = MaterialTheme.typography.labelLarge)
+        }
 
         AnimatedVisibility(
             visible = aviso != null,
