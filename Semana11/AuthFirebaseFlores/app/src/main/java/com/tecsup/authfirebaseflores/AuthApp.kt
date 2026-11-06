@@ -8,8 +8,8 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 
 object Destinations {
+    // Mejora IA: el registro es una pestana dentro de la pantalla de login (AuthScreen)
     const val LOGIN = "login"
-    const val REGISTER = "register"
     const val HOME = "home"
 }
 
@@ -29,27 +29,11 @@ fun AuthNavGraph(navController: NavHostController) {
         startDestination = inicio
     ) {
         composable(Destinations.LOGIN) {
-            LoginScreen(
-                onNavigateToRegister = {
-                    navController.navigate(Destinations.REGISTER)
-                },
-                onLoginSuccess = {
+            AuthScreen(
+                onAutenticado = {
                     navController.navigate(Destinations.HOME) {
                         popUpTo(Destinations.LOGIN) { inclusive = true }
                     }
-                }
-            )
-        }
-
-        composable(Destinations.REGISTER) {
-            RegisterScreen(
-                onRegisterSuccess = {
-                    navController.navigate(Destinations.HOME) {
-                        popUpTo(Destinations.LOGIN) { inclusive = true }
-                    }
-                },
-                onNavigateBack = {
-                    navController.popBackStack()
                 }
             )
         }

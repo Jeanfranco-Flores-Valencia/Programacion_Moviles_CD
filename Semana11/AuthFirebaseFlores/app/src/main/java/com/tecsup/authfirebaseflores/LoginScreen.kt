@@ -1,135 +1,130 @@
 package com.tecsup.authfirebaseflores
 
-import android.widget.Toast
-import androidx.compose.foundation.layout.Box
+import android.util.Patterns
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.offset
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
-/** Pantalla de inicio de sesion con correo y contrasena (Firebase Authentication). */
+/**
+ * Formulario de inicio de sesion con correo y contrasena (Firebase Authentication).
+ * Mejora IA: vive dentro de la tarjeta de AuthScreen; los errores se muestran en la tarjeta.
+ */
 @Composable
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onLoginSuccess: () -> Unit
 ) {
     val auth = FirebaseAuth.getInstance()
-    val context = LocalContext.current
+    val foco = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+    val sacudida = remember { Animatable(0f) }
 
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
+    var aviso by remember { mutableStateOf<Aviso?>(null) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // ---------- TITULO SUPERIOR ----------
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Programación Móvil - Tecsup",
-                style = MaterialTheme.typography.titleLarge,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+    fun avisar(nuevo: Aviso) {
+        aviso = nuevo
+        if (nuevo.esError) scope.launch { sacudida.sacudir() }
+    }
 
-            // ---------- LOGO TECSUP ----------
-            Text(
-                text = "Tecsup",
-                color = Color(0xFF00A3E0),
-                fontSize = 40.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        // ---------- CONTENIDO PRINCIPAL ----------
-        Column(
-            modifier = Modifier.align(Alignment.Center),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Iniciar Sesión 🔐", style = MaterialTheme.typography.headlineMedium)
-            Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Correo electrónico") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            CampoClave(valor = password, onCambio = { password = it }, etiqueta = "Contraseña")
-
-            Spacer(Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    if (email.isBlank() || password.isBlank()) {
-                        Toast.makeText(context, "Complete todos los campos", Toast.LENGTH_SHORT).show()
-                        return@Button
+    fun ingresar() {
+        foco.clearFocus()
+        val correo = email.trim()
+        when {
+            correo.isBlank() || password.isBlank() -> avisar(Aviso("Complete todos los campos"))
+            !Patterns.EMAIL_ADDRESS.matcher(correo).matches() -> avisar(Aviso("El correo no tiene un formato válido"))
+            else -> {
+                isLoading = true
+                aviso = null
+                auth.signInWithEmailAndPassword(correo, password)
+                    .addOnCompleteListener { task ->
+                        isLoading = false
+                        if (task.isSuccessful) onLoginSuccess()
+                        else avisar(Aviso(mensajeDeError(task.exception)))
                     }
-                    isLoading = true
-                    auth.signInWithEmailAndPassword(email.trim(), password)
-                        .addOnCompleteListener { task ->
-                            isLoading = false
-                            if (task.isSuccessful) {
-                                Toast.makeText(context, "Inicio exitoso ✅", Toast.LENGTH_SHORT).show()
-                                onLoginSuccess()
-                            } else {
-                                Toast.makeText(context, mensajeDeError(task.exception), Toast.LENGTH_LONG).show()
-                            }
-                        }
-                },
-                enabled = !isLoading,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (isLoading) "Cargando..." else "Ingresar")
-            }
-
-            TextButton(onClick = onNavigateToRegister) {
-                Text("¿No tienes cuenta? Regístrate aquí")
             }
         }
+    }
 
-        // ---------- PIE DE PAGINA ----------
-        Text(
-            text = "Jeanfranco Flores - Tecsup",
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 8.dp),
-            textAlign = TextAlign.Center
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .offset { IntOffset(sacudida.value.roundToInt(), 0) }
+    ) {
+        CampoTexto(
+            valor = email,
+            onCambio = { email = it; aviso = null },
+            etiqueta = "Correo electrónico",
+            icono = Icons.Outlined.Email,
+            placeholder = "tu.nombre@tecsup.edu.pe",
+            teclado = KeyboardType.Email,
+            onAccion = { foco.moveFocus(FocusDirection.Down) }
         )
+        CampoClave(
+            valor = password,
+            onCambio = { password = it; aviso = null },
+            etiqueta = "Contraseña",
+            imeAction = ImeAction.Done,
+            onAccion = { ingresar() }
+        )
+
+        AnimatedVisibility(
+            visible = aviso != null,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            aviso?.let { MensajeAviso(it) }
+        }
+
+        Spacer(Modifier.height(4.dp))
+        BotonPrincipal(texto = "Ingresar", cargando = isLoading, onClick = { ingresar() })
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("¿No tienes cuenta?", style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSuave)
+            TextButton(onClick = onNavigateToRegister) {
+                Text("Regístrate aquí", color = Paleta.CelesteClaro, fontWeight = FontWeight.SemiBold)
+            }
+        }
     }
 }
