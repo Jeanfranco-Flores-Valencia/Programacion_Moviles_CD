@@ -1,8 +1,10 @@
 package com.tecsup.authfirebaseflores
 
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 
 /**
@@ -41,5 +43,9 @@ private val esquema = darkColorScheme(
 
 @Composable
 fun TemaEducativo(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = esquema, content = content)
+    MaterialTheme(colorScheme = esquema) {
+        // Sin un Surface, Compose pinta el texto en negro por defecto: aqui se fija el texto claro
+        // para toda la app, asi ningun Text ni Icon queda invisible sobre el fondo oscuro.
+        CompositionLocalProvider(LocalContentColor provides Paleta.Texto, content = content)
+    }
 }

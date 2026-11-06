@@ -102,8 +102,10 @@ fun AuthScreen(onAutenticado: () -> Unit) {
                             .widthIn(max = 440.dp)
                             .fillMaxWidth()
                             .tarjeta()
-                            .padding(24.dp)
+                            // Antes del padding: asi el recorte de la animacion incluye el margen
+                            // y el logo que flota no se corta por arriba
                             .animateContentSize()
+                            .padding(24.dp)
                     ) {
                         Encabezado()
                         Spacer(Modifier.height(24.dp))

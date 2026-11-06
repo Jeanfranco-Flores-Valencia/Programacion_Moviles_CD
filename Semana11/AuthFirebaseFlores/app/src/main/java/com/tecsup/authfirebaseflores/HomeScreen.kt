@@ -111,7 +111,7 @@ fun HomeScreen(
                     }
                     Column {
                         Text(saludo, style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSuave)
-                        Text("Bienvenido/a 🎉", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+                        Text("Bienvenido/a 🎉", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold, color = Paleta.Texto)
                     }
                 }
             }
@@ -132,7 +132,7 @@ fun HomeScreen(
                 ) {
                     Icon(Icons.Outlined.Lightbulb, contentDescription = null, tint = Paleta.Ambar, modifier = Modifier.size(28.dp))
                     Column {
-                        Text("Consejo de estudio del día", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text("Consejo de estudio del día", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = Paleta.Texto)
                         Text(consejo, style = MaterialTheme.typography.bodyMedium, color = Paleta.TextoSuave)
                     }
                 }
@@ -152,7 +152,7 @@ fun HomeScreen(
                         modifier = Modifier.size(28.dp)
                     )
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Mis cursos", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text("Mis cursos", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = Paleta.Texto)
                         Text(
                             "Muy pronto podrás registrar y organizar tus cursos aquí.",
                             style = MaterialTheme.typography.bodyMedium,
@@ -181,7 +181,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth().height(52.dp)
                 ) {
                     Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Text("  Cerrar sesión")
+                    Text("  Cerrar sesión", color = Paleta.Texto)
                 }
             }
         }
@@ -200,9 +200,11 @@ fun HomeScreen(
                 }) { Text("Cerrar sesión", color = Paleta.Error) }
             },
             dismissButton = {
-                TextButton(onClick = { confirmarSalida = false }) { Text("Cancelar") }
+                TextButton(onClick = { confirmarSalida = false }) { Text("Cancelar", color = Paleta.CelesteClaro) }
             },
-            containerColor = Paleta.Pizarra
+            containerColor = Paleta.Pizarra,
+            titleContentColor = Paleta.Texto,
+            textContentColor = Paleta.TextoSuave
         )
     }
 }
