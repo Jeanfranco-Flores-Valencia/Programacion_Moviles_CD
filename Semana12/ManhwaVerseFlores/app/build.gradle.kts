@@ -78,4 +78,8 @@ dependencies {
 
     // Portadas de los manhwas desde la URL de la API
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Mejora IA: pruebas unitarias del ViewModel (R12)
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
 }
