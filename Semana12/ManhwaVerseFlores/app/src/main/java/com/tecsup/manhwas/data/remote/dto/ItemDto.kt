@@ -1,43 +1,68 @@
 package com.tecsup.manhwas.data.remote.dto
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Lo que responde Jikan (API publica de MyAnimeList, sin clave).
- * La lista viene envuelta en { "data": [...] } y el detalle en { "data": {...} }.
+ * Lo que responde Kitsu (API publica, sin clave), en formato JSON:API:
+ * { "data": [ { "id": "54114", "attributes": {...}, "relationships": {...} } ], "included": [...] }
+ * Los generos vienen aparte en "included" y cada manhwa solo guarda sus ids.
  * Todos los campos tienen valor por defecto: si la API no manda uno, la app no se cae.
  */
 @Serializable
-data class RespuestaListaDto(val data: List<ItemDto> = emptyList())
+data class RespuestaListaDto(
+    val data: List<ItemDto> = emptyList(),
+    val included: List<IncluidoDto> = emptyList()
+)
 
 @Serializable
-data class RespuestaDetalleDto(val data: ItemDto)
+data class RespuestaDetalleDto(
+    val data: ItemDto,
+    val included: List<IncluidoDto> = emptyList()
+)
 
 @Serializable
 data class ItemDto(
-    @SerialName("mal_id") val id: Int,
-    val title: String = "",
-    @SerialName("title_english") val tituloIngles: String? = null,
-    val images: ImagenesDto? = null,
+    val id: String,                       // Kitsu manda el id como texto: "54114"
+    val attributes: AtributosDto = AtributosDto(),
+    val relationships: RelacionesDto? = null
+)
+
+@Serializable
+data class AtributosDto(
+    val canonicalTitle: String = "",
+    val titles: Map<String, String?> = emptyMap(),
     val synopsis: String? = null,
-    val score: Double? = null,
-    val chapters: Int? = null,
-    val status: String? = null,
-    val members: Int? = null,
-    val genres: List<NombreDto> = emptyList(),
-    val themes: List<NombreDto> = emptyList(),
-    val authors: List<NombreDto> = emptyList()
+    val averageRating: String? = null,    // "84.48" sobre 100
+    val chapterCount: Int? = null,
+    val status: String? = null,           // current, finished, hiatus...
+    val userCount: Int? = null,           // lectores: ordena la lista
+    val serialization: String? = null,    // donde se publica, ej. "KakaoPage"
+    val posterImage: PosterDto? = null
 )
 
 @Serializable
-data class ImagenesDto(val jpg: ImagenDto? = null)
-
-@Serializable
-data class ImagenDto(
-    @SerialName("image_url") val imageUrl: String? = null,
-    @SerialName("large_image_url") val largeImageUrl: String? = null
+data class PosterDto(
+    val small: String? = null,
+    val medium: String? = null,
+    val large: String? = null
 )
 
 @Serializable
-data class NombreDto(val name: String = "")
+data class RelacionesDto(val categories: RelacionDto? = null)
+
+@Serializable
+data class RelacionDto(val data: List<ReferenciaDto> = emptyList())
+
+@Serializable
+data class ReferenciaDto(val type: String = "", val id: String = "")
+
+/** Elemento de "included": aqui solo se piden las categorias (generos) con su titulo. */
+@Serializable
+data class IncluidoDto(
+    val type: String = "",
+    val id: String = "",
+    val attributes: AtributosIncluidoDto = AtributosIncluidoDto()
+)
+
+@Serializable
+data class AtributosIncluidoDto(val title: String? = null)

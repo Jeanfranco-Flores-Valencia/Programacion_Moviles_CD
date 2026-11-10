@@ -10,13 +10,15 @@ Catálogo de **manhwas** (cómics coreanos) de acción y fantasía: sistemas, ma
 
 | | Detalle |
 |---|---|
-| API | [Jikan v4](https://docs.api.jikan.moe/) (datos de MyAnimeList), pública y sin clave |
-| Lista | `GET manga?type=manhwa&genres=1,10&order_by=members&sort=desc&sfw=true&limit=25` (Acción + Fantasía, los más leídos) |
-| Detalle | `GET manga/{id}` |
+| API | [Kitsu](https://kitsu.docs.apiary.io/) (`https://kitsu.io/api/edge/`), pública y sin clave |
+| Lista | `GET manga?filter[subtype]=manhwa&filter[categories]=action,fantasy&sort=-userCount&page[limit]=20&include=categories` (Acción + Fantasía, los más leídos) |
+| Detalle | `GET manga/{id}?include=categories` |
 | Paquete | `com.tecsup.manhwas` |
 
 Para comprobar que la API responde, abrir en el navegador:
-https://api.jikan.moe/v4/manga?type=manhwa&genres=1,10&order_by=members&sort=desc&limit=5
+https://kitsu.io/api/edge/manga?filter[subtype]=manhwa&filter[categories]=action,fantasy&sort=-userCount&page[limit]=5
+
+Kitsu responde en formato JSON:API: los géneros vienen aparte en `included` y `Mappers.kt` los une con cada manhwa. El id llega como texto (`"54114"`) y se guarda como `Int`. El puntaje viene sobre 100 y se muestra sobre 10.
 
 ## Qué hace la app
 
@@ -36,7 +38,7 @@ https://api.jikan.moe/v4/manga?type=manhwa&genres=1,10&order_by=members&sort=des
 
 ```
 UI (Compose) --eventos--> ViewModel (StateFlow<UiState>) --> Repository (interface)
-     ^                          |                               |-- Retrofit (Jikan)
+     ^                          |                               |-- Retrofit (Kitsu)
      |-------- estado ----------|                               |-- Room (fuente única de verdad)
                                 |--> Notificador (interface)    |-- Firebase (Auth + Firestore: rol)
 ```
@@ -53,7 +55,7 @@ app/src/main/java/com/tecsup/manhwas/
 ├── ManhwaApp.kt              guarda el AppContainer
 ├── AppContainer.kt           crea API, base de datos y repositorios
 ├── data/
-│   ├── remote/               ApiService, RetrofitClient, dto/ItemDto
+│   ├── remote/               ApiService, RetrofitClient, dto/ItemDto (Kitsu)
 │   ├── local/                ItemEntity, ItemDao, AppDatabase
 │   ├── auth/                 AuthRepository, FirebaseAuthRepository
 │   ├── repository/           ItemRepository, ItemRepositoryImpl

@@ -14,7 +14,7 @@ data class ItemEntity(
     val capitulos: Int?,
     val estado: String,
     val sinopsis: String,
-    val autores: String,
-    val popularidad: Int,          // lectores en MyAnimeList: ordena la lista
+    val publicadoEn: String,
+    val popularidad: Int,          // lectores en Kitsu: ordena la lista
     val esFavorito: Boolean = false
 )

@@ -3,6 +3,7 @@ package com.tecsup.manhwas.data.repository
 import com.tecsup.manhwas.data.local.ItemDao
 import com.tecsup.manhwas.data.mapper.aEntity
 import com.tecsup.manhwas.data.mapper.aModelo
+import com.tecsup.manhwas.data.mapper.generos
 import com.tecsup.manhwas.data.remote.ApiService
 import com.tecsup.manhwas.domain.model.Item
 import kotlinx.coroutines.flow.Flow
@@ -23,7 +24,9 @@ class ItemRepositoryImpl(
     override suspend fun refrescar(): Result<Int> = try {
         // Si se inserta sin cuidado, el Upsert pone esFavorito = false y se pierden. Se conservan aqui:
         val favoritos = dao.idsFavoritos().toSet()
-        val nuevos = api.listar().data.map { it.aEntity(esFavorito = it.id in favoritos) }
+        val respuesta = api.listar()
+        val generos = respuesta.included.generos()
+        val nuevos = respuesta.data.map { it.aEntity(generos) }.map { it.copy(esFavorito = it.id in favoritos) }
         dao.guardarTodos(nuevos)
         Result.success(nuevos.size)
     } catch (e: IOException) {          // sin internet
@@ -41,7 +44,8 @@ class ItemRepositoryImpl(
     override suspend fun obtenerDetalle(id: Int): Result<Item> {
         val guardado = dao.obtener(id)
         return try {
-            val entidad = api.detalle(id).data.aEntity(esFavorito = guardado?.esFavorito ?: false)
+            val respuesta = api.detalle(id)
+            val entidad = respuesta.data.aEntity(respuesta.included.generos(), esFavorito = guardado?.esFavorito ?: false)
                 .let { if (guardado != null && it.popularidad == 0) it.copy(popularidad = guardado.popularidad) else it }
             dao.guardar(entidad)
             Result.success(entidad.aModelo())

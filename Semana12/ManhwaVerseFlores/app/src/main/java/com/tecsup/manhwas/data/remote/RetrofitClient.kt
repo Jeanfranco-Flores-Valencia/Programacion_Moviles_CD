@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
     // La baseUrl debe terminar en "/"
-    private const val BASE_URL = "https://api.jikan.moe/v4/"
+    private const val BASE_URL = "https://kitsu.io/api/edge/"
 
     private val json = Json {
         ignoreUnknownKeys = true   // la API manda muchos campos que no usamos

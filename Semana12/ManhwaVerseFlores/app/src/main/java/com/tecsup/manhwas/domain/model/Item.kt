@@ -13,6 +13,6 @@ data class Item(
     val capitulos: Int?,
     val estado: String,             // "En publicación", "Finalizado"...
     val sinopsis: String = "",
-    val autores: String = "",
+    val publicadoEn: String = "",       // plataforma donde se publica, ej. "KakaoPage"
     val esFavorito: Boolean = false
 )

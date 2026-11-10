@@ -105,8 +105,8 @@ private fun Contenido(item: Item) {
             )
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(item.titulo, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = Colores.Texto)
-                if (item.autores.isNotBlank()) {
-                    Text(item.autores, style = MaterialTheme.typography.bodySmall, color = Colores.TextoSuave)
+                if (item.publicadoEn.isNotBlank()) {
+                    Text("Publicado en ${item.publicadoEn}", style = MaterialTheme.typography.bodySmall, color = Colores.TextoSuave)
                 }
                 item.puntaje?.let {
                     Row(verticalAlignment = Alignment.CenterVertically) {
