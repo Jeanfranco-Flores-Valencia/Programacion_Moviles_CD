@@ -2,6 +2,9 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)   // JSON de la API -> DTO
+    alias(libs.plugins.ksp)                    // genera el codigo de Room
+    id("com.google.gms.google-services")       // lee app/google-services.json
 }
 
 android {
@@ -9,6 +12,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
+        // Debe coincidir con el paquete registrado en la consola de Firebase
         applicationId = "com.tecsup.manhwas"
         minSdk = 26
         targetSdk = 35
@@ -38,6 +42,7 @@ android {
 }
 
 dependencies {
+    // Compose
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-compose:1.9.2")
     implementation(platform("androidx.compose:compose-bom:2024.09.00"))
@@ -47,4 +52,30 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
     debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // Lifecycle y navegacion
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
+    implementation("androidx.navigation:navigation-compose:2.8.2")
+
+    // Retrofit + serializacion
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Room
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+
+    // Firebase: Auth para el ingreso y Firestore para el rol
+    implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
+
+    // Portadas de los manhwas desde la URL de la API
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }
