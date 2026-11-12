@@ -13,6 +13,7 @@ import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +42,7 @@ import com.tecsup.manhwas.ui.favoritos.FavoritosScreen
 import com.tecsup.manhwas.ui.lista.ListaScreen
 import com.tecsup.manhwas.ui.login.LoginScreen
 import com.tecsup.manhwas.ui.login.LoginViewModel
+import com.tecsup.manhwas.ui.theme.Colores
 
 object Rutas {
     const val LOGIN = "login"
@@ -93,7 +95,7 @@ fun AppNav(container: AppContainer) {
     // El rol decide que pestanas se ven: el panel solo para el administrador
     val pestanas = buildList {
         add(Pestana(Rutas.LISTA, "Catálogo", Icons.Outlined.AutoStories))
-        add(Pestana(Rutas.FAVORITOS, "Favoritos", Icons.Outlined.FavoriteBorder))
+        add(Pestana(Rutas.FAVORITOS, "Biblioteca", Icons.Outlined.FavoriteBorder))
         if (sesion?.rol == Rol.ADMIN) add(Pestana(Rutas.ADMIN, "Panel", Icons.Outlined.AdminPanelSettings))
     }
     val entrada by nav.currentBackStackEntryAsState()
@@ -104,13 +106,21 @@ fun AppNav(container: AppContainer) {
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (sesion != null && pestanas.any { it.ruta == rutaActual }) {
-                NavigationBar {
+                // Mejora IA: barra negra con la pestana activa en morado
+                NavigationBar(containerColor = Colores.Superficie) {
                     pestanas.forEach { p ->
                         NavigationBarItem(
                             selected = rutaActual == p.ruta,
                             onClick = { irAPestana(nav, p.ruta) },
                             icon = { Icon(p.icono, contentDescription = p.etiqueta) },
-                            label = { Text(p.etiqueta) }
+                            label = { Text(p.etiqueta) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = Colores.MoradoClaro,
+                                selectedTextColor = Colores.MoradoClaro,
+                                indicatorColor = Colores.Morado.copy(alpha = 0.22f),
+                                unselectedIconColor = Colores.TextoSuave,
+                                unselectedTextColor = Colores.TextoSuave
+                            )
                         )
                     }
                 }
@@ -133,7 +143,11 @@ fun AppNav(container: AppContainer) {
                 DetalleScreen(vm = viewModel(factory = ViewModelFactory(container, id)), onAtras = { nav.popBackStack() })
             }
             composable(Rutas.FAVORITOS) {
-                FavoritosScreen(vm = viewModel(factory = fabrica), onItem = { nav.navigate(Rutas.detalle(it)) })
+                FavoritosScreen(
+                    vm = viewModel(factory = fabrica),
+                    onItem = { nav.navigate(Rutas.detalle(it)) },
+                    onExplorar = { irAPestana(nav, Rutas.LISTA) }
+                )
             }
             composable(Rutas.ADMIN) {
                 // Doble control: aunque se llegue a la ruta, un usuario no ve el panel

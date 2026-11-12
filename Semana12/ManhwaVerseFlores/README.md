@@ -34,6 +34,16 @@ Kitsu responde en formato JSON:API: los géneros vienen aparte en `included` y `
 - Al sincronizar, los favoritos se conservan y llega la notificación «Se guardaron N elementos».
 - La sesión se mantiene al reabrir la app.
 
+## Mejora con IA (rama `mejora-ia-manhwaverse`)
+
+Detalle de las consultas en `PROMPTS.md`.
+
+- **Interfaz estilo web de lectura:** fondo negro, acentos morados, manhwa más leído destacado, portadas con puntaje, estado y capítulos, y esqueletos animados mientras carga.
+- **Búsqueda y filtros por género** en el catálogo (calculados en el `ListaViewModel`).
+- **Detalle** con la portada de fondo, chips de género y sinopsis con «Leer más».
+- **Componentes reutilizables** en `ui/components`: botones (`BotonPrimario`, `BotonSecundario`, `BotonPeligro`, `BotonIcono`), `Chip`, insignias, `Portada`, `CampoTexto`, `BarraBusqueda`, `Aviso`, `EncabezadoSeccion`, `TarjetaEstadistica`, `TarjetaManhwa` y `TarjetaDestacada`.
+- **Pruebas unitarias (R12):** `ListaViewModelTest` con un repositorio falso, 6 pruebas. Ejecutar con `./gradlew testDebugUnitTest`.
+
 ## Arquitectura MVVM
 
 ```
@@ -66,7 +76,7 @@ app/src/main/java/com/tecsup/manhwas/
     ├── navigation/AppNav.kt
     ├── UiState.kt, ViewModelFactory.kt, Mensajes.kt
     ├── login/ lista/ detalle/ favoritos/ admin/
-    ├── components/           Cargando, ErrorView, ItemCard
+    ├── components/           botones, chips, insignias, campos, tarjetas, Cargando, ErrorView
     └── theme/
 ```
 
