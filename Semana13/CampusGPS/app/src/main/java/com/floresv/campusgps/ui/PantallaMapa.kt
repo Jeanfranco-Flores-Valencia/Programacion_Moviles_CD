@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,6 +32,8 @@ import com.floresv.campusgps.viewmodel.MapaViewModel
 @Composable
 fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
+    val lugares by vm.lugares.collectAsState()
+    val seleccionado by vm.seleccionado.collectAsState()
     val contexto = LocalContext.current
 
     // Android dibuja el cuadro de permiso; la app solo recibe la respuesta
@@ -75,7 +78,13 @@ fun PantallaMapa(vm: MapaViewModel) {
                 }
                 is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
             }
-            // TODO Paso 3: MapaUbicacion con Modifier.weight(1f)
+            // El mapa ocupa el espacio libre
+            MapaUbicacion(
+                estado = estado,
+                lugares = lugares,
+                seleccionado = seleccionado,
+                modifier = Modifier.fillMaxWidth().weight(1f)
+            )
         }
     }
 }
