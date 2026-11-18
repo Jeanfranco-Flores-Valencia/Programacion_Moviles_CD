@@ -5,14 +5,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.floresv.campusgps.data.LugaresRepository
 import com.floresv.campusgps.data.UbicacionRepository
+import com.floresv.campusgps.model.Lugar
 import com.floresv.campusgps.model.LugarConDistancia
 import com.floresv.campusgps.model.Posicion
 import com.floresv.campusgps.model.UbicacionUi
 import com.floresv.campusgps.util.distanciaMetros
 import com.floresv.campusgps.util.formatearDistancia
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MapaViewModel(
@@ -60,7 +64,10 @@ class MapaViewModel(
     fun seleccionar(id: Int?) {
         _seleccionado.value = id
     }
-    // TODO Paso 7: val masCercano: StateFlow<Lugar?>
+    /** El primero de la lista con distancia calculada (la lista ya esta ordenada). Null antes de buscar. */
+    val masCercano: StateFlow<Lugar?> = lugares
+        .map { lista -> lista.firstOrNull { it.metros != null }?.lugar }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     private fun mensajeDe(e: Throwable): String = when (e) {
         is SecurityException -> "Falta el permiso de ubicación"
