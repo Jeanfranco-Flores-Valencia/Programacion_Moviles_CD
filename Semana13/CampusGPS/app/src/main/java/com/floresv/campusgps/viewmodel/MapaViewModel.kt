@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -71,8 +72,30 @@ class MapaViewModel(
     fun seleccionar(id: Int?) {
         _seleccionado.value = id
     }
-    /** El primero de la lista con distancia calculada (la lista ya esta ordenada). Null antes de buscar. */
-    val masCercano: StateFlow<Lugar?> = lugares
+    // ---------- Mejora IA: filtro por categoria ----------
+    /** Categorias para los chips (Estudio, Comida, Eventos, Servicios), en el orden del repositorio. */
+    val categorias: List<String> = lugaresRepo.obtenerLugares().map { it.categoria }.distinct()
+
+    /** Categoria elegida; null = todas. */
+    private val _categoria = MutableStateFlow<String?>(null)
+    val categoria: StateFlow<String?> = _categoria.asStateFlow()
+
+    /** Lo que se ve en el mapa y en la lista: los lugares de la categoria elegida, ya ordenados. */
+    val visibles: StateFlow<List<LugarConDistancia>> = combine(_lugares, _categoria, ::filtrar)
+        .stateIn(viewModelScope, SharingStarted.Eagerly, _lugares.value)
+
+    private fun filtrar(lista: List<LugarConDistancia>, cat: String?) =
+        if (cat == null) lista else lista.filter { it.lugar.categoria == cat }
+
+    /** Tocar la categoria ya elegida la quita (vuelve a Todas). */
+    fun elegirCategoria(nueva: String?) {
+        _categoria.value = if (_categoria.value == nueva) null else nueva
+        // Si el lugar seleccionado queda oculto, se deselecciona
+        if (filtrar(_lugares.value, _categoria.value).none { it.lugar.id == _seleccionado.value }) _seleccionado.value = null
+    }
+
+    /** El primero visible con distancia calculada (la lista ya esta ordenada). Null antes de buscar. */
+    val masCercano: StateFlow<Lugar?> = visibles
         .map { lista -> lista.firstOrNull { it.metros != null }?.lugar }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 

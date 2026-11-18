@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.floresv.campusgps.model.UbicacionUi
 import com.floresv.campusgps.ui.components.BarraSuperior
+import com.floresv.campusgps.ui.components.ChipsCategorias
 import com.floresv.campusgps.ui.components.TarjetaMasCercano
 import com.floresv.campusgps.viewmodel.MapaViewModel
 
@@ -60,7 +61,8 @@ private fun tienePermiso(contexto: Context) =
 @Composable
 fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
-    val lugares by vm.lugares.collectAsState()
+    val lugares by vm.visibles.collectAsState()
+    val categoria by vm.categoria.collectAsState()
     val seleccionado by vm.seleccionado.collectAsState()
     val masCercano by vm.masCercano.collectAsState()
     val contexto = LocalContext.current
@@ -93,7 +95,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Text("Lugares del campus", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    Text(categoria ?: "Lugares del campus", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                     Text("${lugares.size} lugares", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 ListaLugares(
@@ -113,7 +115,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 masCercanoId = masCercano?.id,
                 permisoConcedido = permisoConcedido,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(top = 96.dp, bottom = padding.calculateBottomPadding())
+                contentPadding = PaddingValues(top = 140.dp, bottom = padding.calculateBottomPadding())
             )
 
             Column(
@@ -121,6 +123,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 modifier = Modifier.statusBarsPadding().padding(12.dp)
             ) {
                 BarraSuperior(estado)
+                ChipsCategorias(categorias = vm.categorias, elegida = categoria, onElegir = vm::elegirCategoria)
                 (estado as? UbicacionUi.Error)?.let { error ->
                     MensajeError(
                         error = error,
