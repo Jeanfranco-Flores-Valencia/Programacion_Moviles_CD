@@ -44,6 +44,7 @@ import androidx.core.content.ContextCompat
 import com.floresv.campusgps.model.UbicacionUi
 import com.floresv.campusgps.ui.components.BarraSuperior
 import com.floresv.campusgps.ui.components.ChipsCategorias
+import com.floresv.campusgps.ui.components.SelectorRadio
 import com.floresv.campusgps.ui.components.TarjetaMasCercano
 import com.floresv.campusgps.viewmodel.MapaViewModel
 
@@ -63,6 +64,8 @@ fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
     val lugares by vm.visibles.collectAsState()
     val categoria by vm.categoria.collectAsState()
+    val radio by vm.radio.collectAsState()
+    val dentroDelRadio by vm.dentroDelRadio.collectAsState()
     val seleccionado by vm.seleccionado.collectAsState()
     val masCercano by vm.masCercano.collectAsState()
     val contexto = LocalContext.current
@@ -94,6 +97,14 @@ fun PantallaMapa(vm: MapaViewModel) {
                     onIr = { masCercano?.let { vm.seleccionar(it.id) } },
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
+                SelectorRadio(
+                    opciones = vm.opcionesRadio,
+                    elegido = radio,
+                    dentro = dentroDelRadio.size,
+                    habilitado = estado is UbicacionUi.Lista,
+                    onElegir = vm::elegirRadio,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp)) {
                     Text(categoria ?: "Lugares del campus", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                     Text("${lugares.size} lugares", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -102,6 +113,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                     lugares = lugares,
                     seleccionado = seleccionado,
                     onClick = vm::seleccionar,
+                    dentroDelRadio = dentroDelRadio,
                     modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp)
                 )
             }
@@ -114,6 +126,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 seleccionado = seleccionado,
                 masCercanoId = masCercano?.id,
                 permisoConcedido = permisoConcedido,
+                radio = radio,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(top = 140.dp, bottom = padding.calculateBottomPadding())
             )

@@ -94,6 +94,24 @@ class MapaViewModel(
         if (filtrar(_lugares.value, _categoria.value).none { it.lugar.id == _seleccionado.value }) _seleccionado.value = null
     }
 
+    // ---------- Mejora IA: radio de cercania ----------
+    val opcionesRadio = listOf(100, 200, 500)
+
+    /** Radio elegido en metros; null = sin radio. */
+    private val _radio = MutableStateFlow<Int?>(null)
+    val radio: StateFlow<Int?> = _radio.asStateFlow()
+
+    /** Ids de los lugares que quedan dentro del radio (se recalcula al buscar o al cambiar el radio). */
+    val dentroDelRadio: StateFlow<Set<Int>> = combine(_lugares, _radio) { lista, r ->
+        if (r == null) emptySet()
+        else lista.filter { it.metros != null && it.metros <= r }.map { it.lugar.id }.toSet()
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptySet())
+
+    /** Tocar el radio ya elegido lo quita. */
+    fun elegirRadio(metros: Int) {
+        _radio.value = if (_radio.value == metros) null else metros
+    }
+
     /** El primero visible con distancia calculada (la lista ya esta ordenada). Null antes de buscar. */
     val masCercano: StateFlow<Lugar?> = visibles
         .map { lista -> lista.firstOrNull { it.metros != null }?.lugar }

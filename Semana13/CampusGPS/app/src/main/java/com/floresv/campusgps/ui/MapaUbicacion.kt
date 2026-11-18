@@ -5,12 +5,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.floresv.campusgps.model.LugarConDistancia
 import com.floresv.campusgps.model.UbicacionUi
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.Circle
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapUiSettings
@@ -26,6 +28,7 @@ fun MapaUbicacion(
     seleccionado: Int?,
     masCercanoId: Int?,
     permisoConcedido: Boolean,
+    radio: Int? = null,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues()
 ) {
@@ -57,6 +60,16 @@ fun MapaUbicacion(
         uiSettings = MapUiSettings(myLocationButtonEnabled = false, zoomControlsEnabled = false, mapToolbarEnabled = false)
     ) {
         if (estado is UbicacionUi.Lista) {
+            // Mejora IA: circulo del radio de cercania alrededor de tu posicion
+            radio?.let {
+                Circle(
+                    center = LatLng(estado.posicion.latitud, estado.posicion.longitud),
+                    radius = it.toDouble(),
+                    fillColor = Color(0x332E7D32),
+                    strokeColor = Color(0xFF2E7D32),
+                    strokeWidth = 3f
+                )
+            }
             Marker(
                 state = rememberUpdatedMarkerState(position = LatLng(estado.posicion.latitud, estado.posicion.longitud)),
                 title = "Estás aquí"
