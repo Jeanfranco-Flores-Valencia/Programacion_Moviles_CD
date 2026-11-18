@@ -56,6 +56,8 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
+    // Mejora IA: iconos de categoria (libro, cubiertos, evento, estacionamiento) y de ubicacion
+    implementation("androidx.compose.material:material-icons-extended")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Ubicacion, corrutinas con Play Services (await) y mapa en Compose
