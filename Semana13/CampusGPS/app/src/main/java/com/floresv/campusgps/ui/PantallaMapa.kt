@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,29 +62,37 @@ fun PantallaMapa(vm: MapaViewModel) {
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Deshabilitado mientras busca
-            Button(onClick = ::alPulsar, enabled = estado !is UbicacionUi.Buscando) { Text("Obtener mi ubicación") }
+        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Deshabilitado mientras busca
+                Button(onClick = ::alPulsar, enabled = estado !is UbicacionUi.Buscando) { Text("Obtener mi ubicación") }
 
-            when (val e = estado) {
-                UbicacionUi.Inicial -> Text("Pulsa el botón para ver dónde estás")
-                UbicacionUi.Buscando -> Text("Buscando...")
-                is UbicacionUi.Lista -> {
-                    Text("Latitud: ${e.posicion.latitud}")
-                    Text("Longitud: ${e.posicion.longitud}")
+                when (val e = estado) {
+                    UbicacionUi.Inicial -> Text("Pulsa el botón para ver dónde estás")
+                    UbicacionUi.Buscando -> Text("Buscando...")
+                    is UbicacionUi.Lista -> Text("Lat: ${e.posicion.latitud}   Lon: ${e.posicion.longitud}")
+                    is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
                 }
-                is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
             }
+
             // El mapa ocupa el espacio libre
             MapaUbicacion(
                 estado = estado,
                 lugares = lugares,
                 seleccionado = seleccionado,
                 modifier = Modifier.fillMaxWidth().weight(1f)
+            )
+
+            // La lista va debajo con altura fija
+            ListaLugares(
+                lugares = lugares,
+                seleccionado = seleccionado,
+                onClick = vm::seleccionar,
+                modifier = Modifier.fillMaxWidth().height(220.dp)
             )
         }
     }

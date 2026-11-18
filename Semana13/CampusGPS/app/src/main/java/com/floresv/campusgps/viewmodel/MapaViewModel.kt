@@ -56,7 +56,10 @@ class MapaViewModel(
         ordenados.forEach { Log.d("DISTANCIA", "${it.lugar.nombre}: ${it.metros?.let(::formatearDistancia)}") }
     }
 
-    // TODO Paso 6: fun seleccionar(id: Int?)
+    /** Lugar elegido en la lista (null = ninguno). La pantalla mueve la camara hasta el. */
+    fun seleccionar(id: Int?) {
+        _seleccionado.value = id
+    }
     // TODO Paso 7: val masCercano: StateFlow<Lugar?>
 
     private fun mensajeDe(e: Throwable): String = when (e) {
