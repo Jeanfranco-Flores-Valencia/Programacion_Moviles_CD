@@ -1,11 +1,15 @@
 package com.floresv.campusgps.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.floresv.campusgps.data.LugaresRepository
 import com.floresv.campusgps.data.UbicacionRepository
 import com.floresv.campusgps.model.LugarConDistancia
+import com.floresv.campusgps.model.Posicion
 import com.floresv.campusgps.model.UbicacionUi
+import com.floresv.campusgps.util.distanciaMetros
+import com.floresv.campusgps.util.formatearDistancia
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,7 +37,7 @@ class MapaViewModel(
             ubicacionRepo.obtenerPosicion()
                 .onSuccess {
                     _estado.value = UbicacionUi.Lista(it)
-                    // TODO Paso 5: actualizarDistancias(it)
+                    actualizarDistancias(it)
                 }
                 .onFailure { _estado.value = UbicacionUi.Error(mensajeDe(it)) }
         }
@@ -41,6 +45,15 @@ class MapaViewModel(
 
     fun permisoDenegado() {
         _estado.value = UbicacionUi.Error("Sin permiso de ubicación no puedo mostrar dónde estás")
+    }
+
+    /** Calcula la distancia a cada lugar y ordena del mas cercano al mas lejano. */
+    private fun actualizarDistancias(pos: Posicion) {
+        val ordenados = lugaresRepo.obtenerLugares()
+            .map { LugarConDistancia(it, distanciaMetros(pos, it)) }
+            .sortedBy { it.metros }
+        _lugares.value = ordenados
+        ordenados.forEach { Log.d("DISTANCIA", "${it.lugar.nombre}: ${it.metros?.let(::formatearDistancia)}") }
     }
 
     // TODO Paso 6: fun seleccionar(id: Int?)
