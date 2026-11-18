@@ -6,15 +6,20 @@ import androidx.lifecycle.viewModelScope
 import com.floresv.centrotareas.data.TareasRepository
 import com.floresv.centrotareas.model.AvancePrimos
 import com.floresv.centrotareas.model.CargaUi
+import com.floresv.centrotareas.model.Medicion
 import com.floresv.centrotareas.model.PrimosUi
+import com.floresv.centrotareas.model.ResumenTiempos
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 
@@ -106,6 +111,24 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         _simularError.value = valor
     }
 
+    /** Mejora IA: ultimas cargas exitosas para compararlas (la mas reciente primero, maximo 6). */
+    private val _historial = MutableStateFlow<List<Medicion>>(emptyList())
+    val historial: StateFlow<List<Medicion>> = _historial.asStateFlow()
+
+    /** Promedio de cada modo y el ahorro de cargar a la vez frente a una por una. */
+    val resumen: StateFlow<ResumenTiempos> = _historial
+        .map { lista ->
+            val una = lista.filter { it.modo == "Una por una" }.map { it.milisegundos }.takeIf { it.isNotEmpty() }?.average()?.toLong()
+            val vez = lista.filter { it.modo == "A la vez" }.map { it.milisegundos }.takeIf { it.isNotEmpty() }?.average()?.toLong()
+            val ahorro = if (una != null && vez != null && una > 0) ((una - vez) * 100 / una).toInt() else null
+            ResumenTiempos(una, vez, ahorro)
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ResumenTiempos(null, null, null))
+
+    fun limpiarHistorial() {
+        _historial.value = emptyList()
+    }
+
     /** Mejora IA: interruptor "Tiempo maximo": las cargas que pasen de LIMITE_MS se cortan. */
     private val _limiteTiempo = MutableStateFlow(false)
     val limiteTiempo: StateFlow<Boolean> = _limiteTiempo.asStateFlow()
@@ -139,7 +162,9 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
             try {
                 // Con el limite activo, withTimeout cancela la carga si tarda mas de LIMITE_MS
                 val (perfil, pedidos) = if (_limiteTiempo.value) withTimeout(LIMITE_MS) { cargar() } else cargar()
-                _carga.value = CargaUi.Exito(modo, perfil, pedidos.size, System.currentTimeMillis() - inicio)
+                val ms = System.currentTimeMillis() - inicio
+                _carga.value = CargaUi.Exito(modo, perfil, pedidos.size, ms)
+                _historial.value = (listOf(Medicion(modo, ms)) + _historial.value).take(6)
             } catch (e: TimeoutCancellationException) {
                 // Va antes que CancellationException porque es una subclase suya
                 _carga.value = CargaUi.Error("Tardó demasiado: más de ${LIMITE_MS / 1000} s")
