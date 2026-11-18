@@ -1,6 +1,9 @@
 package com.floresv.campusgps.ui
 
 import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -78,7 +81,16 @@ fun PantallaMapa(vm: MapaViewModel) {
                     UbicacionUi.Inicial -> Text("Pulsa el botón para ver dónde estás")
                     UbicacionUi.Buscando -> Text("Buscando...")
                     is UbicacionUi.Lista -> Text("Lat: ${e.posicion.latitud}   Lon: ${e.posicion.longitud}")
-                    is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
+                    is UbicacionUi.Error -> MensajeError(
+                        error = e,
+                        onAbrirAjustes = {
+                            // Abre la pantalla de la app en Ajustes para conceder el permiso a mano
+                            contexto.startActivity(
+                                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", contexto.packageName, null))
+                            )
+                        },
+                        onReintentar = ::alPulsar
+                    )
                 }
             }
 
