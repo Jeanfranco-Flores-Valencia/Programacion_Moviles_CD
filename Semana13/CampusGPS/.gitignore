@@ -1,0 +1,11 @@
+.gradle/
+build/
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+.kotlin/
+.DS_Store
+# Contiene la ruta del SDK y la clave de Maps (MAPS_API_KEY): nunca se sube
+local.properties
