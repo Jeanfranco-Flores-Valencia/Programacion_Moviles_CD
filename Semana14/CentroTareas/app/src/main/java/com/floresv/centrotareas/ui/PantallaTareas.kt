@@ -35,6 +35,7 @@ fun PantallaTareas(vm: TareasViewModel) {
     val progreso by vm.progreso.collectAsState()
     val corriendo by vm.corriendo.collectAsState()
     val primos by vm.primos.collectAsState()
+    val avancePrimos by vm.avancePrimos.collectAsState()
     val carga by vm.carga.collectAsState()
     val simularError by vm.simularError.collectAsState()
     // Valor por defecto ajustado para que el calculo tarde unos segundos en el emulador
@@ -65,7 +66,7 @@ fun PantallaTareas(vm: TareasViewModel) {
         ) {
             item { PulsoInterfaz(toques, onTocar = { toques++ }) }
             item { TarjetaProgreso(progreso, corriendo, mensaje, vm::tareaLarga, vm::cancelar) }
-            item { TarjetaPrimos(primos, numero, { numero = it }, vm::contar, vm::cancelarPrimos) }
+            item { TarjetaPrimos(primos, avancePrimos, numero, { numero = it }, vm::contar, vm::cancelarPrimos) }
             item { TarjetaCargas(carga, simularError, vm::cambiarSimularError, vm::cargarUnaPorUna, vm::cargarALaVez) }
         }
     }

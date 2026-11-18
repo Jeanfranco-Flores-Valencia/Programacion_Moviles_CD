@@ -18,3 +18,6 @@ sealed interface CargaUi {
     ) : CargaUi
     data class Error(val mensaje: String) : CargaUi
 }
+
+/** Mejora IA: avance del conteo de primos (porcentaje de 0f a 1f y primos encontrados hasta ahora). */
+data class AvancePrimos(val porcentaje: Float, val cantidad: Int, val terminado: Boolean)

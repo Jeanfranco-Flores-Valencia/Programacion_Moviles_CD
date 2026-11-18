@@ -3,21 +3,25 @@ package com.floresv.centrotareas.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Calculate
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Functions
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.floresv.centrotareas.model.AvancePrimos
 import com.floresv.centrotareas.model.PrimosUi
 import com.floresv.centrotareas.ui.components.BotonPrincipal
 import com.floresv.centrotareas.ui.components.BotonSecundario
@@ -32,6 +36,7 @@ import java.util.Locale
 @Composable
 fun TarjetaPrimos(
     primos: PrimosUi,
+    avance: AvancePrimos?,
     numero: String,
     onNumero: (String) -> Unit,
     onContar: (Int) -> Unit,
@@ -65,9 +70,14 @@ fun TarjetaPrimos(
         }
         when (primos) {
             PrimosUi.Inicial -> Unit
-            PrimosUi.Calculando -> Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                Text("Calculando en segundo plano...")
+            // Mejora IA: barra con el porcentaje y los primos encontrados hasta ahora
+            PrimosUi.Calculando -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                val p = avance?.porcentaje ?: 0f
+                LinearProgressIndicator(progress = { p }, modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(50)))
+                Row {
+                    Text("${(p * 100).toInt()} %", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    Text("${formato.format(avance?.cantidad ?: 0)} primos encontrados", style = MaterialTheme.typography.bodySmall)
+                }
             }
             is PrimosUi.Listo -> Resultado(
                 "${formato.format(primos.cantidad)} números primos",

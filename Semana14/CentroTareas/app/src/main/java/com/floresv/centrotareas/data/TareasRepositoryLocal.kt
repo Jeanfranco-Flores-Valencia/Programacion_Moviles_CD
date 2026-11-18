@@ -1,7 +1,9 @@
 package com.floresv.centrotareas.data
 
 import android.util.Log
+import com.floresv.centrotareas.model.AvancePrimos
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +44,18 @@ class TareasRepositoryLocal : TareasRepository {
         }
         cantidad
     }
+
+    /** Emite el avance cada 1 % del recorrido. Al cancelar la recoleccion, ensureActive corta el ciclo. */
+    override fun contarPrimosConProgreso(hasta: Int): Flow<AvancePrimos> = flow {
+        val paso = maxOf(1, hasta / 100)
+        var cantidad = 0
+        for (n in 2..hasta) {
+            currentCoroutineContext().ensureActive()
+            if (esPrimo(n)) cantidad++
+            if (n % paso == 0) emit(AvancePrimos(n.toFloat() / hasta, cantidad, terminado = false))
+        }
+        emit(AvancePrimos(1f, cantidad, terminado = true))
+    }.flowOn(Dispatchers.Default)
 
     /** Prueba dividir entre 2 y la raiz de n (d * d <= n evita calcular la raiz y los desbordes). */
     private fun esPrimo(n: Int): Boolean {

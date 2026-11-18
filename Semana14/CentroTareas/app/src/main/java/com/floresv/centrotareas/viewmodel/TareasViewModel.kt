@@ -4,13 +4,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.floresv.centrotareas.data.TareasRepository
+import com.floresv.centrotareas.model.AvancePrimos
 import com.floresv.centrotareas.model.CargaUi
 import com.floresv.centrotareas.model.PrimosUi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -65,15 +65,22 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
     private var trabajoPrimos: Job? = null
 
-    /** Cuenta los primos en el Repository (segundo plano) y mide cuanto tarda. */
+    /** Mejora IA: avance del calculo en curso (null cuando no se esta calculando). */
+    private val _avancePrimos = MutableStateFlow<AvancePrimos?>(null)
+    val avancePrimos: StateFlow<AvancePrimos?> = _avancePrimos.asStateFlow()
+
+    /** Cuenta los primos en el Repository (segundo plano), muestra el avance y mide cuanto tarda. */
     fun contar(hasta: Int) {
         if (hasta < 2 || _primos.value is PrimosUi.Calculando) return
         trabajoPrimos = viewModelScope.launch {
             _primos.value = PrimosUi.Calculando
+            _avancePrimos.value = AvancePrimos(0f, 0, terminado = false)
             val inicio = System.currentTimeMillis()
             try {
-                val cantidad = repo.contarPrimos(hasta)
-                _primos.value = PrimosUi.Listo(cantidad, System.currentTimeMillis() - inicio)
+                repo.contarPrimosConProgreso(hasta).collect { avance ->
+                    _avancePrimos.value = avance
+                    if (avance.terminado) _primos.value = PrimosUi.Listo(avance.cantidad, System.currentTimeMillis() - inicio)
+                }
             } catch (e: CancellationException) {
                 _primos.value = PrimosUi.Cancelado
                 throw e   // se vuelve a lanzar para no romper la cancelacion
