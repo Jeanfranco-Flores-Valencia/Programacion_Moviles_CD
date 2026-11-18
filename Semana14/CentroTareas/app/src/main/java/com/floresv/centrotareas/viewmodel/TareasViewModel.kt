@@ -9,12 +9,14 @@ import com.floresv.centrotareas.model.CargaUi
 import com.floresv.centrotareas.model.PrimosUi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
@@ -104,6 +106,14 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         _simularError.value = valor
     }
 
+    /** Mejora IA: interruptor "Tiempo maximo": las cargas que pasen de LIMITE_MS se cortan. */
+    private val _limiteTiempo = MutableStateFlow(false)
+    val limiteTiempo: StateFlow<Boolean> = _limiteTiempo.asStateFlow()
+
+    fun cambiarLimiteTiempo(valor: Boolean) {
+        _limiteTiempo.value = valor
+    }
+
     /** Perfil y despues pedidos: los tiempos se suman (unos 5 s). */
     fun cargarUnaPorUna() = ejecutarCarga("Una por una") {
         val perfil = repo.cargarPerfil()
@@ -127,13 +137,22 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
             _carga.value = CargaUi.Cargando
             val inicio = System.currentTimeMillis()
             try {
-                val (perfil, pedidos) = cargar()
+                // Con el limite activo, withTimeout cancela la carga si tarda mas de LIMITE_MS
+                val (perfil, pedidos) = if (_limiteTiempo.value) withTimeout(LIMITE_MS) { cargar() } else cargar()
                 _carga.value = CargaUi.Exito(modo, perfil, pedidos.size, System.currentTimeMillis() - inicio)
+            } catch (e: TimeoutCancellationException) {
+                // Va antes que CancellationException porque es una subclase suya
+                _carga.value = CargaUi.Error("Tardó demasiado: más de ${LIMITE_MS / 1000} s")
             } catch (e: CancellationException) {
                 throw e   // la cancelacion no es un error: se deja pasar
             } catch (e: Exception) {
                 _carga.value = CargaUi.Error("No se pudo cargar: " + (e.message ?: "error desconocido"))
             }
         }
+    }
+
+    companion object {
+        /** Una por una (5 s) supera el limite; a la vez (3 s) entra. */
+        const val LIMITE_MS = 4000L
     }
 }

@@ -31,6 +31,8 @@ fun TarjetaCargas(
     carga: CargaUi,
     simularError: Boolean,
     onSimularError: (Boolean) -> Unit,
+    limiteTiempo: Boolean,
+    onLimiteTiempo: (Boolean) -> Unit,
     onUnaPorUna: () -> Unit,
     onALaVez: () -> Unit
 ) {
@@ -43,13 +45,8 @@ fun TarjetaCargas(
     val cargando = carga is CargaUi.Cargando
 
     TarjetaTarea("Dos cargas", "Perfil (2 s) y pedidos (3 s)", Icons.Outlined.CloudDownload, estado) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Simular error", style = MaterialTheme.typography.bodyLarge)
-                Text("Los pedidos fallan con «Sin conexión»", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Switch(checked = simularError, onCheckedChange = onSimularError, enabled = !cargando)
-        }
+        Interruptor("Simular error", "Los pedidos fallan con «Sin conexión»", simularError, !cargando, onSimularError)
+        Interruptor("Tiempo máximo (4 s)", "Corta la carga si tarda demasiado", limiteTiempo, !cargando, onLimiteTiempo)
         // Deshabilitados mientras carga: no se lanza una segunda carga
         FilaAcciones {
             BotonSecundario("Una por una", Icons.Outlined.ViewStream, habilitado = !cargando, onClick = onUnaPorUna)
@@ -71,5 +68,17 @@ fun TarjetaCargas(
                 FilaAcciones { BotonPrincipal("Reintentar", Icons.Outlined.Refresh, onClick = onALaVez) }
             }
         }
+    }
+}
+
+/** Fila con titulo, explicacion y un Switch (se usa para las dos opciones de la tarjeta). */
+@Composable
+private fun Interruptor(titulo: String, detalle: String, activo: Boolean, habilitado: Boolean, onCambio: (Boolean) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(titulo, style = MaterialTheme.typography.bodyLarge)
+            Text(detalle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Switch(checked = activo, onCheckedChange = onCambio, enabled = habilitado)
     }
 }

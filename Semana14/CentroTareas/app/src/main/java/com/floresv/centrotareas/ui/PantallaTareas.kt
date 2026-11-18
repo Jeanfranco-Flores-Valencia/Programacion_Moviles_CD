@@ -38,6 +38,7 @@ fun PantallaTareas(vm: TareasViewModel) {
     val avancePrimos by vm.avancePrimos.collectAsState()
     val carga by vm.carga.collectAsState()
     val simularError by vm.simularError.collectAsState()
+    val limiteTiempo by vm.limiteTiempo.collectAsState()
     // Valor por defecto ajustado para que el calculo tarde unos segundos en el emulador
     var numero by rememberSaveable { mutableStateOf("3000000") }
     // Prueba de vida: si deja de sumar, la pantalla esta congelada
@@ -67,7 +68,7 @@ fun PantallaTareas(vm: TareasViewModel) {
             item { PulsoInterfaz(toques, onTocar = { toques++ }) }
             item { TarjetaProgreso(progreso, corriendo, mensaje, vm::tareaLarga, vm::cancelar) }
             item { TarjetaPrimos(primos, avancePrimos, numero, { numero = it }, vm::contar, vm::cancelarPrimos) }
-            item { TarjetaCargas(carga, simularError, vm::cambiarSimularError, vm::cargarUnaPorUna, vm::cargarALaVez) }
+            item { TarjetaCargas(carga, simularError, vm::cambiarSimularError, limiteTiempo, vm::cambiarLimiteTiempo, vm::cargarUnaPorUna, vm::cargarALaVez) }
         }
     }
 }
