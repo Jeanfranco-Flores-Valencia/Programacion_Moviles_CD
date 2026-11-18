@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.floresv.campusgps.data.LugaresRepository
+import com.floresv.campusgps.data.PreferenciasRepository
 import com.floresv.campusgps.data.UbicacionNoDisponibleException
 import com.floresv.campusgps.data.UbicacionRepository
 import com.floresv.campusgps.model.Lugar
@@ -18,13 +19,15 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MapaViewModel(
     private val ubicacionRepo: UbicacionRepository,
-    private val lugaresRepo: LugaresRepository
+    private val lugaresRepo: LugaresRepository,
+    private val preferenciasRepo: PreferenciasRepository
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow<UbicacionUi>(UbicacionUi.Inicial)
@@ -37,6 +40,14 @@ class MapaViewModel(
 
     private val _seleccionado = MutableStateFlow<Int?>(null)
     val seleccionado: StateFlow<Int?> = _seleccionado.asStateFlow()
+
+    init {
+        // Mejora IA: al abrir la app se recupera el ultimo lugar visitado (el mapa viaja hasta el)
+        viewModelScope.launch {
+            val ultimo = preferenciasRepo.ultimoLugar.first()
+            if (ultimo != null && _seleccionado.value == null) _seleccionado.value = ultimo
+        }
+    }
 
     fun buscar() {
         // Sin Google Play Services no hay ubicacion: no tiene sentido reintentar
@@ -71,6 +82,8 @@ class MapaViewModel(
     /** Lugar elegido en la lista (null = ninguno). La pantalla mueve la camara hasta el. */
     fun seleccionar(id: Int?) {
         _seleccionado.value = id
+        // Mejora IA: se guarda como ultimo lugar visitado
+        if (id != null) viewModelScope.launch { preferenciasRepo.guardarUltimoLugar(id) }
     }
     // ---------- Mejora IA: filtro por categoria ----------
     /** Categorias para los chips (Estudio, Comida, Eventos, Servicios), en el orden del repositorio. */

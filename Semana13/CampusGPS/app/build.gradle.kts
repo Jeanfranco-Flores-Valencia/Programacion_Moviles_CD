@@ -65,4 +65,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1")
     implementation("com.google.maps.android:maps-compose:8.0.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+
+    // Mejora IA: guardar el ultimo lugar visitado
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
 }
