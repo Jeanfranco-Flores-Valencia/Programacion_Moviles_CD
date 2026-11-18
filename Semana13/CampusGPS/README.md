@@ -10,6 +10,20 @@ CampusGPS obtiene la ubicación del celular, la muestra en un mapa de Google y l
 
 **Tecnologías:** Kotlin, Jetpack Compose + Material 3 (sin XML), Google Play Services Location (`FusedLocationProviderClient`), Maps Compose. Paquete: `com.floresv.campusgps`.
 
+## Fase 2: mejora con IA (rama `mejora-ia-campusgps`)
+
+Detalle de los prompts en `PROMPTS.md`.
+
+| Mejora | Qué hace | Capas |
+|---|---|---|
+| Diseño estilo app de mapas | Mapa a pantalla completa, barra flotante con el estado, hoja inferior deslizable con el más cercano y la lista, y botón flotante «Mi ubicación» | View |
+| Punto azul nativo | `isMyLocationEnabled` solo si el permiso fue concedido | View |
+| Filtrar por categoría | Chips con icono y color (Estudio, Comida, Eventos, Servicios) que filtran el mapa y la lista | ViewModel + View |
+| Radio de cercanía | 100, 200 o 500 m: círculo verde alrededor de tu posición y la etiqueta «Dentro del radio» en la lista | ViewModel + View |
+| Último lugar visitado | DataStore guarda el último lugar elegido; al abrir la app el mapa viaja hasta él | Repository + ViewModel |
+
+Componentes reutilizables en `ui/components`: `BarraSuperior`, `ChipsCategorias`, `SelectorRadio`, `TarjetaMasCercano`, `TarjetaLugar`, `IconoCategoria`, `InsigniaRadio` y `Categorias.kt` (color e icono por categoría).
+
 ## Estructura de paquetes
 
 ```
@@ -21,7 +35,9 @@ com.floresv.campusgps/
 │   ├── UbicacionRepository.kt      interface (+ UbicacionNoDisponibleException)
 │   ├── UbicacionRepositoryGoogle.kt  FusedLocationProviderClient y Play Services
 │   ├── LugaresRepository.kt        interface
-│   └── LugaresRepositoryLocal.kt   los 5 lugares ficticios
+│   ├── LugaresRepositoryLocal.kt   los 5 lugares ficticios
+│   ├── PreferenciasRepository.kt   interface (Fase 2)
+│   └── PreferenciasRepositoryDataStore.kt  último lugar visitado (Fase 2)
 ├── util/
 │   ├── Distancia.kt                distanciaMetros(desde, hasta)
 │   └── Formato.kt                  formatearDistancia(metros)
@@ -33,6 +49,7 @@ com.floresv.campusgps/
     ├── MapaUbicacion.kt            GoogleMap con los marcadores
     ├── ListaLugares.kt             tarjetas con la distancia
     ├── MensajeError.kt             error con Abrir ajustes o Reintentar
+    ├── components/                 componentes reutilizables (Fase 2)
     └── theme/
 ```
 
