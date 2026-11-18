@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import com.floresv.centrotareas.model.CargaUi
 import com.floresv.centrotareas.model.PrimosUi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,7 @@ fun PantallaTareas(vm: TareasViewModel) {
     val progreso by vm.progreso.collectAsState()
     val corriendo by vm.corriendo.collectAsState()
     val primos by vm.primos.collectAsState()
+    val carga by vm.carga.collectAsState()
     // Valor por defecto ajustado para que el calculo tarde unos segundos en el emulador
     var numero by rememberSaveable { mutableStateOf("3000000") }
     // Prueba de vida: si deja de sumar, la pantalla esta congelada
@@ -108,7 +110,21 @@ fun PantallaTareas(vm: TareasViewModel) {
                 }
             }
             Tarjeta("Dos cargas") {
-                // TODO Pasos 6 y 7: Una por una, A la vez, Simular error y resultado
+                val cargando = carga is CargaUi.Cargando
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Deshabilitados mientras carga: no se lanza una segunda carga
+                    OutlinedButton(onClick = vm::cargarUnaPorUna, enabled = !cargando) { Text("Una por una") }
+                    Button(onClick = vm::cargarALaVez, enabled = !cargando) { Text("A la vez") }
+                }
+                when (val c = carga) {
+                    CargaUi.Inicial -> Unit
+                    CargaUi.Cargando -> CircularProgressIndicator()
+                    is CargaUi.Exito -> Recuadro(
+                        "${c.modo}: ${c.perfil} · ${c.pedidos} pedidos · ${c.milisegundos} ms",
+                        exito = true
+                    )
+                    is CargaUi.Error -> Recuadro(c.mensaje, exito = false)
+                }
             }
         }
     }
