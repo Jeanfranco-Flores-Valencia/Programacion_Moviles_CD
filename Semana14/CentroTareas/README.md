@@ -10,6 +10,20 @@ CentroTareas hace tres cosas que tardan: una tarea con barra de progreso, un cá
 
 **Tecnologías:** Kotlin, Jetpack Compose + Material 3 (sin XML), corrutinas y ViewModel. Paquete: `com.floresv.centrotareas`.
 
+## Fase 2: mejora con IA (rama `mejora-ia-centrotareas`)
+
+Detalle de los prompts en `PROMPTS.md`.
+
+| Mejora | Qué hace | Capas |
+|---|---|---|
+| Panel de tareas | Barra grande que se encoge, una tarjeta por tarea con icono e insignia de estado, anillo de progreso y un «pulso» animado que deja de latir si la pantalla se congela | View |
+| Progreso desde el Repository | La tarea simulada vive en el Repository y emite su avance como `Flow` con `flowOn(Dispatchers.Default)` | Repository + ViewModel |
+| Primos con progreso | Barra con el porcentaje y los primos encontrados mientras calcula; Cancelar lo corta al instante | Repository + ViewModel + View |
+| Tiempo máximo | Interruptor que limita las cargas a 4 s con `withTimeout`: una por una se corta y a la vez entra | ViewModel + View |
+| Comparación de tiempos | Las últimas 6 cargas en barras, con los promedios y cuánto más rápido fue cargar a la vez | ViewModel + View |
+
+Componentes reutilizables en `ui/components`: `TarjetaTarea`, `InsigniaEstado`, `BotonPrincipal`, `BotonSecundario`, `FilaAcciones`, `Resultado`, `AnilloProgreso`, `PulsoInterfaz` y `BarraTiempo`.
+
 ## Estructura de paquetes
 
 ```
@@ -24,7 +38,9 @@ com.floresv.centrotareas/
 │   ├── TareasViewModel.kt         tarea con progreso, primos y cargas
 │   └── TareasViewModelFactory.kt
 └── ui/
-    ├── PantallaTareas.kt          las tres tarjetas
+    ├── PantallaTareas.kt          las tarjetas en una lista
+    ├── TarjetaProgreso.kt, TarjetaPrimos.kt, TarjetaCargas.kt, TarjetaComparacion.kt   (Fase 2)
+    ├── components/                componentes reutilizables (Fase 2)
     └── theme/
 ```
 
