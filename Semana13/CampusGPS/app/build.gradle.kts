@@ -1,7 +1,15 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+}
+
+// La clave de Maps se lee de local.properties (si existe); asi no queda en el codigo ni en git
+val localProps = Properties().apply {
+    val archivo = rootProject.file("local.properties")
+    if (archivo.exists()) archivo.inputStream().use { load(it) }
 }
 
 android {
@@ -14,6 +22,9 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        // Llega al Manifest como ${MAPS_API_KEY}
+        manifestPlaceholders["MAPS_API_KEY"] = localProps.getProperty("MAPS_API_KEY", "")
     }
 
     buildTypes {
