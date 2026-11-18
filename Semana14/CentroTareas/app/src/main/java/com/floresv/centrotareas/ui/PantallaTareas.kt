@@ -29,6 +29,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -52,6 +53,7 @@ fun PantallaTareas(vm: TareasViewModel) {
     val corriendo by vm.corriendo.collectAsState()
     val primos by vm.primos.collectAsState()
     val carga by vm.carga.collectAsState()
+    val simularError by vm.simularError.collectAsState()
     // Valor por defecto ajustado para que el calculo tarde unos segundos en el emulador
     var numero by rememberSaveable { mutableStateOf("3000000") }
     // Prueba de vida: si deja de sumar, la pantalla esta congelada
@@ -111,6 +113,10 @@ fun PantallaTareas(vm: TareasViewModel) {
             }
             Tarjeta("Dos cargas") {
                 val cargando = carga is CargaUi.Cargando
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Simular error", modifier = Modifier.weight(1f))
+                    Switch(checked = simularError, onCheckedChange = vm::cambiarSimularError)
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     // Deshabilitados mientras carga: no se lanza una segunda carga
                     OutlinedButton(onClick = vm::cargarUnaPorUna, enabled = !cargando) { Text("Una por una") }
@@ -123,7 +129,10 @@ fun PantallaTareas(vm: TareasViewModel) {
                         "${c.modo}: ${c.perfil} · ${c.pedidos} pedidos · ${c.milisegundos} ms",
                         exito = true
                     )
-                    is CargaUi.Error -> Recuadro(c.mensaje, exito = false)
+                    is CargaUi.Error -> {
+                        Recuadro(c.mensaje, exito = false)
+                        Button(onClick = vm::cargarALaVez) { Text("Reintentar") }
+                    }
                 }
             }
         }
