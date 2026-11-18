@@ -1,8 +1,12 @@
 package com.floresv.centrotareas.data
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
@@ -19,6 +23,15 @@ class TareasRepositoryLocal : TareasRepository {
         if (simularError) throw IOException("Sin conexión")
         return listOf("Pedido 101", "Pedido 102", "Pedido 103")
     }
+
+    /** 100 pasos de 40 ms (unos 4 s). flowOn mueve el trabajo a Dispatchers.Default; quien recolecta sigue en main. */
+    override fun progresoTarea(): Flow<Float> = flow {
+        Log.d("HILO", "Dentro: ${Thread.currentThread().name}")
+        for (i in 1..100) {
+            delay(40)
+            emit(i / 100f)
+        }
+    }.flowOn(Dispatchers.Default)
 
     /** Calculo pesado en Dispatchers.Default; ensureActive() permite cancelarlo a mitad. */
     override suspend fun contarPrimos(hasta: Int): Int = withContext(Dispatchers.Default) {
