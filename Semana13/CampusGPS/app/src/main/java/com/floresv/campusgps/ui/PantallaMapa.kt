@@ -1,11 +1,13 @@
 package com.floresv.campusgps.ui
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +32,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,17 +44,46 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.floresv.campusgps.model.Lugar
+import com.floresv.campusgps.model.LugarConDistancia
 import com.floresv.campusgps.model.UbicacionUi
 import com.floresv.campusgps.ui.components.BarraSuperior
 import com.floresv.campusgps.ui.components.ChipsCategorias
+import com.floresv.campusgps.ui.components.FichaLugar
 import com.floresv.campusgps.ui.components.SelectorRadio
 import com.floresv.campusgps.ui.components.TarjetaMasCercano
+import com.floresv.campusgps.util.formatearDistancia
 import com.floresv.campusgps.viewmodel.MapaViewModel
 
 private val permisos = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
 
 private fun tienePermiso(contexto: Context) =
     permisos.any { ContextCompat.checkSelfPermission(contexto, it) == PackageManager.PERMISSION_GRANTED }
+
+/** Abre la app de mapas o navegacion del celular con el lugar como destino. */
+private fun comoLlegar(contexto: Context, lugar: Lugar) {
+    val geo = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=${lugar.latitud},${lugar.longitud}(${Uri.encode(lugar.nombre)})"))
+    try {
+        contexto.startActivity(geo)
+    } catch (e: ActivityNotFoundException) {
+        // Sin app de mapas: se abre OpenStreetMap en el navegador
+        contexto.startActivity(
+            Intent(Intent.ACTION_VIEW, Uri.parse("https://www.openstreetmap.org/?mlat=${lugar.latitud}&mlon=${lugar.longitud}#map=18/${lugar.latitud}/${lugar.longitud}"))
+        )
+    }
+}
+
+/** Comparte el nombre, la distancia y el enlace del lugar con cualquier app (WhatsApp, correo...). */
+private fun compartir(contexto: Context, item: LugarConDistancia) {
+    val lugar = item.lugar
+    val texto = buildString {
+        append(lugar.nombre)
+        item.metros?.let { append(" (a ${formatearDistancia(it)} de mí)") }
+        append("\nhttps://www.openstreetmap.org/?mlat=${lugar.latitud}&mlon=${lugar.longitud}#map=18/${lugar.latitud}/${lugar.longitud}")
+    }
+    val envio = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, texto)
+    contexto.startActivity(Intent.createChooser(envio, "Compartir lugar"))
+}
 
 /**
  * Mejora IA: pantalla al estilo de una app de mapas. El mapa ocupa toda la pantalla, arriba flota
@@ -86,35 +119,61 @@ fun PantallaMapa(vm: MapaViewModel) {
         }
     }
 
+    val hoja = rememberBottomSheetScaffoldState()
+    // Cada vez que se pulsa "Centrar" el mapa vuelve al lugar de la ficha
+    var centrar by remember { mutableIntStateOf(0) }
+
+    // Al elegir un lugar (en la lista o en el mapa) la ficha se abre completa
+    LaunchedEffect(seleccionado) {
+        if (seleccionado != null) hoja.bottomSheetState.expand()
+    }
+    // Atras cierra la ficha antes de salir de la app
+    BackHandler(enabled = seleccionado != null) { vm.seleccionar(null) }
+
     BottomSheetScaffold(
-        scaffoldState = rememberBottomSheetScaffoldState(),
+        scaffoldState = hoja,
         sheetPeekHeight = 210.dp,
         sheetContent = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
-                TarjetaMasCercano(
-                    masCercano = lugares.firstOrNull { it.lugar.id == masCercano?.id },
-                    onIr = { masCercano?.let { vm.seleccionar(it.id) } },
-                    modifier = Modifier.padding(horizontal = 16.dp)
+            val ficha = lugares.firstOrNull { it.lugar.id == seleccionado }
+            if (ficha != null) {
+                // Mejora IA: con un lugar elegido, la hoja muestra su ficha en vez de la lista
+                FichaLugar(
+                    item = ficha,
+                    esMasCercano = ficha.lugar.id == masCercano?.id,
+                    dentroDelRadio = ficha.lugar.id in dentroDelRadio,
+                    onCerrar = { vm.seleccionar(null) },
+                    onComoLlegar = { comoLlegar(contexto, ficha.lugar) },
+                    onCentrar = { centrar++ },
+                    onCompartir = { compartir(contexto, ficha) },
+                    modifier = Modifier.padding(bottom = 24.dp)
                 )
-                SelectorRadio(
-                    opciones = vm.opcionesRadio,
-                    elegido = radio,
-                    dentro = dentroDelRadio.size,
-                    habilitado = estado is UbicacionUi.Lista,
-                    onElegir = vm::elegirRadio,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Text(categoria ?: "Lugares del campus", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                    Text("${lugares.size} lugares", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)) {
+                    TarjetaMasCercano(
+                        masCercano = lugares.firstOrNull { it.lugar.id == masCercano?.id },
+                        onIr = { masCercano?.let { vm.seleccionar(it.id) } },
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    SelectorRadio(
+                        opciones = vm.opcionesRadio,
+                        elegido = radio,
+                        dentro = dentroDelRadio.size,
+                        habilitado = estado is UbicacionUi.Lista,
+                        onElegir = vm::elegirRadio,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text(categoria ?: "Lugares del campus", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                        Text("${lugares.size} lugares", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    ListaLugares(
+                        lugares = lugares,
+                        seleccionado = seleccionado,
+                        onClick = vm::seleccionar,
+                        dentroDelRadio = dentroDelRadio,
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp)
+                    )
                 }
-                ListaLugares(
-                    lugares = lugares,
-                    seleccionado = seleccionado,
-                    onClick = vm::seleccionar,
-                    dentroDelRadio = dentroDelRadio,
-                    modifier = Modifier.fillMaxWidth().heightIn(max = 420.dp)
-                )
             }
         }
     ) { padding ->
@@ -126,6 +185,8 @@ fun PantallaMapa(vm: MapaViewModel) {
                 masCercanoId = masCercano?.id,
                 permisoConcedido = permisoConcedido,
                 radio = radio,
+                centrar = centrar,
+                onMarcador = vm::seleccionar,
                 modifier = Modifier.fillMaxSize()
             )
 

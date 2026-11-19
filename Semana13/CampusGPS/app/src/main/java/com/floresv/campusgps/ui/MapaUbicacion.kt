@@ -49,6 +49,8 @@ fun MapaUbicacion(
     masCercanoId: Int?,
     permisoConcedido: Boolean,
     radio: Int? = null,
+    centrar: Int = 0,
+    onMarcador: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val contexto = LocalContext.current
@@ -104,8 +106,8 @@ fun MapaUbicacion(
         }
     }
 
-    // Al elegir un lugar en la lista, la camara viaja hasta el con zoom 17
-    LaunchedEffect(seleccionado) {
+    // Al elegir un lugar (o pulsar Centrar en su ficha) la camara viaja hasta el con zoom 17
+    LaunchedEffect(seleccionado, centrar) {
         val lugar = lugares.firstOrNull { it.lugar.id == seleccionado }?.lugar ?: return@LaunchedEffect
         mapa.controller.animateTo(GeoPoint(lugar.latitud, lugar.longitud), 17.0, 1000L)
     }
@@ -140,6 +142,8 @@ fun MapaUbicacion(
                     snippet = item.lugar.categoria
                     icon = icono(vista.context, if (item.lugar.id == masCercanoId) VERDE else AZUL)
                     setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                    // Mejora IA: tocar el marcador abre la ficha del lugar
+                    setOnMarkerClickListener { _, _ -> onMarcador(item.lugar.id); true }
                 }
                 vista.overlays.add(marcador)
                 // El lugar seleccionado muestra su nombre en el mapa

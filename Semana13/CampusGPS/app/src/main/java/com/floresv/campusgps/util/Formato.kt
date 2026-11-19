@@ -6,3 +6,6 @@ import java.util.Locale
 fun formatearDistancia(metros: Float): String =
     if (metros < 1000f) "${metros.toInt()} m"
     else String.format(Locale.US, "%.1f km", metros / 1000f)
+
+/** Mejora IA: minutos a pie, caminando unos 80 m por minuto (minimo 1). */
+fun minutosCaminando(metros: Float): Int = (metros / 80f).toInt().coerceAtLeast(1)
