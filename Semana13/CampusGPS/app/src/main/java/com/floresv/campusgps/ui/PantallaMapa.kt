@@ -11,7 +11,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -127,8 +126,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                 masCercanoId = masCercano?.id,
                 permisoConcedido = permisoConcedido,
                 radio = radio,
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(top = 140.dp, bottom = padding.calculateBottomPadding())
+                modifier = Modifier.fillMaxSize()
             )
 
             Column(

@@ -1,26 +1,46 @@
 package com.floresv.campusgps.ui
 
-import androidx.compose.foundation.layout.PaddingValues
+import android.content.Context
+import android.graphics.drawable.Drawable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.floresv.campusgps.model.LugarConDistancia
 import com.floresv.campusgps.model.UbicacionUi
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.Circle
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.rememberCameraPositionState
-import com.google.maps.android.compose.rememberUpdatedMarkerState
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.CustomZoomButtonsController
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polygon
+import org.osmdroid.views.overlay.infowindow.InfoWindow
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
-/** Mapa de Google: solo dibuja lo que recibe (estado, lugares y seleccionado). */
+/** Colores de los marcadores (los mismos de la guia: rojo, azul y verde). */
+private const val ROJO = 0xFFE53935.toInt()
+private const val AZUL = 0xFF1E88E5.toInt()
+private const val VERDE = 0xFF43A047.toInt()
+private const val VERDE_RELLENO = 0x332E7D32
+private const val VERDE_BORDE = 0xFF2E7D32.toInt()
+
+/** Marcador por defecto de osmdroid pintado del color indicado. */
+private fun icono(contexto: Context, color: Int): Drawable =
+    ContextCompat.getDrawable(contexto, org.osmdroid.library.R.drawable.marker_default)!!.mutate().apply { setTint(color) }
+
+/**
+ * Mapa de OpenStreetMap (osmdroid): gratis, sin clave de API. Solo dibuja lo que recibe
+ * (estado, lugares, seleccionado, mas cercano y radio); no calcula nada ni consulta repositorios.
+ */
 @Composable
 fun MapaUbicacion(
     estado: UbicacionUi,
@@ -29,69 +49,113 @@ fun MapaUbicacion(
     masCercanoId: Int?,
     permisoConcedido: Boolean,
     radio: Int? = null,
-    modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues()
+    modifier: Modifier = Modifier
 ) {
-    // Camara inicial: Lima, zoom 12
-    val camara = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(LatLng(-12.0464, -77.0428), 12f)
+    val contexto = LocalContext.current
+    val mapa = remember {
+        // OpenStreetMap pide identificar la app que descarga los mosaicos
+        Configuration.getInstance().userAgentValue = contexto.packageName
+        MapView(contexto).apply {
+            setTileSource(TileSourceFactory.MAPNIK)
+            setMultiTouchControls(true)
+            zoomController.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
+            // Camara inicial: Lima, zoom 12
+            controller.setZoom(12.0)
+            controller.setCenter(GeoPoint(-12.0464, -77.0428))
+        }
+    }
+    // Mejora IA: punto azul nativo de osmdroid con tu ubicacion en vivo
+    val puntoAzul = remember { MyLocationNewOverlay(GpsMyLocationProvider(contexto), mapa) }
+
+    // El mapa sigue el ciclo de vida de la pantalla
+    val ciclo = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(ciclo) {
+        val observador = LifecycleEventObserver { _, evento ->
+            when (evento) {
+                Lifecycle.Event.ON_RESUME -> mapa.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapa.onPause()
+                else -> Unit
+            }
+        }
+        ciclo.addObserver(observador)
+        onDispose {
+            ciclo.removeObserver(observador)
+            puntoAzul.disableMyLocation()
+            mapa.onDetach()
+        }
     }
 
-    // Cuando llega la ubicacion, la camara viaja hasta ella
+    // El punto azul solo se activa si el permiso fue concedido
+    LaunchedEffect(permisoConcedido) {
+        if (permisoConcedido) {
+            if (puntoAzul !in mapa.overlays) mapa.overlays.add(puntoAzul)
+            puntoAzul.enableMyLocation()
+        } else {
+            puntoAzul.disableMyLocation()
+            mapa.overlays.remove(puntoAzul)
+        }
+        mapa.invalidate()
+    }
+
+    // Cuando llega la ubicacion, la camara viaja hasta ella (zoom 16)
     LaunchedEffect(estado) {
         if (estado is UbicacionUi.Lista) {
-            val p = estado.posicion
-            camara.animate(CameraUpdateFactory.newLatLngZoom(LatLng(p.latitud, p.longitud), 16f))
+            mapa.controller.animateTo(GeoPoint(estado.posicion.latitud, estado.posicion.longitud), 16.0, 1000L)
         }
     }
 
     // Al elegir un lugar en la lista, la camara viaja hasta el con zoom 17
     LaunchedEffect(seleccionado) {
         val lugar = lugares.firstOrNull { it.lugar.id == seleccionado }?.lugar ?: return@LaunchedEffect
-        camara.animate(CameraUpdateFactory.newLatLngZoom(LatLng(lugar.latitud, lugar.longitud), 17f))
+        mapa.controller.animateTo(GeoPoint(lugar.latitud, lugar.longitud), 17.0, 1000L)
     }
 
-    GoogleMap(
+    AndroidView(
+        factory = { mapa },
         modifier = modifier,
-        cameraPositionState = camara,
-        contentPadding = contentPadding,
-        // Mejora IA: punto azul nativo de Google Maps, solo si el permiso fue concedido
-        properties = MapProperties(isMyLocationEnabled = permisoConcedido),
-        uiSettings = MapUiSettings(myLocationButtonEnabled = false, zoomControlsEnabled = false, mapToolbarEnabled = false)
-    ) {
-        if (estado is UbicacionUi.Lista) {
-            // Mejora IA: circulo del radio de cercania alrededor de tu posicion
-            radio?.let {
-                Circle(
-                    center = LatLng(estado.posicion.latitud, estado.posicion.longitud),
-                    radius = it.toDouble(),
-                    fillColor = Color(0x332E7D32),
-                    strokeColor = Color(0xFF2E7D32),
-                    strokeWidth = 3f
-                )
-            }
-            Marker(
-                state = rememberUpdatedMarkerState(position = LatLng(estado.posicion.latitud, estado.posicion.longitud)),
-                title = "Estás aquí"
-            )
-        }
-        // Un marcador por cada lugar del campus: azul, y verde el mas cercano
-        lugares.forEach { item ->
-            key(item.lugar.id) {
-                val marcador = rememberUpdatedMarkerState(position = LatLng(item.lugar.latitud, item.lugar.longitud))
-                // El lugar seleccionado muestra su nombre en el mapa
-                LaunchedEffect(seleccionado) {
-                    if (seleccionado == item.lugar.id) marcador.showInfoWindow()
+        update = { vista ->
+            // Se vuelven a dibujar el circulo y los marcadores con el estado actual
+            InfoWindow.closeAllInfoWindowsOn(vista)
+            vista.overlays.removeAll { it is Marker || it is Polygon }
+
+            if (estado is UbicacionUi.Lista) {
+                val centro = GeoPoint(estado.posicion.latitud, estado.posicion.longitud)
+                // Mejora IA: circulo del radio de cercania alrededor de tu posicion
+                radio?.let {
+                    vista.overlays.add(0, Polygon(vista).apply {
+                        points = Polygon.pointsAsCircle(centro, it.toDouble())
+                        fillPaint.color = VERDE_RELLENO
+                        outlinePaint.color = VERDE_BORDE
+                        outlinePaint.strokeWidth = 4f
+                        setOnClickListener { _, _, _ -> false }
+                    })
                 }
-                Marker(
-                    state = marcador,
-                    title = item.lugar.nombre,
-                    snippet = item.lugar.categoria,
-                    icon = BitmapDescriptorFactory.defaultMarker(
-                        if (item.lugar.id == masCercanoId) BitmapDescriptorFactory.HUE_GREEN else BitmapDescriptorFactory.HUE_AZURE
-                    )
-                )
             }
+
+            // Un marcador por cada lugar: azul, y verde el mas cercano (nombre y categoria al tocarlo)
+            lugares.forEach { item ->
+                val marcador = Marker(vista).apply {
+                    position = GeoPoint(item.lugar.latitud, item.lugar.longitud)
+                    title = item.lugar.nombre
+                    snippet = item.lugar.categoria
+                    icon = icono(vista.context, if (item.lugar.id == masCercanoId) VERDE else AZUL)
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                }
+                vista.overlays.add(marcador)
+                // El lugar seleccionado muestra su nombre en el mapa
+                if (item.lugar.id == seleccionado) marcador.showInfoWindow()
+            }
+
+            // Tu posicion en rojo
+            if (estado is UbicacionUi.Lista) {
+                vista.overlays.add(Marker(vista).apply {
+                    position = GeoPoint(estado.posicion.latitud, estado.posicion.longitud)
+                    title = "Estás aquí"
+                    icon = icono(vista.context, ROJO)
+                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                })
+            }
+            vista.invalidate()
         }
-    }
+    )
 }
