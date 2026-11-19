@@ -73,18 +73,6 @@ Al tocar **Tarea larga (MAL)** y enseguida **Tócame**, la pantalla se congela d
 
 Valores de referencia comprobados: 100 → 25, 1000 → 168, 10 000 → 1229, 100 000 → 9592 y 500 000 → 41 538 primos.
 
-## Capturas
-
-Guardar las imágenes en la carpeta `capturas/` con estos nombres:
-
-| Tarea con progreso | Cancelada | Primos |
-|---|---|---|
-| ![Progreso](capturas/1_progreso.png) | ![Cancelada](capturas/2_cancelada.png) | ![Primos](capturas/3_primos.png) |
-
-| Una por una contra a la vez | Error |
-|---|---|
-| ![Cargas](capturas/4_cargas.png) | ![Error](capturas/5_error.png) |
-
 ## Para pensar
 
 **1. ¿Por qué no se veía «Trabajando...» en el Paso 1?**
