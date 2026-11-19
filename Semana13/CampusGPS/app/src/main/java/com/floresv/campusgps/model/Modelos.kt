@@ -7,7 +7,10 @@ data class Lugar(
     val nombre: String,
     val categoria: String,
     val latitud: Double,
-    val longitud: Double
+    val longitud: Double,
+    // Mejora IA: datos de la ficha del lugar (ficticios, como las coordenadas)
+    val descripcion: String = "",
+    val horario: String = ""
 )
 
 // metros = null mientras todavia no se conoce la ubicacion del usuario

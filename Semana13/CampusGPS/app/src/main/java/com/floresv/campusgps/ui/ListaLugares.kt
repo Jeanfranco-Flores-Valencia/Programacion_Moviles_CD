@@ -2,6 +2,7 @@ package com.floresv.campusgps.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -30,7 +31,7 @@ fun ListaLugares(
                 item,
                 seleccionado = item.lugar.id == seleccionado,
                 onClick = { onClick(item.lugar.id) },
-                detalle = if (item.lugar.id in dentroDelRadio) { { InsigniaRadio() } } else null
+                detalle = if (item.lugar.id in dentroDelRadio) { { InsigniaRadio(Modifier.padding(top = 4.dp)) } } else null
             )
         }
     }

@@ -36,7 +36,7 @@ fun TarjetaMasCercano(masCercano: LugarConDistancia?, onIr: () -> Unit, modifier
         modifier = modifier.fillMaxWidth()
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(16.dp)) {
-            if (masCercano != null) IconoCategoria(masCercano.lugar.categoria, tamano = 48.dp)
+            if (masCercano != null) MiniaturaLugar(masCercano.lugar, tamano = 56.dp)
             Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
                 Text("Más cercano", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
                 if (masCercano != null) {

@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.floresv.campusgps.model.LugarConDistancia
 import com.floresv.campusgps.util.formatearDistancia
 
-/** Fila de la lista: icono de categoria, nombre, categoria y distancia. La seleccionada se resalta. */
+/** Fila de la lista: foto, nombre, categoria, horario y distancia. La seleccionada se resalta. */
 @Composable
 fun TarjetaLugar(
     item: LugarConDistancia,
@@ -37,10 +37,13 @@ fun TarjetaLugar(
         modifier = modifier.fillMaxWidth()
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(12.dp)) {
-            IconoCategoria(item.lugar.categoria)
+            MiniaturaLugar(item.lugar)
             Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
                 Text(item.lugar.nombre, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
-                Text(item.lugar.categoria, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(item.lugar.categoria, style = MaterialTheme.typography.bodySmall, color = colorDeCategoria(item.lugar.categoria), fontWeight = FontWeight.Medium)
+                if (item.lugar.horario.isNotBlank()) {
+                    Text(item.lugar.horario, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 detalle?.invoke()
             }
             Text(
