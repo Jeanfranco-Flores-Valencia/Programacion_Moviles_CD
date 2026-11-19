@@ -7,6 +7,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -90,7 +91,8 @@ fun MapaUbicacion(
 
     AndroidView(
         factory = { mapa },
-        modifier = modifier,
+        // osmdroid no recorta lo que dibuja: sin esto el mapa se pinta encima del boton y de la lista
+        modifier = modifier.clipToBounds(),
         update = { vista ->
             // Se vuelven a dibujar los marcadores con el estado actual
             InfoWindow.closeAllInfoWindowsOn(vista)
