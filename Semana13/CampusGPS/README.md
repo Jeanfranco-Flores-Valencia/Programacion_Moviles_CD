@@ -21,8 +21,23 @@ Detalle de los prompts en `PROMPTS.md`.
 | Filtrar por categoría | Chips con icono y color (Estudio, Comida, Eventos, Servicios) que filtran el mapa y la lista | ViewModel + View |
 | Radio de cercanía | 100, 200 o 500 m: círculo verde (`Polygon.pointsAsCircle`) alrededor de tu posición y la etiqueta «Dentro del radio» en la lista | ViewModel + View |
 | Último lugar visitado | DataStore guarda el último lugar elegido; al abrir la app el mapa viaja hasta él | Repository + ViewModel |
+| Ficha del lugar | Foto, horario, descripción y minutos caminando. Se abre al tocar una tarjeta o un marcador, con los botones Cómo llegar, Centrar y Compartir | Repository + View |
 
-Componentes reutilizables en `ui/components`: `BarraSuperior`, `ChipsCategorias`, `SelectorRadio`, `TarjetaMasCercano`, `TarjetaLugar`, `IconoCategoria`, `InsigniaRadio` y `Categorias.kt` (color e icono por categoría).
+Componentes reutilizables en `ui/components`: `BarraSuperior`, `ChipsCategorias`, `SelectorRadio`, `TarjetaMasCercano`, `TarjetaLugar`, `FichaLugar`, `FotoLugar`, `InsigniaRadio` y `Categorias.kt` (color e icono por categoría).
+
+### Créditos de las fotos
+
+Las fotos de los lugares son referenciales (los lugares son ficticios) y están en `res/drawable-nodpi`.
+
+| Lugar | Foto | Autor | Licencia |
+|---|---|---|---|
+| Biblioteca Central | [American Library reading area](https://commons.wikimedia.org/wiki/File:American_Library_reading_area.jpg) | Liudmila | Dominio público |
+| Cafetería Campus | [Batensteinbad-kantine](https://commons.wikimedia.org/wiki/File:Batensteinbad-kantine.jpg) | Edoderoo | CC BY-SA 3.0 |
+| Laboratorio de Cómputo | [AI Lab 1](https://commons.wikimedia.org/wiki/File:AI_Lab_1.jpg) | ManoBV16 | CC0 |
+| Auditorio Principal | Foto propia del estudiante | — | — |
+| Estacionamiento Norte | [Parking in the night](https://commons.wikimedia.org/wiki/File:20251107_Parking_in_the_night.jpg) | Tn.kuvat | CC BY 4.0 |
+
+Las fotos se recortaron a 800 × 500 px.
 
 ## Estructura de paquetes
 
@@ -40,7 +55,7 @@ com.floresv.campusgps/
 │   └── PreferenciasRepositoryDataStore.kt  último lugar visitado (Fase 2)
 ├── util/
 │   ├── Distancia.kt                distanciaMetros(desde, hasta)
-│   └── Formato.kt                  formatearDistancia(metros)
+│   └── Formato.kt                  formatearDistancia(metros), minutosCaminando(metros)
 ├── viewmodel/
 │   ├── MapaViewModel.kt
 │   └── CampusViewModelFactory.kt
