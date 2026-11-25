@@ -4,12 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,12 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.tecsup.murocampus.model.Comentario
+import com.tecsup.murocampus.ui.components.AutorConAvatar
+import com.tecsup.murocampus.ui.components.ComentarioHilo
 import com.tecsup.murocampus.viewmodel.DetalleUi
 import com.tecsup.murocampus.viewmodel.PostsViewModel
 import com.tecsup.murocampus.viewmodel.UiState
 
-/** Detalle de una publicacion con sus comentarios. El boton Atras del sistema vuelve a la lista. */
+/** Mejora IA: la publicacion completa y sus comentarios como respuestas en un hilo. */
 @Composable
 fun PantallaDetalle(vm: PostsViewModel, id: Int, modifier: Modifier = Modifier) {
     val estado by vm.detalle.collectAsStateWithLifecycle()
@@ -44,42 +43,25 @@ fun PantallaDetalle(vm: PostsViewModel, id: Int, modifier: Modifier = Modifier) 
 
 @Composable
 private fun Detalle(datos: DetalleUi, modifier: Modifier = Modifier) {
-    LazyColumn(
-        contentPadding = PaddingValues(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier.fillMaxSize()
-    ) {
+    val post = datos.post
+    LazyColumn(contentPadding = PaddingValues(bottom = 24.dp), modifier = modifier.fillMaxSize()) {
         item {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(2.dp), modifier = Modifier.fillMaxWidth()) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(16.dp)) {
-                    EtiquetaUsuario(datos.post.userId)
-                    Text(datos.post.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    Text(datos.post.body, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(16.dp)) {
+                AutorConAvatar(post.userId, detalle = "#${post.id}")
+                Text(post.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(post.body, style = MaterialTheme.typography.bodyLarge)
             }
-        }
-        item {
+            HorizontalDivider()
             Text(
                 "Comentarios (${datos.comentarios.size})",
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 4.dp)
             )
         }
-        items(datos.comentarios, key = { it.id }) { TarjetaComentario(it) }
-    }
-}
-
-@Composable
-private fun TarjetaComentario(c: Comentario) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.padding(12.dp)) {
-            Text(c.email, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
-            Text(c.body, style = MaterialTheme.typography.bodySmall)
+        items(datos.comentarios, key = { it.id }) {
+            ComentarioHilo(it)
+            HorizontalDivider(modifier = Modifier.padding(start = 60.dp))
         }
     }
 }

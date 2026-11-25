@@ -19,9 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 /** Un color por usuario para la etiqueta "Usuario N". */
@@ -31,49 +29,6 @@ private val coloresUsuario = listOf(
 )
 
 fun colorDeUsuario(userId: Int): Color = coloresUsuario[(userId - 1).mod(coloresUsuario.size)]
-
-/** Etiqueta redondeada con el numero de usuario. */
-@Composable
-fun EtiquetaUsuario(userId: Int) {
-    Text(
-        "Usuario $userId",
-        color = Color.White,
-        style = MaterialTheme.typography.labelSmall,
-        fontWeight = FontWeight.Bold,
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(colorDeUsuario(userId))
-            .padding(horizontal = 8.dp, vertical = 2.dp)
-    )
-}
-
-/** Tarjeta de una publicacion: etiqueta del usuario, titulo en negrita y las primeras lineas del texto. */
-@Composable
-fun TarjetaPost(
-    userId: Int,
-    titulo: String,
-    cuerpo: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.padding(12.dp)) {
-            EtiquetaUsuario(userId)
-            Text(titulo, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(
-                cuerpo,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
 
 /** Indicador de carga centrado con su texto. */
 @Composable

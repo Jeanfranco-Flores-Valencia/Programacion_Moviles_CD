@@ -47,6 +47,36 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
         }
     }
 
+    // ----- Mejora IA: deslizar para actualizar y avisos
+    /** true mientras se actualiza la lista sin quitar la que ya se ve. */
+    private val _refrescando = MutableStateFlow(false)
+    val refrescando: StateFlow<Boolean> = _refrescando.asStateFlow()
+
+    /** Mensaje corto para el Snackbar (null = nada que mostrar). */
+    private val _aviso = MutableStateFlow<String?>(null)
+    val aviso: StateFlow<String?> = _aviso.asStateFlow()
+
+    fun avisoMostrado() {
+        _aviso.value = null
+    }
+
+    /** Vuelve a pedir la lista dejando la actual en pantalla; si falla, solo avisa. */
+    fun refrescar() {
+        if (_refrescando.value) return
+        trabajoLista?.cancel()
+        trabajoLista = viewModelScope.launch {
+            _refrescando.value = true
+            try {
+                val filtro = _usuarioFiltro.value
+                (if (filtro == null) repo.listar() else repo.porUsuario(filtro))
+                    .onSuccess { _lista.value = UiState.Exito(it) }
+                    .onFailure { _aviso.value = "No se pudo actualizar: " + mensajeDe(it).lineSequence().first() }
+            } finally {
+                _refrescando.value = false
+            }
+        }
+    }
+
     /** Guarda el filtro y recarga: null llama a listar() y un numero a porUsuario(userId). */
     fun filtrar(userId: Int?) {
         _usuarioFiltro.value = userId
