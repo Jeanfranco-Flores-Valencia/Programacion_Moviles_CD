@@ -19,9 +19,13 @@ data class DetalleUi(val post: Post, val comentarios: List<Comentario>)
 /** Solo conoce la interface PostRepository: nada de Retrofit, PostApi, HttpException ni Context. */
 class PostsViewModel(private val repo: PostRepository) : ViewModel() {
 
-    // ----- Lista (paso 6)
+    // ----- Lista (paso 6) y filtro por usuario (paso 8)
     private val _lista = MutableStateFlow<UiState<List<Post>>>(UiState.Cargando)
     val lista: StateFlow<UiState<List<Post>>> = _lista.asStateFlow()
+
+    /** Usuario elegido en los chips. null = Todos. */
+    private val _usuarioFiltro = MutableStateFlow<Int?>(null)
+    val usuarioFiltro: StateFlow<Int?> = _usuarioFiltro.asStateFlow()
 
     private var trabajoLista: Job? = null
 
@@ -29,15 +33,23 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
         cargar()
     }
 
-    /** Pide la lista: Cargando, y luego Exito o Error segun el Result del Repository. */
+    /** Pide la lista (toda o la del usuario filtrado): Cargando, y luego Exito o Error. */
     fun cargar() {
         trabajoLista?.cancel()   // si habia una carga en curso, se reemplaza
         trabajoLista = viewModelScope.launch {
             _lista.value = UiState.Cargando
-            repo.listar()
+            val filtro = _usuarioFiltro.value
+            val resultado = if (filtro == null) repo.listar() else repo.porUsuario(filtro)
+            resultado
                 .onSuccess { _lista.value = UiState.Exito(it) }
                 .onFailure { _lista.value = UiState.Error(mensajeDe(it)) }
         }
+    }
+
+    /** Guarda el filtro y recarga: null llama a listar() y un numero a porUsuario(userId). */
+    fun filtrar(userId: Int?) {
+        _usuarioFiltro.value = userId
+        cargar()
     }
 
     // ----- Detalle con comentarios (paso 7)
