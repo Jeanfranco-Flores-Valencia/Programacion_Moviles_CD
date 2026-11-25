@@ -10,8 +10,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /** Lo que muestra la pantalla de detalle: la publicacion y sus comentarios. */
@@ -76,6 +79,24 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
             }
         }
     }
+
+    // ----- Mejora IA: busqueda por titulo en las publicaciones ya descargadas
+    private val _busqueda = MutableStateFlow("")
+    val busqueda: StateFlow<String> = _busqueda.asStateFlow()
+
+    fun buscar(texto: String) {
+        _busqueda.value = texto
+    }
+
+    /**
+     * La lista que se dibuja: la misma de la red, pero si hay texto de busqueda solo con los titulos
+     * que lo contienen. No vuelve a llamar al servicio: filtra lo que ya se descargo.
+     */
+    val listaVisible: StateFlow<UiState<List<Post>>> = combine(_lista, _busqueda) { estado, texto ->
+        if (estado is UiState.Exito && texto.isNotBlank())
+            UiState.Exito(estado.datos.filter { it.title.contains(texto.trim(), ignoreCase = true) })
+        else estado
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Cargando)
 
     /** Guarda el filtro y recarga: null llama a listar() y un numero a porUsuario(userId). */
     fun filtrar(userId: Int?) {
