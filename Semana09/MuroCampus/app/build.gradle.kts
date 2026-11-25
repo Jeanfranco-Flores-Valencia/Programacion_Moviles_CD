@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    // Convierte JSON en data class (@Serializable). Misma version que Kotlin
+    kotlin("plugin.serialization") version "2.2.21"
 }
 
 android {
@@ -49,4 +51,13 @@ dependencies {
 
     // ViewModel en Compose (viewModelScope). Las corrutinas vienen incluidas
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+
+    // Servicio web REST: Retrofit hace las llamadas, OkHttp la conexion y kotlinx.serialization el JSON
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    // collectAsStateWithLifecycle()
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
 }
