@@ -133,6 +133,37 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
         }
     }
 
+    // ----- Mejora IA: borrar con DELETE
+    /** true mientras se borra (o se edita): desactiva los botones del detalle. */
+    private val _procesando = MutableStateFlow(false)
+    val procesando: StateFlow<Boolean> = _procesando.asStateFlow()
+
+    /** Id de la publicacion recien borrada: la pantalla vuelve a la lista al verlo. */
+    private val _eliminada = MutableStateFlow<Int?>(null)
+    val eliminada: StateFlow<Int?> = _eliminada.asStateFlow()
+
+    fun eliminar(id: Int) {
+        if (_procesando.value) return
+        viewModelScope.launch {
+            _procesando.value = true
+            repo.eliminar(id)
+                .onSuccess { codigo ->
+                    // JSONPlaceholder no borra de verdad: se quita de la lista que ya esta en memoria
+                    (_lista.value as? UiState.Exito)?.let { actual ->
+                        _lista.value = UiState.Exito(actual.datos.filterNot { it.id == id })
+                    }
+                    _aviso.value = "Publicación #$id eliminada (código $codigo)"
+                    _eliminada.value = id
+                }
+                .onFailure { _aviso.value = "No se pudo eliminar: " + mensajeDe(it).lineSequence().first() }
+            _procesando.value = false
+        }
+    }
+
+    fun eliminacionVista() {
+        _eliminada.value = null
+    }
+
     // ----- Crear publicacion (paso 9)
     /** null = todavia no se envio nada. */
     private val _publicacion = MutableStateFlow<UiState<Post>?>(null)

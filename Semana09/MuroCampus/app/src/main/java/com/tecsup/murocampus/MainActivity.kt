@@ -65,6 +65,13 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                // Mejora IA: al borrar la publicacion abierta se vuelve al muro
+                val eliminada by vm.eliminada.collectAsStateWithLifecycle()
+                LaunchedEffect(eliminada) {
+                    if (eliminada != null && eliminada == idSeleccionado) idSeleccionado = null
+                    if (eliminada != null) vm.eliminacionVista()
+                }
+
                 val enLista = idSeleccionado == null && !creando
                 Scaffold(
                     snackbarHost = { SnackbarHost(snackbar) },
