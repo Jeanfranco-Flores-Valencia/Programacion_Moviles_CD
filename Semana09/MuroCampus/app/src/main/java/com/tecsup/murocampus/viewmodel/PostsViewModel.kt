@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tecsup.murocampus.data.PostRepository
 import com.tecsup.murocampus.model.Comentario
+import com.tecsup.murocampus.model.NuevoPost
 import com.tecsup.murocampus.model.Post
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -79,5 +80,26 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
                 if (error != null) UiState.Error(mensajeDe(error))
                 else UiState.Exito(DetalleUi(post.getOrThrow(), comentarios.getOrThrow()))
         }
+    }
+
+    // ----- Crear publicacion (paso 9)
+    /** null = todavia no se envio nada. */
+    private val _publicacion = MutableStateFlow<UiState<Post>?>(null)
+    val publicacion: StateFlow<UiState<Post>?> = _publicacion.asStateFlow()
+
+    /** Envia la publicacion nueva con POST. JSONPlaceholder responde con id 101 pero no la guarda. */
+    fun publicar(titulo: String, texto: String) {
+        if (_publicacion.value is UiState.Cargando) return
+        viewModelScope.launch {
+            _publicacion.value = UiState.Cargando
+            repo.crear(NuevoPost(userId = 1, title = titulo.trim(), body = texto.trim()))
+                .onSuccess { _publicacion.value = UiState.Exito(it) }
+                .onFailure { _publicacion.value = UiState.Error(mensajeDe(it)) }
+        }
+    }
+
+    /** Al salir de la pantalla Crear se borra el mensaje anterior. */
+    fun reiniciarPublicacion() {
+        _publicacion.value = null
     }
 }

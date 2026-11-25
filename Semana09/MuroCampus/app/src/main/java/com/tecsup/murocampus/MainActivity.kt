@@ -18,6 +18,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.tecsup.murocampus.ui.PantallaCrear
 import com.tecsup.murocampus.ui.PantallaDetalle
 import com.tecsup.murocampus.ui.PantallaLista
 import com.tecsup.murocampus.ui.theme.MuroCampusTheme
@@ -34,9 +35,14 @@ class MainActivity : ComponentActivity() {
                 val vm: PostsViewModel = viewModel(factory = PostsViewModelFactory())
                 // Navegacion simple: con null se ve la lista
                 var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
+                var creando by rememberSaveable { mutableStateOf(false) }
 
                 // Atras vuelve a la lista sin recargarla
-                BackHandler(enabled = idSeleccionado != null) { idSeleccionado = null }
+                BackHandler(enabled = idSeleccionado != null || creando) {
+                    if (creando) vm.reiniciarPublicacion()
+                    idSeleccionado = null
+                    creando = false
+                }
 
                 Scaffold(
                     topBar = {
@@ -51,8 +57,16 @@ class MainActivity : ComponentActivity() {
                 ) { padding ->
                     val modificador = Modifier.padding(padding)
                     val id = idSeleccionado
-                    if (id != null) PantallaDetalle(vm, id, modificador)
-                    else PantallaLista(vm, onAbrir = { idSeleccionado = it }, modifier = modificador)
+                    when {
+                        creando -> PantallaCrear(vm, modificador)
+                        id != null -> PantallaDetalle(vm, id, modificador)
+                        else -> PantallaLista(
+                            vm,
+                            onAbrir = { idSeleccionado = it },
+                            onCrear = { creando = true },
+                            modifier = modificador
+                        )
+                    }
                 }
             }
         }
