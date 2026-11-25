@@ -10,6 +10,22 @@ MuroCampus es un muro de publicaciones que viene de internet. Consume el servici
 
 **Tecnologías:** Kotlin, Jetpack Compose + Material 3 (sin XML), Retrofit, OkHttp, kotlinx.serialization, corrutinas y ViewModel. Paquete: `com.tecsup.murocampus`.
 
+## Fase 2: mejora con IA (rama `mejora-ia-murocampus`)
+
+Detalle de los prompts en `PROMPTS.md`.
+
+| Mejora | Qué hace | Capas |
+|---|---|---|
+| Diseño estilo red social | Barra clara con flecha para volver, avatar por usuario, «Usuario N · @usuarioN · #id», comentarios en hilo, botón flotante «Publicar», deslizar para actualizar y avisos en un Snackbar | ViewModel + View |
+| Búsqueda | Campo que filtra por título las publicaciones ya descargadas (`combine` en el ViewModel) | ViewModel + View |
+| Borrar publicación | Botón **Eliminar** con confirmación: `@DELETE("posts/{id}")` con `Response<Unit>` y revisión del código | API + Repository + ViewModel + View |
+| Editar con PATCH | **Editar título** dentro de la publicación: `@PATCH("posts/{id}")` con `@Body CambioTitulo` y la respuesta del servicio en pantalla | API + Repository + ViewModel + View |
+| Encabezado con interceptor | `Interceptor` de OkHttp que agrega `Accept: application/json` a todas las peticiones | RetrofitClient |
+
+Componentes reutilizables en `ui/components`: `Avatar`, `EncabezadoAutor`, `PublicacionFeed`, `ComentarioHilo`, `ChipsUsuarios`, `BarraBusqueda`, `AccionesPublicacion`, `EditorTitulo` y `Aviso`.
+
+JSONPlaceholder **simula** el DELETE y el PATCH (responde 200 pero no guarda nada): la app aplica el cambio a los datos que ya tiene en memoria, y al deslizar para actualizar el muro vuelve a mostrar lo original.
+
 ## La API que se usa
 
 | Para... | Verbo y ruta | Anotación | Qué devuelve |
@@ -19,6 +35,8 @@ MuroCampus es un muro de publicaciones que viene de internet. Consume el servici
 | Ver sus comentarios | `GET posts/{id}/comments` | `@Path("id")` | 5 comentarios |
 | Filtrar por usuario | `GET posts?userId=2` | `@Query("userId")` | 10 publicaciones del usuario |
 | Crear una publicación | `POST posts` | `@Body` | La publicación creada con `id` = 101 |
+| Editar el título (Fase 2) | `PATCH posts/{id}` | `@Path` + `@Body` | La publicación con el título nuevo |
+| Borrar (Fase 2) | `DELETE posts/{id}` | `@Path` | Respuesta vacía con código 200 (`Response<Unit>`) |
 
 ## Estructura de paquetes
 
@@ -26,7 +44,7 @@ MuroCampus es un muro de publicaciones que viene de internet. Consume el servici
 com.tecsup.murocampus/
 ├── MainActivity.kt                navegación simple: lista, detalle (idSeleccionado) y crear
 ├── model/
-│   └── Modelos.kt                 Usuario (ejemplo), Post, Comentario, NuevoPost  (@Serializable)
+│   └── Modelos.kt                 Usuario (ejemplo), Post, Comentario, NuevoPost, CambioTitulo (Fase 2)
 ├── data/
 │   ├── remote/
 │   │   ├── PostApi.kt             interface de Retrofit: @GET, @POST, @Path, @Query, @Body
@@ -41,6 +59,7 @@ com.tecsup.murocampus/
     ├── PantallaLista.kt           chips de usuario, lista y botón +
     ├── PantallaDetalle.kt         publicación y Comentarios (N)
     ├── PantallaCrear.kt           Título, Contenido y Publicar
+    ├── components/                componentes reutilizables (Fase 2)
     └── theme/
 ```
 
