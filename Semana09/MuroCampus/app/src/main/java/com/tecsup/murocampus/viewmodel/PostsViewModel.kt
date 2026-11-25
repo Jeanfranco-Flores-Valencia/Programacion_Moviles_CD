@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 /** Lo que muestra la pantalla de detalle: la publicacion y sus comentarios. */
 data class DetalleUi(val post: Post, val comentarios: List<Comentario>)
 
-/** Solo conoce la interface PostRepository: nada de Retrofit, PostApi, HttpException ni Context. */
+/** Solo conoce la interface PostRepository: no sabe de la capa de red ni recibe un Context. */
 class PostsViewModel(private val repo: PostRepository) : ViewModel() {
 
     // ----- Lista (paso 6) y filtro por usuario (paso 8)
