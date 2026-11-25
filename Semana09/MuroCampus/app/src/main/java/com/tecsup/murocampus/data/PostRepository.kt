@@ -1,6 +1,7 @@
 package com.tecsup.murocampus.data
 
 import com.tecsup.murocampus.data.remote.PostApi
+import com.tecsup.murocampus.model.CambioTitulo
 import com.tecsup.murocampus.model.Comentario
 import com.tecsup.murocampus.model.NuevoPost
 import com.tecsup.murocampus.model.Post
@@ -14,6 +15,8 @@ interface PostRepository {
     suspend fun comentarios(id: Int): Result<List<Comentario>>
     suspend fun porUsuario(userId: Int): Result<List<Post>>
     suspend fun crear(nuevo: NuevoPost): Result<Post>
+    /** Mejora IA: cambia el titulo con PATCH y devuelve la publicacion que respondio el servicio. */
+    suspend fun editarTitulo(id: Int, titulo: String): Result<Post>
     /** Mejora IA: devuelve el codigo HTTP de la respuesta (200 si se borro). */
     suspend fun eliminar(id: Int): Result<Int>
 }
@@ -26,6 +29,8 @@ class PostRepositoryRemote(private val api: PostApi) : PostRepository {
     override suspend fun comentarios(id: Int) = llamar { api.comentarios(id) }
     override suspend fun porUsuario(userId: Int) = llamar { api.porUsuario(userId) }
     override suspend fun crear(nuevo: NuevoPost) = llamar { api.crear(nuevo) }
+
+    override suspend fun editarTitulo(id: Int, titulo: String) = llamar { api.editarTitulo(id, CambioTitulo(titulo)) }
 
     /** Si el codigo no es 2xx, HttpException lo convierte en fallo (y llamar lo envuelve en Result). */
     override suspend fun eliminar(id: Int) = llamar {

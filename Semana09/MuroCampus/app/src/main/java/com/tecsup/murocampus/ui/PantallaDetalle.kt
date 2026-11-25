@@ -25,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tecsup.murocampus.ui.components.AccionesPublicacion
 import com.tecsup.murocampus.ui.components.AutorConAvatar
 import com.tecsup.murocampus.ui.components.ComentarioHilo
+import com.tecsup.murocampus.ui.components.EditorTitulo
 import com.tecsup.murocampus.viewmodel.DetalleUi
 import com.tecsup.murocampus.viewmodel.PostsViewModel
 import com.tecsup.murocampus.viewmodel.UiState
@@ -35,6 +36,7 @@ fun PantallaDetalle(vm: PostsViewModel, id: Int, modifier: Modifier = Modifier) 
     val estado by vm.detalle.collectAsStateWithLifecycle()
     val procesando by vm.procesando.collectAsStateWithLifecycle()
     var confirmarBorrado by rememberSaveable { mutableStateOf(false) }
+    var editando by rememberSaveable { mutableStateOf(false) }
 
     // Avisa al ViewModel que se abrio este detalle; el ViewModel decide si hace falta pedirlo
     LaunchedEffect(id) { vm.abrir(id) }
@@ -44,7 +46,14 @@ fun PantallaDetalle(vm: PostsViewModel, id: Int, modifier: Modifier = Modifier) 
         is UiState.Error -> ErrorConReintento(e.mensaje, onReintentar = { vm.abrir(id) }, modifier = modifier)
         // Si todavia se ve el detalle de otra publicacion, se muestra la carga hasta que llegue el nuevo
         is UiState.Exito ->
-            if (e.datos.post.id == id) Detalle(e.datos, procesando, onEliminar = { confirmarBorrado = true }, modifier = modifier)
+            if (e.datos.post.id == id) Detalle(
+                e.datos, procesando, editando,
+                onEditar = { editando = true },
+                onGuardarTitulo = { editando = false; vm.editarTitulo(id, it) },
+                onCancelarEdicion = { editando = false },
+                onEliminar = { confirmarBorrado = true },
+                modifier = modifier
+            )
             else Cargando("Cargando publicación...", modifier)
     }
 
@@ -68,6 +77,10 @@ fun PantallaDetalle(vm: PostsViewModel, id: Int, modifier: Modifier = Modifier) 
 private fun Detalle(
     datos: DetalleUi,
     procesando: Boolean,
+    editando: Boolean,
+    onEditar: () -> Unit,
+    onGuardarTitulo: (String) -> Unit,
+    onCancelarEdicion: () -> Unit,
     onEliminar: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -76,9 +89,11 @@ private fun Detalle(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(16.dp)) {
                 AutorConAvatar(post.userId, detalle = "#${post.id}")
-                Text(post.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                // Mejora IA: en modo edicion el titulo se vuelve un campo con Guardar (PATCH)
+                if (editando) EditorTitulo(post.title, onGuardar = onGuardarTitulo, onCancelar = onCancelarEdicion)
+                else Text(post.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Text(post.body, style = MaterialTheme.typography.bodyLarge)
-                AccionesPublicacion(habilitado = !procesando, onEliminar = onEliminar)
+                if (!editando) AccionesPublicacion(habilitado = !procesando, onEliminar = onEliminar, onEditar = onEditar)
             }
             HorizontalDivider()
             Text(

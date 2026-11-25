@@ -133,7 +133,7 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
         }
     }
 
-    // ----- Mejora IA: borrar con DELETE
+    // ----- Mejora IA: borrar con DELETE y editar con PATCH
     /** true mientras se borra (o se edita): desactiva los botones del detalle. */
     private val _procesando = MutableStateFlow(false)
     val procesando: StateFlow<Boolean> = _procesando.asStateFlow()
@@ -156,6 +156,27 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
                     _eliminada.value = id
                 }
                 .onFailure { _aviso.value = "No se pudo eliminar: " + mensajeDe(it).lineSequence().first() }
+            _procesando.value = false
+        }
+    }
+
+    // ----- Mejora IA: editar el titulo con PATCH
+    /** Cambia el titulo y actualiza el detalle y la lista con la respuesta del servicio. */
+    fun editarTitulo(id: Int, titulo: String) {
+        if (_procesando.value || titulo.isBlank()) return
+        viewModelScope.launch {
+            _procesando.value = true
+            repo.editarTitulo(id, titulo.trim())
+                .onSuccess { actualizado ->
+                    (_detalle.value as? UiState.Exito)?.let { actual ->
+                        if (actual.datos.post.id == id) _detalle.value = UiState.Exito(actual.datos.copy(post = actualizado))
+                    }
+                    (_lista.value as? UiState.Exito)?.let { actual ->
+                        _lista.value = UiState.Exito(actual.datos.map { if (it.id == id) actualizado else it })
+                    }
+                    _aviso.value = "Título actualizado con PATCH"
+                }
+                .onFailure { _aviso.value = "No se pudo editar: " + mensajeDe(it).lineSequence().first() }
             _procesando.value = false
         }
     }

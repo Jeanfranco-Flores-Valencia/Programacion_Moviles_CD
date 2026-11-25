@@ -36,3 +36,9 @@ data class NuevoPost(
     val title: String,
     val body: String
 )
+
+/** Mejora IA: lo que se envia con PATCH para cambiar solo el titulo. */
+@Serializable
+data class CambioTitulo(
+    val title: String
+)
