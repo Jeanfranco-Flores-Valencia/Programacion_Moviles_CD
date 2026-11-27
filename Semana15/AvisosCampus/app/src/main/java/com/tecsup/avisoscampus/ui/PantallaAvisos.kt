@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -38,6 +39,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tecsup.avisoscampus.model.PermisoUi
 import androidx.core.content.ContextCompat
@@ -54,6 +56,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     val faltan by vm.faltan.collectAsState()
     val escuchando by vm.escuchandoAvion.collectAsState()
     val avisos by vm.avisos.collectAsState()
+    val mensaje by vm.mensaje.collectAsState()
 
     // El receptor solo existe mientras el switch esta activado; al salir siempre se quita
     DisposableEffect(escuchando) {
@@ -84,7 +87,7 @@ fun PantallaAvisos(vm: AvisosViewModel) {
     LaunchedEffect(Unit) {
         vm.eventos.collect { aviso ->
             val mostrado = Notificador.mostrar(contexto, aviso)
-            // TODO Paso 8: si no se mostro, avisar al ViewModel
+            if (!mostrado) vm.noSePudoMostrar()
         }
     }
 
@@ -109,6 +112,25 @@ fun PantallaAvisos(vm: AvisosViewModel) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) lanzador.launch(Manifest.permission.POST_NOTIFICATIONS)
                     else vm.permisoRespondido(true)
                 }) { Text("Permitir notificaciones") }
+            }
+            // Paso 8: mensaje de error y acceso a los ajustes de notificaciones de la app
+            mensaje?.let {
+                Text(
+                    it,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.errorContainer).padding(12.dp)
+                )
+                OutlinedButton(
+                    onClick = {
+                        contexto.startActivity(
+                            Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                .putExtra(Settings.EXTRA_APP_PACKAGE, contexto.packageName)
+                        )
+                    },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) { Text("Abrir ajustes") }
             }
             Tarjeta("Avisos") {
                 Button(onClick = vm::avisarAhora) { Text("Mostrar aviso") }
