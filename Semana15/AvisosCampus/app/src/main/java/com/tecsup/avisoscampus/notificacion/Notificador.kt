@@ -15,10 +15,13 @@ import androidx.core.content.ContextCompat
 import com.tecsup.avisoscampus.MainActivity
 import com.tecsup.avisoscampus.R
 import com.tecsup.avisoscampus.model.Aviso
+import com.tecsup.avisoscampus.model.Origen
 
 /** Todo lo que habla con el sistema de notificaciones. Lo usa la pantalla, nunca el ViewModel. */
 object Notificador {
     const val CANAL = "avisos"
+    /** Mejora IA: canal de importancia alta (aparece como ventana emergente). Lo usa el recordatorio. */
+    const val CANAL_URGENTE = "urgentes"
 
     /** Desde Android 8 (O) toda notificacion necesita un canal. Crearlo otra vez no hace nada. */
     fun crearCanal(context: Context) {
@@ -26,7 +29,10 @@ object Notificador {
             val canal = NotificationChannel(CANAL, "Avisos", NotificationManager.IMPORTANCE_DEFAULT).apply {
                 description = "Notificaciones de la app"
             }
-            context.getSystemService(NotificationManager::class.java).createNotificationChannel(canal)
+            val urgente = NotificationChannel(CANAL_URGENTE, "Urgentes", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "Recordatorios que no se pueden pasar por alto"
+            }
+            context.getSystemService(NotificationManager::class.java).createNotificationChannels(listOf(canal, urgente))
         }
     }
 
@@ -42,11 +48,13 @@ object Notificador {
         // Al tocar la notificacion se abre MainActivity (FLAG_IMMUTABLE: nadie puede cambiar el Intent)
         val intent = Intent(context, MainActivity::class.java)
         val pendiente = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-        val notificacion = NotificationCompat.Builder(context, CANAL)
+        // Mejora IA: el recordatorio va por el canal urgente; lo demas por "Avisos"
+        val urgente = aviso.origen == Origen.RECORDATORIO
+        val notificacion = NotificationCompat.Builder(context, if (urgente) CANAL_URGENTE else CANAL)
             .setSmallIcon(R.drawable.ic_notificacion)
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(if (urgente) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendiente)
             .setAutoCancel(true)   // se quita del panel al tocarla
             .build()
