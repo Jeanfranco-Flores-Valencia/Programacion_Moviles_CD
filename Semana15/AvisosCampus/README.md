@@ -10,6 +10,16 @@ AvisosCampus muestra notificaciones locales y escucha lo que pasa en el celular.
 
 **Tecnologías:** Kotlin, Jetpack Compose + Material 3 (sin XML), NotificationCompat, PendingIntent, BroadcastReceiver, corrutinas y ViewModel. Paquete: `com.tecsup.avisoscampus`.
 
+## Fase 2: mejora con IA (rama `mejora-ia-avisoscampus`)
+
+Detalle de los prompts en `PROMPTS.md`.
+
+| Mejora | Qué hace | Capas |
+|---|---|---|
+| Dos canales | Canal **Urgentes** con `IMPORTANCE_HIGH` (emergente) además de **Avisos**; el recordatorio usa el urgente | Notificador |
+| Texto largo | Al expandir la notificación se lee el texto completo, el origen y la hora (`BigTextStyle`) | Notificador |
+| Receptor del cargador | Switch **Escuchar el cargador**: avisa **Conectado** o **Desconectado** con `ACTION_POWER_CONNECTED` / `ACTION_POWER_DISCONNECTED` | Receiver + ViewModel + View |
+
 ## Estructura de paquetes
 
 ```
@@ -23,7 +33,8 @@ com.tecsup.avisoscampus/
 ├── notificacion/
 │   └── Notificador.kt            canal, permiso y mostrar (NotificationCompat + PendingIntent)
 ├── receiver/
-│   └── ModoAvionReceiver.kt      BroadcastReceiver del modo avión
+│   ├── ModoAvionReceiver.kt      BroadcastReceiver del modo avión
+│   └── CargadorReceiver.kt       BroadcastReceiver del cargador (Fase 2)
 ├── viewmodel/
 │   ├── AvisosViewModel.kt        permiso, avisos, recordatorio, receptor y errores
 │   └── AvisosViewModelFactory.kt

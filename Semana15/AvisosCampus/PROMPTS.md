@@ -1,0 +1,11 @@
+# PROMPTS.md — Fase 2 (rama `mejora-ia-avisoscampus`)
+
+Herramienta: asistente de IA (Claude), con permiso del docente para usar IA.
+Mejoras elegidas: **dos canales**, **texto largo** y **receptor del cargador**.
+Reglas revisadas en cada respuesta: nada de `Context`, `NotificationManager` ni `BroadcastReceiver` en el ViewModel; todo receptor se quita en `onDispose`; `PendingIntent` siempre con `FLAG_IMMUTABLE`.
+
+| Prompt que escribí | Qué respondió la IA | Qué cambié o descarté | Por qué |
+|---|---|---|---|
+| «Agrega un canal Urgentes con IMPORTANCE_HIGH y otro Avisos; que el recordatorio use el urgente.» | Crear los dos canales en `crearCanal` y pasar el canal como parámetro de `mostrar`, eligiéndolo en el ViewModel. | Lo dejé dentro del `Notificador`: elige el canal según el `origen` del aviso (RECORDATORIO → urgente) y creé los dos canales con `createNotificationChannels`. También subí la prioridad a `PRIORITY_HIGH` para Android 7 o menos, que no tiene canales. | El canal es un detalle del sistema de notificaciones: si el ViewModel lo eligiera, tendría que conocer constantes de Android. Con el `origen`, que ya está en el modelo, basta. |
+| «Muestra el texto completo al expandir la notificación con BigTextStyle.» | `setStyle(NotificationCompat.BigTextStyle().bigText(aviso.texto))`. | Agregué al texto expandido el origen y la hora del aviso, que no caben en la línea corta. | Así la notificación expandida dice lo mismo que el historial. |
+| «Escucha ACTION_POWER_CONNECTED y ACTION_POWER_DISCONNECTED y avisa, con su propio switch.» | Un `CargadorReceiver` registrado en el `AndroidManifest.xml` con un `<receiver>` y un `IntentFilter` con las dos acciones. | Descarté el registro en el Manifest: desde Android 8 estos anuncios ya no llegan a receptores declarados ahí, y además el receptor no podría hablar con el ViewModel. Lo registré igual que el del modo avión: en un `DisposableEffect` con su switch y `unregisterReceiver` en `onDispose`. Agregué `Origen.CARGADOR` y su color en el historial. | Un receptor dinámico solo vive mientras el usuario lo pide y nunca queda registrado al salir. El ViewModel solo recibe `alCambiarCargador(conectado)`: no conoce el `BroadcastReceiver`. |
