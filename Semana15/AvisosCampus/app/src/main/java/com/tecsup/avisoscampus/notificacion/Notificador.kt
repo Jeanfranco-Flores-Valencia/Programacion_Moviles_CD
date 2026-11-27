@@ -54,6 +54,11 @@ object Notificador {
             .setSmallIcon(R.drawable.ic_notificacion)
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
+            // Mejora IA: al expandir la notificacion se lee el texto completo y la hora del aviso
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText("${aviso.texto}.\nOrigen: ${aviso.origen.texto} · ${aviso.hora}")
+            )
             .setPriority(if (urgente) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendiente)
             .setAutoCancel(true)   // se quita del panel al tocarla
