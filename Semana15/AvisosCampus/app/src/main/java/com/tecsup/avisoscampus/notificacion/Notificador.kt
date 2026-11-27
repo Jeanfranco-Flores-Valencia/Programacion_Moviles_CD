@@ -1,14 +1,23 @@
 package com.tecsup.avisoscampus.notificacion
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
 import com.tecsup.avisoscampus.model.Aviso
 
 /** Todo lo que habla con el sistema de notificaciones. Lo usa la pantalla, nunca el ViewModel. */
 object Notificador {
     const val CANAL = "avisos"
 
+    /** Desde Android 8 (O) toda notificacion necesita un canal. Crearlo otra vez no hace nada. */
     fun crearCanal(context: Context) {
-        // TODO Paso 1: si SDK_INT >= O, crear NotificationChannel y registrarlo
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val canal = NotificationChannel(CANAL, "Avisos", NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = "Notificaciones de la app"
+            }
+            context.getSystemService(NotificationManager::class.java).createNotificationChannel(canal)
+        }
     }
 
     // TODO Paso 2: fun tienePermiso(context: Context): Boolean
