@@ -6,6 +6,8 @@ import com.tecsup.avisoscampus.data.AvisosRepository
 import com.tecsup.avisoscampus.model.Aviso
 import com.tecsup.avisoscampus.model.Origen
 import com.tecsup.avisoscampus.model.PermisoUi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -40,7 +42,34 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
             _eventos.emit(aviso)
         }
     }
-    // TODO Paso 5: faltan, recordarEn(segundos) y cancelarRecordatorio()
+    // ----- Recordatorio (paso 5)
+    private var trabajo: Job? = null
+
+    /** Segundos que faltan, o null si no hay recordatorio activo. */
+    private val _faltan = MutableStateFlow<Int?>(null)
+    val faltan: StateFlow<Int?> = _faltan.asStateFlow()
+
+    /** Cuenta regresiva en viewModelScope: sigue aunque se minimice la app o se rote la pantalla. */
+    fun recordarEn(segundos: Int = 10) {
+        if (trabajo?.isActive == true) return   // ya hay uno activo
+        trabajo = viewModelScope.launch {
+            try {
+                for (s in segundos downTo 1) {
+                    _faltan.value = s
+                    delay(1000)
+                }
+                val aviso = repo.registrar("Recordatorio", "Revisa tu laboratorio pendiente", Origen.RECORDATORIO)
+                _eventos.emit(aviso)
+            } finally {
+                _faltan.value = null   // termine bien o cancelado
+            }
+        }
+    }
+
+    /** Cancela la cuenta: no se emite ningun aviso. */
+    fun cancelarRecordatorio() {
+        trabajo?.cancel()
+    }
     // TODO Paso 6: escuchandoAvion, cambiarEscucha(valor) y alCambiarModoAvion(activo)
     // TODO Paso 8: fun noSePudoMostrar()
 }
