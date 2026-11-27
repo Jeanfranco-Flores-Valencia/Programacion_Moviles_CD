@@ -1,9 +1,12 @@
 package com.tecsup.avisoscampus.notificacion
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.content.ContextCompat
 import com.tecsup.avisoscampus.model.Aviso
 
 /** Todo lo que habla con el sistema de notificaciones. Lo usa la pantalla, nunca el ViewModel. */
@@ -20,7 +23,10 @@ object Notificador {
         }
     }
 
-    // TODO Paso 2: fun tienePermiso(context: Context): Boolean
+    /** Antes de Android 13 no hay que pedir permiso: siempre se puede notificar. */
+    fun tienePermiso(context: Context): Boolean =
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) true
+        else ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 
     fun mostrar(context: Context, aviso: Aviso): Boolean {
         // TODO Paso 3: si no tienePermiso(context) -> return false

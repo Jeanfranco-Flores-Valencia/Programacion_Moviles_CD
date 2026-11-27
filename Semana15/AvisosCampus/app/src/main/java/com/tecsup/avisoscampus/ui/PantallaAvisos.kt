@@ -1,5 +1,9 @@
 package com.tecsup.avisoscampus.ui
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +25,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +43,17 @@ import com.tecsup.avisoscampus.viewmodel.AvisosViewModel
 @Composable
 fun PantallaAvisos(vm: AvisosViewModel) {
     val contexto = LocalContext.current
+    val permiso by vm.permiso.collectAsState()
+
+    // Android dibuja el cuadro de permiso; la app solo recibe la respuesta
+    val lanzador = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { concedido ->
+        vm.permisoRespondido(concedido)
+    }
+
+    // Si el permiso ya estaba concedido (o el celular es anterior a Android 13), se avisa al ViewModel
+    LaunchedEffect(Unit) {
+        if (Notificador.tienePermiso(contexto)) vm.permisoRespondido(true)
+    }
 
     // Ya viene hecho: el ViewModel emite el aviso y la pantalla (que tiene Context) lo muestra
     LaunchedEffect(Unit) {
@@ -62,8 +79,11 @@ fun PantallaAvisos(vm: AvisosViewModel) {
             modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp)
         ) {
             Tarjeta("Permiso de notificaciones") {
-                // TODO Paso 2: estado del permiso y boton "Permitir notificaciones"
-                FilaEstado(PermisoUi.SinPedir)
+                FilaEstado(permiso)
+                Button(onClick = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) lanzador.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    else vm.permisoRespondido(true)
+                }) { Text("Permitir notificaciones") }
             }
             Tarjeta("Avisos") {
                 // TODO Paso 3: boton "Mostrar aviso" -> vm.avisarAhora()
